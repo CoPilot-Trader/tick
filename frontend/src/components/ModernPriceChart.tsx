@@ -452,6 +452,7 @@ export default function ModernPriceChart({
               axisLine={{ stroke: '#374151' }}
               domain={['dataMin - 2', 'dataMax + 2']}
               width={60}
+              tickFormatter={(value) => `$${value.toFixed(2)}`}
             />
             
             {filters.showVolume && (
@@ -463,6 +464,11 @@ export default function ModernPriceChart({
                 tick={{ fill: '#9ca3af' }}
                 axisLine={{ stroke: '#374151' }}
                 width={50}
+                tickFormatter={(value) => {
+                  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                  return value.toString();
+                }}
               />
             )}
             

@@ -105,7 +105,7 @@ export default function ComparisonChart({
             const closestDiff = Math.abs(new Date(closest.timestamp).getTime() - pointTime);
             const currentDiff = Math.abs(new Date(current.timestamp).getTime() - pointTime);
             return currentDiff < closestDiff && currentDiff < 5 * 60 * 1000 ? current : closest;
-          }, null as OHLCVDataPoint | null);
+          }, undefined as OHLCVDataPoint | undefined);
         }
         
         if (matchingPoint) {
@@ -167,7 +167,7 @@ export default function ComparisonChart({
             const closestDiff = Math.abs(new Date(closest.timestamp).getTime() - predTime);
             const currentDiff = Math.abs(new Date(current.timestamp).getTime() - predTime);
             return currentDiff < closestDiff && currentDiff < 5 * 60 * 1000 ? current : closest;
-          }, null as PredictionPoint | null);
+          }, undefined as PredictionPoint | undefined);
         }
         
         if (matchingPrediction) {
@@ -213,22 +213,25 @@ export default function ComparisonChart({
         };
       });
       
-      console.log('Comparison chart data:', {
-        totalPoints: allDataPoints.length,
-        firstPoint: samplePoint,
-        dataKeys: dataKeys,
-        stocks: stocksData.map(s => s.symbol),
-        sampleDataValues: sampleDataValues,
-        stockDataCounts: stockDataCounts,
-        hasData: allDataPoints.some(p => {
-          return stocksData.some(s => {
-            const actual = p[`${s.symbol}_actual`];
-            const predicted = p[`${s.symbol}_predicted`];
-            return (actual !== null && actual !== undefined && !isNaN(actual)) ||
-                   (predicted !== null && predicted !== undefined && !isNaN(predicted));
-          });
-        }),
-      });
+      // Debug logging (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Comparison chart data:', {
+          totalPoints: allDataPoints.length,
+          firstPoint: samplePoint,
+          dataKeys: dataKeys,
+          stocks: stocksData.map(s => s.symbol),
+          sampleDataValues: sampleDataValues,
+          stockDataCounts: stockDataCounts,
+          hasData: allDataPoints.some(p => {
+            return stocksData.some(s => {
+              const actual = p[`${s.symbol}_actual`];
+              const predicted = p[`${s.symbol}_predicted`];
+              return (actual !== null && actual !== undefined && !isNaN(actual)) ||
+                     (predicted !== null && predicted !== undefined && !isNaN(predicted));
+            });
+          }),
+        });
+      }
     }
 
     return allDataPoints;
@@ -408,7 +411,10 @@ export default function ComparisonChart({
       max: max === -Infinity ? 100 : max * 1.02 
     };
     
-    console.log('Price range calculated:', range, 'from', chartData.length, 'points');
+    // Debug logging (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Price range calculated:', range, 'from', chartData.length, 'points');
+    }
     
     return range;
   }, [chartData, stocksData]);
@@ -554,6 +560,7 @@ export default function ComparisonChart({
               domain={[Math.floor(priceRange.min), Math.ceil(priceRange.max)]}
               width={60}
               allowDataOverflow={false}
+              tickFormatter={(value) => `$${value.toFixed(2)}`}
             />
             
             <Tooltip content={<CustomTooltip />} />
@@ -576,7 +583,9 @@ export default function ComparisonChart({
               });
               
               if (dataPoints.length === 0) {
-                console.warn(`No valid data points for ${symbol} in displayedData`);
+                if (process.env.NODE_ENV === 'development') {
+                  console.warn(`No valid data points for ${symbol} in displayedData`);
+                }
                 return null;
               }
               
@@ -589,7 +598,10 @@ export default function ComparisonChart({
                 return val !== null && val !== undefined && !isNaN(val);
               }).length;
               
-              console.log(`Rendering ${symbol}: ${dataPoints.length} total points, ${actualCount} actual, ${predictedCount} predicted`);
+              // Debug logging (only in development)
+              if (process.env.NODE_ENV === 'development') {
+                console.log(`Rendering ${symbol}: ${dataPoints.length} total points, ${actualCount} actual, ${predictedCount} predicted`);
+              }
               
               return (
                 <React.Fragment key={symbol}>
