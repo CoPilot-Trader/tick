@@ -1,8 +1,18 @@
-# Frontend - Multi-Agent Stock Prediction System
+# Frontend - TICK Rapid Prototype
 
-Next.js/TypeScript frontend for the multi-agent stock prediction system.
+Next.js/TypeScript frontend for the TICK multi-agent stock prediction system.
 
+**Status**: 🚀 Rapid Prototype (Milestone 0)  
 **Developer**: Lead Developer
+
+## Features
+
+- 📊 **Interactive Price Charts**: Real-time and predicted prices with support/resistance levels
+- 🎯 **5-Minute Predictions**: Clickable prediction dots showing detailed insights
+- 📈 **10 S&P 500 Stocks**: Pre-configured with top stocks (AAPL, MSFT, GOOGL, etc.)
+- 💡 **Prediction Details**: Modal showing price predictions, trend classification, sentiment, and fused signals
+- 🎨 **Modern UI**: Built with Tailwind CSS and Recharts
+- 🔌 **Backend Ready**: API client structure ready for backend integration
 
 ## Structure
 
@@ -71,9 +81,20 @@ frontend/
 - `src/types/` - TypeScript interfaces and types
 - `src/hooks/` - Custom React hooks
 
+## Components
+
+- **StockSelector**: Dropdown to select from 10 S&P 500 stocks
+- **PriceChart**: Interactive chart with actual prices, predictions, and support/resistance levels
+- **PredictionDetail**: Modal showing detailed prediction insights (price, trend, sentiment, levels)
+- **StockOverview**: Overview card with current price, change, and key metrics
+
 ## API Integration
 
-The frontend communicates with the backend API. See `src/lib/api/` for API client setup.
+The frontend currently uses mock data but is ready for backend integration. See `src/lib/api/client.ts` for API client setup. To connect to backend:
+
+1. Update `NEXT_PUBLIC_API_URL` in `.env.local`
+2. Uncomment API calls in `src/lib/api/client.ts`
+3. Remove mock data imports
 
 ## Building for Production
 
