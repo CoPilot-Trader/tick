@@ -1,0 +1,129 @@
+{
+  "mock_aapl_001": {
+    "sentiment_score": 0.85,
+    "sentiment_label": "positive",
+    "confidence": 0.92,
+    "reasoning": "Article reports record earnings and stock surge, clearly positive for Apple"
+  },
+  "mock_aapl_002": {
+    "sentiment_score": 0.72,
+    "sentiment_label": "positive",
+    "confidence": 0.88,
+    "reasoning": "Positive news about new AI features and capabilities"
+  },
+  "mock_aapl_003": {
+    "sentiment_score": 0.68,
+    "sentiment_label": "positive",
+    "confidence": 0.85,
+    "reasoning": "Strong sales growth indicates positive sentiment"
+  },
+  "mock_aapl_004": {
+    "sentiment_score": 0.55,
+    "sentiment_label": "positive",
+    "confidence": 0.75,
+    "reasoning": "Expansion news is generally positive but not strongly so"
+  },
+  "mock_aapl_005": {
+    "sentiment_score": 0.65,
+    "sentiment_label": "positive",
+    "confidence": 0.82,
+    "reasoning": "Services revenue growth is positive indicator"
+  },
+  "mock_aapl_006": {
+    "sentiment_score": -0.35,
+    "sentiment_label": "negative",
+    "confidence": 0.78,
+    "reasoning": "Antitrust scrutiny is negative but not severe"
+  },
+  "mock_aapl_007": {
+    "sentiment_score": 0.58,
+    "sentiment_label": "positive",
+    "confidence": 0.80,
+    "reasoning": "Product sales growth is positive"
+  },
+  "mock_aapl_008": {
+    "sentiment_score": 0.62,
+    "sentiment_label": "positive",
+    "confidence": 0.83,
+    "reasoning": "Partnership announcements are positive"
+  },
+  "mock_aapl_009": {
+    "sentiment_score": 0.48,
+    "sentiment_label": "neutral",
+    "confidence": 0.70,
+    "reasoning": "Store traffic increase is mildly positive"
+  },
+  "mock_aapl_010": {
+    "sentiment_score": 0.52,
+    "sentiment_label": "positive",
+    "confidence": 0.72,
+    "reasoning": "Privacy features are generally viewed positively"
+  },
+  "mock_msft_001": {
+    "sentiment_score": 0.78,
+    "sentiment_label": "positive",
+    "confidence": 0.90,
+    "reasoning": "Strong cloud revenue growth is very positive"
+  },
+  "mock_msft_002": {
+    "sentiment_score": 0.65,
+    "sentiment_label": "positive",
+    "confidence": 0.85,
+    "reasoning": "User growth is positive indicator"
+  },
+  "mock_msft_003": {
+    "sentiment_score": 0.82,
+    "sentiment_label": "positive",
+    "confidence": 0.93,
+    "reasoning": "Major AI investment is very positive"
+  },
+  "mock_msft_004": {
+    "sentiment_score": 0.58,
+    "sentiment_label": "positive",
+    "confidence": 0.80,
+    "reasoning": "OS adoption is positive but not strongly so"
+  },
+  "mock_msft_005": {
+    "sentiment_score": 0.68,
+    "sentiment_label": "positive",
+    "confidence": 0.85,
+    "reasoning": "Subscription growth is positive"
+  },
+  "mock_msft_006": {
+    "sentiment_score": 0.55,
+    "sentiment_label": "positive",
+    "confidence": 0.78,
+    "reasoning": "Gaming growth is moderately positive"
+  },
+  "mock_msft_007": {
+    "sentiment_score": -0.25,
+    "sentiment_label": "negative",
+    "confidence": 0.70,
+    "reasoning": "Sales decline is negative but not severe"
+  },
+  "mock_msft_008": {
+    "sentiment_score": 0.72,
+    "sentiment_label": "positive",
+    "confidence": 0.88,
+    "reasoning": "Developer tools are positive for ecosystem"
+  },
+  "mock_msft_009": {
+    "sentiment_score": 0.60,
+    "sentiment_label": "positive",
+    "confidence": 0.82,
+    "reasoning": "LinkedIn growth is positive"
+  },
+  "mock_msft_010": {
+    "sentiment_score": 0.75,
+    "sentiment_label": "positive",
+    "confidence": 0.90,
+    "reasoning": "Security revenue growth is very positive"
+  },
+  "default": {
+    "sentiment_score": 0.0,
+    "sentiment_label": "neutral",
+    "confidence": 0.5,
+    "reasoning": "Default mock response - article not found in mock data"
+  }
+}
+

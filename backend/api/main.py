@@ -13,9 +13,10 @@ app = FastAPI(
 )
 
 # CORS configuration
+# Allow all origins for development (including file:// for local HTML files)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,7 +35,11 @@ async def health_check():
     return {"status": "healthy"}
 
 
-# TODO: Import and include agent routers
+# Import and include agent routers
+from api.routers import news_pipeline_visualizer
+app.include_router(news_pipeline_visualizer.router)
+
+# TODO: Import and include other agent routers
 # from api.routers import news_agent, price_prediction_agent
 # app.include_router(news_agent.router, prefix="/api/v1/news", tags=["news"])
 # app.include_router(price_prediction_agent.router, prefix="/api/v1/predictions", tags=["predictions"])

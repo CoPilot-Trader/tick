@@ -1,0 +1,923 @@
+{
+  "AAPL": [
+    {
+      "id": "mock_aapl_001",
+      "title": "Apple Reports Record Q4 Earnings, Exceeds Analyst Expectations",
+      "source": "Reuters",
+      "published_at": "2024-01-15T10:00:00Z",
+      "url": "https://example.com/apple-earnings-q4-2024",
+      "summary": "Apple Inc reported record-breaking Q4 earnings, exceeding analyst expectations by 8%. The company's revenue reached $119.6 billion, driven by strong iPhone sales and services revenue growth.",
+      "content": "Apple Inc reported record-breaking Q4 earnings on Monday, exceeding analyst expectations by 8%. The company's revenue reached $119.6 billion, driven by strong iPhone sales and services revenue growth. CEO Tim Cook attributed the success to robust demand for the iPhone 15 Pro models and continued growth in the App Store and Apple Music subscriptions. The company's stock surged 5% in after-hours trading following the announcement."
+    },
+    {
+      "id": "mock_aapl_002",
+      "title": "Apple Announces New AI Features for iPhone and iPad",
+      "source": "TechCrunch",
+      "published_at": "2024-01-15T09:30:00Z",
+      "url": "https://example.com/apple-ai-features-2024",
+      "summary": "Apple unveiled new AI capabilities in its latest software update, including advanced Siri improvements and machine learning enhancements for iPhone cameras.",
+      "content": "Apple unveiled new AI capabilities in its latest software update, including advanced Siri improvements and machine learning enhancements for iPhone cameras. The new features use on-device processing to improve privacy while delivering faster response times. The update will be available to all iPhone 12 and later models starting next month."
+    },
+    {
+      "id": "mock_aapl_003",
+      "title": "Apple Watch Sales Surge 25% Year-Over-Year",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T14:20:00Z",
+      "url": "https://example.com/apple-watch-sales-surge",
+      "summary": "Apple Watch sales increased 25% year-over-year in the holiday quarter, with the new Series 9 model driving strong demand.",
+      "content": "Apple Watch sales increased 25% year-over-year in the holiday quarter, with the new Series 9 model driving strong demand. The wearable device segment now represents a significant portion of Apple's revenue, with health and fitness features being key differentiators. Analysts expect continued growth as Apple expands its health monitoring capabilities."
+    },
+    {
+      "id": "mock_aapl_004",
+      "title": "Apple Expands Manufacturing Operations in India",
+      "source": "Reuters",
+      "published_at": "2024-01-14T08:15:00Z",
+      "url": "https://example.com/apple-india-manufacturing",
+      "summary": "Apple announced plans to expand its manufacturing operations in India, investing $2 billion in new facilities.",
+      "content": "Apple announced plans to expand its manufacturing operations in India, investing $2 billion in new facilities. The expansion will create 50,000 new jobs and increase iPhone production capacity by 40%. This move is part of Apple's strategy to diversify its supply chain and reduce dependence on China."
+    },
+    {
+      "id": "mock_aapl_005",
+      "title": "Apple Services Revenue Hits All-Time High",
+      "source": "CNBC",
+      "published_at": "2024-01-13T16:45:00Z",
+      "url": "https://example.com/apple-services-revenue",
+      "summary": "Apple's services division, including App Store, Apple Music, and iCloud, generated $23.1 billion in revenue, an all-time high.",
+      "content": "Apple's services division, including App Store, Apple Music, and iCloud, generated $23.1 billion in revenue, an all-time high. The segment grew 12% year-over-year, driven by increased subscription revenue and higher App Store commissions. Services now account for over 20% of Apple's total revenue."
+    },
+    {
+      "id": "mock_aapl_006",
+      "title": "Apple Faces Antitrust Scrutiny in European Union",
+      "source": "Financial Times",
+      "published_at": "2024-01-13T11:30:00Z",
+      "url": "https://example.com/apple-eu-antitrust",
+      "summary": "The European Union is investigating Apple's App Store practices for potential antitrust violations.",
+      "content": "The European Union is investigating Apple's App Store practices for potential antitrust violations. The investigation focuses on Apple's commission structure and restrictions on third-party payment systems. If found guilty, Apple could face fines of up to 10% of its global revenue."
+    },
+    {
+      "id": "mock_aapl_007",
+      "title": "Apple MacBook Pro Sales Reach New Heights",
+      "source": "The Verge",
+      "published_at": "2024-01-12T13:20:00Z",
+      "url": "https://example.com/apple-macbook-pro-sales",
+      "summary": "MacBook Pro sales reached new heights in Q4, with the M3 chip models driving strong demand from professionals and creatives.",
+      "content": "MacBook Pro sales reached new heights in Q4, with the M3 chip models driving strong demand from professionals and creatives. The new processors offer significant performance improvements, making the laptops popular among video editors, developers, and designers. Apple's Mac revenue grew 8% year-over-year."
+    },
+    {
+      "id": "mock_aapl_008",
+      "title": "Apple Partners with Major Car Manufacturers for CarPlay",
+      "source": "TechCrunch",
+      "published_at": "2024-01-12T10:00:00Z",
+      "url": "https://example.com/apple-carplay-partnership",
+      "summary": "Apple announced partnerships with 15 major car manufacturers to integrate the next-generation CarPlay system.",
+      "content": "Apple announced partnerships with 15 major car manufacturers to integrate the next-generation CarPlay system. The new CarPlay will offer deeper integration with vehicle systems, including climate control and instrument clusters. The partnerships include BMW, Mercedes-Benz, and Ford."
+    },
+    {
+      "id": "mock_aapl_009",
+      "title": "Apple Store Traffic Increases 30% During Holiday Season",
+      "source": "Bloomberg",
+      "published_at": "2024-01-11T15:30:00Z",
+      "url": "https://example.com/apple-store-traffic",
+      "summary": "Apple retail stores saw a 30% increase in foot traffic during the holiday season compared to last year.",
+      "content": "Apple retail stores saw a 30% increase in foot traffic during the holiday season compared to last year. The surge was driven by strong demand for iPhone 15 models and new iPad releases. Apple's retail strategy focusing on customer experience continues to pay off."
+    },
+    {
+      "id": "mock_aapl_010",
+      "title": "Apple Announces New Privacy Features for iOS 18",
+      "source": "The Verge",
+      "published_at": "2024-01-11T09:15:00Z",
+      "url": "https://example.com/apple-ios18-privacy",
+      "summary": "Apple previewed new privacy features for iOS 18, including enhanced app tracking controls and data encryption.",
+      "content": "Apple previewed new privacy features for iOS 18, including enhanced app tracking controls and data encryption. The update will give users more granular control over how apps access their data. Privacy has been a key differentiator for Apple in the smartphone market."
+    }
+  ],
+  "MSFT": [
+    {
+      "id": "mock_msft_001",
+      "title": "Microsoft Azure Revenue Surges 28% in Latest Quarter",
+      "source": "Reuters",
+      "published_at": "2024-01-15T11:00:00Z",
+      "url": "https://example.com/microsoft-azure-revenue",
+      "summary": "Microsoft's Azure cloud computing division reported revenue growth of 28% year-over-year, driven by increased enterprise adoption.",
+      "content": "Microsoft's Azure cloud computing division reported revenue growth of 28% year-over-year, driven by increased enterprise adoption. The cloud segment generated $33.7 billion in revenue, with Azure infrastructure services leading the growth. CEO Satya Nadella highlighted strong demand for AI-powered cloud services."
+    },
+    {
+      "id": "mock_msft_002",
+      "title": "Microsoft Teams Reaches 400 Million Monthly Active Users",
+      "source": "TechCrunch",
+      "published_at": "2024-01-15T10:30:00Z",
+      "url": "https://example.com/microsoft-teams-users",
+      "summary": "Microsoft Teams reached 400 million monthly active users, solidifying its position as a leading collaboration platform.",
+      "content": "Microsoft Teams reached 400 million monthly active users, solidifying its position as a leading collaboration platform. The growth was driven by remote work trends and new AI-powered features. Microsoft continues to invest heavily in Teams to compete with Slack and Zoom."
+    },
+    {
+      "id": "mock_msft_003",
+      "title": "Microsoft Invests $10 Billion in OpenAI Partnership",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T16:00:00Z",
+      "url": "https://example.com/microsoft-openai-investment",
+      "summary": "Microsoft announced a $10 billion investment in OpenAI, deepening their partnership in AI development.",
+      "content": "Microsoft announced a $10 billion investment in OpenAI, deepening their partnership in AI development. The investment will accelerate the integration of GPT models into Microsoft products, including Office 365 and Azure. This partnership positions Microsoft as a leader in enterprise AI solutions."
+    },
+    {
+      "id": "mock_msft_004",
+      "title": "Windows 11 Adoption Rate Exceeds Expectations",
+      "source": "The Verge",
+      "published_at": "2024-01-14T12:45:00Z",
+      "url": "https://example.com/windows11-adoption",
+      "summary": "Windows 11 adoption rate exceeded Microsoft's expectations, with over 500 million devices now running the operating system.",
+      "content": "Windows 11 adoption rate exceeded Microsoft's expectations, with over 500 million devices now running the operating system. The new OS offers improved performance, security features, and a redesigned interface. Microsoft plans to end support for Windows 10 in 2025, encouraging further migration."
+    },
+    {
+      "id": "mock_msft_005",
+      "title": "Microsoft Office 365 Subscriptions Reach 400 Million",
+      "source": "CNBC",
+      "published_at": "2024-01-13T14:20:00Z",
+      "url": "https://example.com/microsoft-office365-subscriptions",
+      "summary": "Microsoft Office 365 subscriptions reached 400 million, with strong growth in enterprise and consumer segments.",
+      "content": "Microsoft Office 365 subscriptions reached 400 million, with strong growth in enterprise and consumer segments. The productivity suite continues to be a major revenue driver, with new AI features like Copilot driving adoption. Microsoft expects continued growth as it adds more AI capabilities."
+    },
+    {
+      "id": "mock_msft_006",
+      "title": "Microsoft Xbox Game Pass Hits 35 Million Subscribers",
+      "source": "GameSpot",
+      "published_at": "2024-01-13T09:30:00Z",
+      "url": "https://example.com/microsoft-xbox-gamepass",
+      "summary": "Microsoft's Xbox Game Pass subscription service reached 35 million subscribers, showing strong growth in gaming division.",
+      "content": "Microsoft's Xbox Game Pass subscription service reached 35 million subscribers, showing strong growth in gaming division. The service offers access to hundreds of games for a monthly fee, including day-one releases of first-party titles. Microsoft's gaming revenue grew 15% year-over-year."
+    },
+    {
+      "id": "mock_msft_007",
+      "title": "Microsoft Surface Sales Decline Amidst Market Competition",
+      "source": "Financial Times",
+      "published_at": "2024-01-12T15:15:00Z",
+      "url": "https://example.com/microsoft-surface-sales",
+      "summary": "Microsoft Surface device sales declined 12% year-over-year as competition intensifies in the laptop and tablet market.",
+      "content": "Microsoft Surface device sales declined 12% year-over-year as competition intensifies in the laptop and tablet market. The decline was attributed to increased competition from Apple's MacBook line and various Windows laptop manufacturers. Microsoft is focusing on premium models to maintain profitability."
+    },
+    {
+      "id": "mock_msft_008",
+      "title": "Microsoft Announces New AI Copilot Features for Developers",
+      "source": "TechCrunch",
+      "published_at": "2024-01-12T11:00:00Z",
+      "url": "https://example.com/microsoft-copilot-developers",
+      "summary": "Microsoft unveiled new AI Copilot features for developers, including code generation and debugging assistance.",
+      "content": "Microsoft unveiled new AI Copilot features for developers, including code generation and debugging assistance. The new tools integrate with Visual Studio and GitHub, helping developers write code faster and with fewer errors. Early adopters report 30% productivity improvements."
+    },
+    {
+      "id": "mock_msft_009",
+      "title": "Microsoft LinkedIn Revenue Grows 10% Year-Over-Year",
+      "source": "Bloomberg",
+      "published_at": "2024-01-11T13:45:00Z",
+      "url": "https://example.com/microsoft-linkedin-revenue",
+      "summary": "Microsoft's LinkedIn professional network reported 10% revenue growth, driven by premium subscriptions and advertising.",
+      "content": "Microsoft's LinkedIn professional network reported 10% revenue growth, driven by premium subscriptions and advertising. The platform now has over 900 million members worldwide. LinkedIn continues to be a key acquisition for Microsoft, providing valuable professional data and advertising revenue."
+    },
+    {
+      "id": "mock_msft_010",
+      "title": "Microsoft Security Revenue Exceeds $20 Billion Annually",
+      "source": "Reuters",
+      "published_at": "2024-01-11T08:30:00Z",
+      "url": "https://example.com/microsoft-security-revenue",
+      "summary": "Microsoft's security business exceeded $20 billion in annual revenue, making it one of the largest security vendors globally.",
+      "content": "Microsoft's security business exceeded $20 billion in annual revenue, making it one of the largest security vendors globally. The growth is driven by increased cybersecurity threats and enterprise demand for comprehensive security solutions. Microsoft's integrated security approach across cloud and on-premises is a key differentiator."
+    }
+  ],
+  "GOOGL": [
+    {
+      "id": "mock_googl_001",
+      "title": "Google Cloud Revenue Grows 25% as Enterprise Adoption Accelerates",
+      "source": "Reuters",
+      "published_at": "2024-01-15T12:00:00Z",
+      "url": "https://example.com/google-cloud-revenue",
+      "summary": "Google Cloud reported 25% revenue growth, driven by increased enterprise adoption and AI services.",
+      "content": "Google Cloud reported 25% revenue growth, driven by increased enterprise adoption and AI services. The cloud division generated $8.4 billion in revenue, with strong demand for AI and machine learning services. Google is investing heavily to compete with AWS and Azure."
+    },
+    {
+      "id": "mock_googl_002",
+      "title": "Google Search Market Share Remains Dominant at 92%",
+      "source": "Bloomberg",
+      "published_at": "2024-01-15T09:45:00Z",
+      "url": "https://example.com/google-search-marketshare",
+      "summary": "Google Search maintains 92% global market share despite competition from Microsoft Bing and other search engines.",
+      "content": "Google Search maintains 92% global market share despite competition from Microsoft Bing and other search engines. The dominance is driven by superior search algorithms and extensive indexing. Google's search advertising revenue continues to be the company's primary revenue source."
+    },
+    {
+      "id": "mock_googl_003",
+      "title": "YouTube Advertising Revenue Hits Record High",
+      "source": "CNBC",
+      "published_at": "2024-01-14T17:30:00Z",
+      "url": "https://example.com/youtube-advertising-revenue",
+      "summary": "YouTube advertising revenue reached a record high of $9.2 billion in the latest quarter, up 12% year-over-year.",
+      "content": "YouTube advertising revenue reached a record high of $9.2 billion in the latest quarter, up 12% year-over-year. The growth was driven by increased video consumption and improved ad targeting. YouTube Shorts, the platform's short-form video feature, contributed significantly to the growth."
+    },
+    {
+      "id": "mock_googl_004",
+      "title": "Google Pixel Smartphone Sales Increase 40% Year-Over-Year",
+      "source": "The Verge",
+      "published_at": "2024-01-14T13:15:00Z",
+      "url": "https://example.com/google-pixel-sales",
+      "summary": "Google Pixel smartphone sales increased 40% year-over-year, with the Pixel 8 series driving strong demand.",
+      "content": "Google Pixel smartphone sales increased 40% year-over-year, with the Pixel 8 series driving strong demand. The new phones feature improved cameras and AI capabilities, making them competitive with Apple and Samsung. Google is expanding Pixel availability to more markets."
+    },
+    {
+      "id": "mock_googl_005",
+      "title": "Google Announces Major AI Model Updates for Gemini",
+      "source": "TechCrunch",
+      "published_at": "2024-01-13T15:00:00Z",
+      "url": "https://example.com/google-gemini-ai-updates",
+      "summary": "Google announced major updates to its Gemini AI model, improving performance and adding new capabilities.",
+      "content": "Google announced major updates to its Gemini AI model, improving performance and adding new capabilities. The new version offers better reasoning, multimodal understanding, and reduced latency. Google is positioning Gemini as a competitor to OpenAI's GPT models."
+    },
+    {
+      "id": "mock_googl_006",
+      "title": "Google Chrome Browser Market Share Drops Slightly",
+      "source": "Financial Times",
+      "published_at": "2024-01-13T10:20:00Z",
+      "url": "https://example.com/google-chrome-marketshare",
+      "summary": "Google Chrome's browser market share dropped slightly to 64%, as users explore alternatives like Firefox and Edge.",
+      "content": "Google Chrome's browser market share dropped slightly to 64%, as users explore alternatives like Firefox and Edge. The decline is minimal but notable as privacy concerns grow. Chrome remains the dominant browser, with over 3 billion users worldwide."
+    },
+    {
+      "id": "mock_googl_007",
+      "title": "Google Workspace Subscriptions Reach 10 Million Businesses",
+      "source": "Bloomberg",
+      "published_at": "2024-01-12T14:30:00Z",
+      "url": "https://example.com/google-workspace-subscriptions",
+      "summary": "Google Workspace subscriptions reached 10 million businesses, with strong growth in enterprise segment.",
+      "content": "Google Workspace subscriptions reached 10 million businesses, with strong growth in enterprise segment. The productivity suite competes with Microsoft Office 365, offering cloud-based collaboration tools. Google is adding AI features to maintain competitiveness."
+    },
+    {
+      "id": "mock_googl_008",
+      "title": "Google Faces Antitrust Lawsuit Over Search Dominance",
+      "source": "Reuters",
+      "published_at": "2024-01-12T09:00:00Z",
+      "url": "https://example.com/google-antitrust-lawsuit",
+      "summary": "Google faces a new antitrust lawsuit alleging it maintains search dominance through anti-competitive practices.",
+      "content": "Google faces a new antitrust lawsuit alleging it maintains search dominance through anti-competitive practices. The lawsuit claims Google uses its market position to favor its own services and suppress competitors. If successful, the case could result in significant fines and forced changes to Google's business practices."
+    },
+    {
+      "id": "mock_googl_009",
+      "title": "Google Maps Introduces AI-Powered Navigation Features",
+      "source": "TechCrunch",
+      "published_at": "2024-01-11T16:15:00Z",
+      "url": "https://example.com/google-maps-ai-navigation",
+      "summary": "Google Maps introduced new AI-powered navigation features, including real-time traffic predictions and route optimization.",
+      "content": "Google Maps introduced new AI-powered navigation features, including real-time traffic predictions and route optimization. The new features use machine learning to provide more accurate ETAs and suggest alternative routes. Google Maps has over 1 billion monthly active users."
+    },
+    {
+      "id": "mock_googl_010",
+      "title": "Google Android Market Share Remains Strong at 70%",
+      "source": "The Verge",
+      "published_at": "2024-01-11T11:30:00Z",
+      "url": "https://example.com/google-android-marketshare",
+      "summary": "Google's Android operating system maintains 70% global smartphone market share, with over 3 billion active devices.",
+      "content": "Google's Android operating system maintains 70% global smartphone market share, with over 3 billion active devices. The platform's open nature and wide device support continue to drive adoption. Google generates revenue from Android through Play Store commissions and advertising."
+    }
+  ],
+  "XOM": [
+    {
+      "id": "mock_xom_001",
+      "title": "Exxon Mobil Reports Strong Q4 Earnings on Higher Oil Prices",
+      "source": "Reuters",
+      "published_at": "2024-01-15T08:00:00Z",
+      "url": "https://example.com/exxon-mobil-q4-earnings",
+      "summary": "Exxon Mobil reported strong Q4 earnings, with profits rising 15% due to higher oil prices and increased production.",
+      "content": "Exxon Mobil reported strong Q4 earnings, with profits rising 15% due to higher oil prices and increased production. The company's revenue reached $95.4 billion, driven by strong performance in upstream operations. CEO Darren Woods highlighted the company's focus on low-cost production and operational efficiency."
+    },
+    {
+      "id": "mock_xom_002",
+      "title": "Exxon Mobil Announces $20 Billion Investment in Low-Carbon Projects",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T10:30:00Z",
+      "url": "https://example.com/exxon-low-carbon-investment",
+      "summary": "Exxon Mobil announced a $20 billion investment in low-carbon energy projects, including carbon capture and hydrogen production.",
+      "content": "Exxon Mobil announced a $20 billion investment in low-carbon energy projects, including carbon capture and hydrogen production. The investment is part of the company's strategy to reduce emissions while maintaining profitability. The projects are expected to generate returns while supporting climate goals."
+    },
+    {
+      "id": "mock_xom_003",
+      "title": "Exxon Mobil Expands Permian Basin Operations",
+      "source": "Financial Times",
+      "published_at": "2024-01-14T07:15:00Z",
+      "url": "https://example.com/exxon-permian-basin",
+      "summary": "Exxon Mobil announced expansion of its Permian Basin operations, increasing production capacity by 25%.",
+      "content": "Exxon Mobil announced expansion of its Permian Basin operations, increasing production capacity by 25%. The Permian Basin is one of the most productive oil fields in the United States. The expansion will create 1,500 new jobs and increase daily production by 200,000 barrels."
+    },
+    {
+      "id": "mock_xom_004",
+      "title": "Exxon Mobil Faces Environmental Lawsuit Over Emissions",
+      "source": "Reuters",
+      "published_at": "2024-01-13T14:45:00Z",
+      "url": "https://example.com/exxon-environmental-lawsuit",
+      "summary": "Exxon Mobil faces a new environmental lawsuit alleging the company misled investors about climate change risks.",
+      "content": "Exxon Mobil faces a new environmental lawsuit alleging the company misled investors about climate change risks. The lawsuit claims Exxon knew about climate change impacts but failed to disclose them to investors. If successful, the case could result in significant financial penalties."
+    },
+    {
+      "id": "mock_xom_005",
+      "title": "Exxon Mobil Refining Margins Improve on Strong Demand",
+      "source": "CNBC",
+      "published_at": "2024-01-13T11:20:00Z",
+      "url": "https://example.com/exxon-refining-margins",
+      "summary": "Exxon Mobil's refining margins improved significantly due to strong demand for gasoline and diesel.",
+      "content": "Exxon Mobil's refining margins improved significantly due to strong demand for gasoline and diesel. The company's downstream operations generated $4.2 billion in profit, up 30% from the previous quarter. Strong travel demand and limited refining capacity contributed to the improvement."
+    },
+    {
+      "id": "mock_xom_006",
+      "title": "Exxon Mobil Partners with Government on Carbon Capture Project",
+      "source": "Bloomberg",
+      "published_at": "2024-01-12T13:00:00Z",
+      "url": "https://example.com/exxon-carbon-capture",
+      "summary": "Exxon Mobil announced a partnership with the government on a $5 billion carbon capture and storage project.",
+      "content": "Exxon Mobil announced a partnership with the government on a $5 billion carbon capture and storage project. The project will capture CO2 from industrial facilities and store it underground. This is part of Exxon's strategy to position itself as a leader in carbon management."
+    },
+    {
+      "id": "mock_xom_007",
+      "title": "Exxon Mobil Increases Dividend for 41st Consecutive Year",
+      "source": "Financial Times",
+      "published_at": "2024-01-12T09:30:00Z",
+      "url": "https://example.com/exxon-dividend-increase",
+      "summary": "Exxon Mobil increased its quarterly dividend by 4%, marking the 41st consecutive year of dividend increases.",
+      "content": "Exxon Mobil increased its quarterly dividend by 4%, marking the 41st consecutive year of dividend increases. The company's commitment to returning cash to shareholders has made it attractive to income-focused investors. Exxon has one of the longest dividend increase streaks in the S&P 500."
+    },
+    {
+      "id": "mock_xom_008",
+      "title": "Exxon Mobil Oil Production Rises 8% in Latest Quarter",
+      "source": "Reuters",
+      "published_at": "2024-01-11T15:15:00Z",
+      "url": "https://example.com/exxon-production-increase",
+      "summary": "Exxon Mobil's oil production increased 8% in the latest quarter, driven by new projects coming online.",
+      "content": "Exxon Mobil's oil production increased 8% in the latest quarter, driven by new projects coming online. The company produced 3.8 million barrels per day, with strong contributions from Guyana and the Permian Basin. Production growth is expected to continue as new projects ramp up."
+    },
+    {
+      "id": "mock_xom_009",
+      "title": "Exxon Mobil Chemical Division Reports Record Profits",
+      "source": "Bloomberg",
+      "published_at": "2024-01-11T10:45:00Z",
+      "url": "https://example.com/exxon-chemical-profits",
+      "summary": "Exxon Mobil's chemical division reported record profits, driven by strong demand for plastics and specialty chemicals.",
+      "content": "Exxon Mobil's chemical division reported record profits, driven by strong demand for plastics and specialty chemicals. The division generated $2.1 billion in profit, up 22% year-over-year. Strong margins and operational efficiency contributed to the record performance."
+    },
+    {
+      "id": "mock_xom_010",
+      "title": "Exxon Mobil Announces New Offshore Drilling Project",
+      "source": "Financial Times",
+      "published_at": "2024-01-10T12:00:00Z",
+      "url": "https://example.com/exxon-offshore-drilling",
+      "summary": "Exxon Mobil announced a new $3 billion offshore drilling project in the Gulf of Mexico.",
+      "content": "Exxon Mobil announced a new $3 billion offshore drilling project in the Gulf of Mexico. The project is expected to produce 100,000 barrels per day when fully operational. The investment demonstrates Exxon's commitment to maintaining production levels despite transition to cleaner energy."
+    }
+  ],
+  "CVX": [
+    {
+      "id": "mock_cvx_001",
+      "title": "Chevron Reports Record Quarterly Profit on High Oil Prices",
+      "source": "Reuters",
+      "published_at": "2024-01-15T08:30:00Z",
+      "url": "https://example.com/chevron-record-profit",
+      "summary": "Chevron reported record quarterly profit of $6.5 billion, driven by high oil prices and strong production.",
+      "content": "Chevron reported record quarterly profit of $6.5 billion, driven by high oil prices and strong production. The company's revenue reached $54.2 billion, with upstream operations contributing significantly. CEO Mike Wirth highlighted strong operational performance and cost discipline."
+    },
+    {
+      "id": "mock_cvx_002",
+      "title": "Chevron Acquires Renewable Energy Company for $3 Billion",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T11:00:00Z",
+      "url": "https://example.com/chevron-renewable-acquisition",
+      "summary": "Chevron acquired a renewable energy company for $3 billion, expanding its clean energy portfolio.",
+      "content": "Chevron acquired a renewable energy company for $3 billion, expanding its clean energy portfolio. The acquisition includes wind and solar assets, positioning Chevron in the growing renewable energy market. This is part of Chevron's strategy to diversify beyond traditional oil and gas."
+    },
+    {
+      "id": "mock_cvx_003",
+      "title": "Chevron Natural Gas Production Increases 12%",
+      "source": "CNBC",
+      "published_at": "2024-01-14T08:45:00Z",
+      "url": "https://example.com/chevron-natural-gas-production",
+      "summary": "Chevron's natural gas production increased 12% year-over-year, driven by strong demand and new projects.",
+      "content": "Chevron's natural gas production increased 12% year-over-year, driven by strong demand and new projects. Natural gas is seen as a bridge fuel in the energy transition, with lower emissions than coal. Chevron is investing in natural gas infrastructure to meet growing demand."
+    },
+    {
+      "id": "mock_cvx_004",
+      "title": "Chevron Announces $10 Billion Share Buyback Program",
+      "source": "Financial Times",
+      "published_at": "2024-01-13T15:30:00Z",
+      "url": "https://example.com/chevron-share-buyback",
+      "summary": "Chevron announced a $10 billion share buyback program, returning excess cash to shareholders.",
+      "content": "Chevron announced a $10 billion share buyback program, returning excess cash to shareholders. The program will be executed over the next 12 months, reducing share count and increasing earnings per share. Strong cash generation from high oil prices enables the buyback."
+    },
+    {
+      "id": "mock_cvx_005",
+      "title": "Chevron Expands LNG Export Capacity",
+      "source": "Reuters",
+      "published_at": "2024-01-13T12:15:00Z",
+      "url": "https://example.com/chevron-lng-expansion",
+      "summary": "Chevron announced expansion of its LNG export capacity by 30%, responding to strong global demand.",
+      "content": "Chevron announced expansion of its LNG export capacity by 30%, responding to strong global demand. The expansion will increase annual export capacity to 15 million tons. LNG demand is growing as countries transition away from coal, creating opportunities for exporters."
+    },
+    {
+      "id": "mock_cvx_006",
+      "title": "Chevron Faces Regulatory Scrutiny Over Environmental Practices",
+      "source": "Bloomberg",
+      "published_at": "2024-01-12T14:20:00Z",
+      "url": "https://example.com/chevron-regulatory-scrutiny",
+      "summary": "Chevron faces increased regulatory scrutiny over its environmental practices and emissions reporting.",
+      "content": "Chevron faces increased regulatory scrutiny over its environmental practices and emissions reporting. Regulators are investigating whether Chevron accurately reported its greenhouse gas emissions. The investigation could result in fines and required operational changes."
+    },
+    {
+      "id": "mock_cvx_007",
+      "title": "Chevron Refining Operations Generate Strong Margins",
+      "source": "CNBC",
+      "published_at": "2024-01-12T10:00:00Z",
+      "url": "https://example.com/chevron-refining-margins",
+      "summary": "Chevron's refining operations generated strong margins due to favorable product spreads and operational efficiency.",
+      "content": "Chevron's refining operations generated strong margins due to favorable product spreads and operational efficiency. The downstream segment contributed $1.8 billion in profit, with refineries running at high utilization rates. Strong demand for transportation fuels supported margins."
+    },
+    {
+      "id": "mock_cvx_008",
+      "title": "Chevron Announces New Oil Discovery in Gulf of Mexico",
+      "source": "Financial Times",
+      "published_at": "2024-01-11T16:30:00Z",
+      "url": "https://example.com/chevron-oil-discovery",
+      "summary": "Chevron announced a new oil discovery in the Gulf of Mexico, estimated to contain 500 million barrels.",
+      "content": "Chevron announced a new oil discovery in the Gulf of Mexico, estimated to contain 500 million barrels. The discovery is significant and could support production for decades. Chevron will begin development planning, with first production expected in 2027."
+    },
+    {
+      "id": "mock_cvx_009",
+      "title": "Chevron Increases Investment in Carbon Capture Technology",
+      "source": "Reuters",
+      "published_at": "2024-01-11T11:45:00Z",
+      "url": "https://example.com/chevron-carbon-capture",
+      "summary": "Chevron increased investment in carbon capture technology, committing $2 billion to new projects.",
+      "content": "Chevron increased investment in carbon capture technology, committing $2 billion to new projects. The technology captures CO2 from industrial processes and stores it underground. Carbon capture is seen as essential for reducing emissions while maintaining energy production."
+    },
+    {
+      "id": "mock_cvx_010",
+      "title": "Chevron Dividend Yield Attracts Income Investors",
+      "source": "Bloomberg",
+      "published_at": "2024-01-10T13:20:00Z",
+      "url": "https://example.com/chevron-dividend-yield",
+      "summary": "Chevron's dividend yield of 4.2% attracts income-focused investors seeking stable returns.",
+      "content": "Chevron's dividend yield of 4.2% attracts income-focused investors seeking stable returns. The company has increased its dividend for 36 consecutive years, demonstrating commitment to shareholders. High oil prices enable strong dividend payments while maintaining capital investment."
+    }
+  ],
+  "JNJ": [
+    {
+      "id": "mock_jnj_001",
+      "title": "Johnson & Johnson Reports Strong Q4 Earnings on Pharmaceutical Growth",
+      "source": "Reuters",
+      "published_at": "2024-01-15T09:00:00Z",
+      "url": "https://example.com/jnj-q4-earnings",
+      "summary": "Johnson & Johnson reported strong Q4 earnings, with pharmaceutical sales driving 8% revenue growth.",
+      "content": "Johnson & Johnson reported strong Q4 earnings, with pharmaceutical sales driving 8% revenue growth. The company's revenue reached $21.4 billion, with oncology and immunology drugs leading the growth. CEO Joaquin Duato highlighted strong performance across all business segments."
+    },
+    {
+      "id": "mock_jnj_002",
+      "title": "Johnson & Johnson Receives FDA Approval for New Cancer Drug",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T11:30:00Z",
+      "url": "https://example.com/jnj-fda-approval-cancer",
+      "summary": "Johnson & Johnson received FDA approval for a new cancer treatment, expanding its oncology portfolio.",
+      "content": "Johnson & Johnson received FDA approval for a new cancer treatment, expanding its oncology portfolio. The drug targets a specific type of lung cancer and showed promising results in clinical trials. The approval is expected to generate $500 million in annual sales."
+    },
+    {
+      "id": "mock_jnj_003",
+      "title": "Johnson & Johnson Medical Device Sales Recover Post-Pandemic",
+      "source": "CNBC",
+      "published_at": "2024-01-14T08:15:00Z",
+      "url": "https://example.com/jnj-medical-devices",
+      "summary": "Johnson & Johnson's medical device sales recovered strongly post-pandemic, with surgical procedures returning to normal levels.",
+      "content": "Johnson & Johnson's medical device sales recovered strongly post-pandemic, with surgical procedures returning to normal levels. The medical device segment generated $7.8 billion in revenue, up 12% year-over-year. Strong demand for orthopedic and surgical products drove the growth."
+    },
+    {
+      "id": "mock_jnj_004",
+      "title": "Johnson & Johnson Announces $5 Billion Share Buyback",
+      "source": "Financial Times",
+      "published_at": "2024-01-13T14:00:00Z",
+      "url": "https://example.com/jnj-share-buyback",
+      "summary": "Johnson & Johnson announced a $5 billion share buyback program, returning excess cash to shareholders.",
+      "content": "Johnson & Johnson announced a $5 billion share buyback program, returning excess cash to shareholders. The program will be executed over the next 12 months. Strong cash generation from pharmaceutical sales enables the buyback while maintaining R&D investment."
+    },
+    {
+      "id": "mock_jnj_005",
+      "title": "Johnson & Johnson Consumer Health Division Shows Growth",
+      "source": "Reuters",
+      "published_at": "2024-01-13T10:45:00Z",
+      "url": "https://example.com/jnj-consumer-health",
+      "summary": "Johnson & Johnson's consumer health division showed 5% growth, driven by strong brand performance.",
+      "content": "Johnson & Johnson's consumer health division showed 5% growth, driven by strong brand performance. Popular brands like Tylenol, Band-Aid, and Listerine contributed to the growth. The division was recently spun off as a separate company but remains a key part of J&J's portfolio."
+    },
+    {
+      "id": "mock_jnj_006",
+      "title": "Johnson & Johnson Expands Manufacturing in Emerging Markets",
+      "source": "Bloomberg",
+      "published_at": "2024-01-12T13:30:00Z",
+      "url": "https://example.com/jnj-manufacturing-expansion",
+      "summary": "Johnson & Johnson announced expansion of manufacturing facilities in India and China to meet growing demand.",
+      "content": "Johnson & Johnson announced expansion of manufacturing facilities in India and China to meet growing demand. The $2 billion investment will increase production capacity by 30% and create 3,000 new jobs. The expansion supports J&J's strategy to serve emerging markets."
+    },
+    {
+      "id": "mock_jnj_007",
+      "title": "Johnson & Johnson R&D Investment Reaches Record $14 Billion",
+      "source": "CNBC",
+      "published_at": "2024-01-12T09:20:00Z",
+      "url": "https://example.com/jnj-rd-investment",
+      "summary": "Johnson & Johnson's R&D investment reached a record $14 billion, focusing on oncology and immunology.",
+      "content": "Johnson & Johnson's R&D investment reached a record $14 billion, focusing on oncology and immunology. The company has 50+ drugs in clinical development, with several in late-stage trials. Strong R&D pipeline supports future growth prospects."
+    },
+    {
+      "id": "mock_jnj_008",
+      "title": "Johnson & Johnson Faces Product Liability Lawsuit",
+      "source": "Financial Times",
+      "published_at": "2024-01-11T15:00:00Z",
+      "url": "https://example.com/jnj-product-liability",
+      "summary": "Johnson & Johnson faces a new product liability lawsuit related to one of its medical devices.",
+      "content": "Johnson & Johnson faces a new product liability lawsuit related to one of its medical devices. The lawsuit alleges the device caused complications in some patients. J&J has set aside $2 billion for potential settlements related to various product liability cases."
+    },
+    {
+      "id": "mock_jnj_009",
+      "title": "Johnson & Johnson Dividend Increases for 61st Consecutive Year",
+      "source": "Reuters",
+      "published_at": "2024-01-11T11:15:00Z",
+      "url": "https://example.com/jnj-dividend-increase",
+      "summary": "Johnson & Johnson increased its dividend by 5%, marking the 61st consecutive year of dividend increases.",
+      "content": "Johnson & Johnson increased its dividend by 5%, marking the 61st consecutive year of dividend increases. The company is a Dividend Aristocrat, having increased dividends for over 60 years. J&J's dividend yield of 3.1% attracts income-focused investors."
+    },
+    {
+      "id": "mock_jnj_010",
+      "title": "Johnson & Johnson Partners with Biotech Startup on Gene Therapy",
+      "source": "Bloomberg",
+      "published_at": "2024-01-10T12:30:00Z",
+      "url": "https://example.com/jnj-gene-therapy-partnership",
+      "summary": "Johnson & Johnson announced a partnership with a biotech startup to develop gene therapy treatments.",
+      "content": "Johnson & Johnson announced a partnership with a biotech startup to develop gene therapy treatments. The partnership includes a $500 million investment and access to J&J's global distribution network. Gene therapy represents a growing area of medical innovation."
+    }
+  ],
+  "PFE": [
+    {
+      "id": "mock_pfe_001",
+      "title": "Pfizer Reports Q4 Earnings Beat on Strong Vaccine Sales",
+      "source": "Reuters",
+      "published_at": "2024-01-15T09:30:00Z",
+      "url": "https://example.com/pfizer-q4-earnings",
+      "summary": "Pfizer reported Q4 earnings that beat analyst expectations, driven by strong sales of COVID-19 vaccines and treatments.",
+      "content": "Pfizer reported Q4 earnings that beat analyst expectations, driven by strong sales of COVID-19 vaccines and treatments. The company's revenue reached $14.2 billion, with Comirnaty vaccine contributing significantly. CEO Albert Bourla highlighted the company's diverse portfolio beyond COVID products."
+    },
+    {
+      "id": "mock_pfe_002",
+      "title": "Pfizer Announces New Cancer Drug Approval in Europe",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T12:00:00Z",
+      "url": "https://example.com/pfizer-cancer-drug-europe",
+      "summary": "Pfizer announced European approval for a new cancer treatment, expanding its oncology portfolio.",
+      "content": "Pfizer announced European approval for a new cancer treatment, expanding its oncology portfolio. The drug targets a specific type of breast cancer and showed strong efficacy in clinical trials. European approval follows FDA approval received earlier this year."
+    },
+    {
+      "id": "mock_pfe_003",
+      "title": "Pfizer COVID-19 Vaccine Demand Declines as Pandemic Wanes",
+      "source": "CNBC",
+      "published_at": "2024-01-14T09:45:00Z",
+      "url": "https://example.com/pfizer-vaccine-demand-decline",
+      "summary": "Pfizer's COVID-19 vaccine demand declined 40% as the pandemic wanes and vaccination rates slow.",
+      "content": "Pfizer's COVID-19 vaccine demand declined 40% as the pandemic wanes and vaccination rates slow. The company is adjusting production to match lower demand. Pfizer is focusing on annual booster shots and developing combination vaccines for flu and COVID."
+    },
+    {
+      "id": "mock_pfe_004",
+      "title": "Pfizer Acquires Biotech Company for $2.5 Billion",
+      "source": "Financial Times",
+      "published_at": "2024-01-13T15:15:00Z",
+      "url": "https://example.com/pfizer-biotech-acquisition",
+      "summary": "Pfizer acquired a biotech company specializing in rare disease treatments for $2.5 billion.",
+      "content": "Pfizer acquired a biotech company specializing in rare disease treatments for $2.5 billion. The acquisition adds three drugs in late-stage development to Pfizer's pipeline. Rare diseases represent a high-growth, high-margin segment of the pharmaceutical market."
+    },
+    {
+      "id": "mock_pfe_005",
+      "title": "Pfizer R&D Pipeline Shows Strong Progress",
+      "source": "Reuters",
+      "published_at": "2024-01-13T11:30:00Z",
+      "url": "https://example.com/pfizer-rd-pipeline",
+      "summary": "Pfizer's R&D pipeline shows strong progress, with 10 drugs entering Phase 3 trials this year.",
+      "content": "Pfizer's R&D pipeline shows strong progress, with 10 drugs entering Phase 3 trials this year. The pipeline focuses on oncology, immunology, and rare diseases. Strong R&D investment supports future growth as COVID-related revenue declines."
+    },
+    {
+      "id": "mock_pfe_006",
+      "title": "Pfizer Expands Manufacturing Capacity for mRNA Vaccines",
+      "source": "Bloomberg",
+      "published_at": "2024-01-12T14:45:00Z",
+      "url": "https://example.com/pfizer-mrna-manufacturing",
+      "summary": "Pfizer announced expansion of mRNA vaccine manufacturing capacity, investing $1.5 billion in new facilities.",
+      "content": "Pfizer announced expansion of mRNA vaccine manufacturing capacity, investing $1.5 billion in new facilities. The expansion will support production of COVID vaccines and future mRNA-based treatments. mRNA technology has applications beyond vaccines, including cancer treatments."
+    },
+    {
+      "id": "mock_pfe_007",
+      "title": "Pfizer Faces Patent Expiration on Key Drug",
+      "source": "CNBC",
+      "published_at": "2024-01-12T10:20:00Z",
+      "url": "https://example.com/pfizer-patent-expiration",
+      "summary": "Pfizer faces patent expiration on a key drug, which could impact revenue as generic competition enters the market.",
+      "content": "Pfizer faces patent expiration on a key drug, which could impact revenue as generic competition enters the market. The drug generated $3 billion in annual sales. Pfizer is developing next-generation versions and combination therapies to maintain market position."
+    },
+    {
+      "id": "mock_pfe_008",
+      "title": "Pfizer Partners with Academic Institutions on Research",
+      "source": "Financial Times",
+      "published_at": "2024-01-11T16:00:00Z",
+      "url": "https://example.com/pfizer-academic-partnership",
+      "summary": "Pfizer announced partnerships with leading academic institutions to accelerate drug discovery.",
+      "content": "Pfizer announced partnerships with leading academic institutions to accelerate drug discovery. The partnerships provide access to cutting-edge research and early-stage drug candidates. Academic partnerships are a key source of innovation in the pharmaceutical industry."
+    },
+    {
+      "id": "mock_pfe_009",
+      "title": "Pfizer Dividend Yield Attracts Income Investors",
+      "source": "Reuters",
+      "published_at": "2024-01-11T12:15:00Z",
+      "url": "https://example.com/pfizer-dividend-yield",
+      "summary": "Pfizer's dividend yield of 4.5% attracts income-focused investors seeking stable returns.",
+      "content": "Pfizer's dividend yield of 4.5% attracts income-focused investors seeking stable returns. The company has a strong history of dividend payments and increases. High cash generation from COVID products enabled special dividends, though regular dividends remain sustainable."
+    },
+    {
+      "id": "mock_pfe_010",
+      "title": "Pfizer Launches New Marketing Campaign for Established Products",
+      "source": "Bloomberg",
+      "published_at": "2024-01-10T13:45:00Z",
+      "url": "https://example.com/pfizer-marketing-campaign",
+      "summary": "Pfizer launched a new marketing campaign for established products to extend their lifecycle.",
+      "content": "Pfizer launched a new marketing campaign for established products to extend their lifecycle. The campaign targets new patient populations and indications. Extending product lifecycles helps maximize value before patent expiration."
+    }
+  ],
+  "JPM": [
+    {
+      "id": "mock_jpm_001",
+      "title": "JPMorgan Chase Reports Record Q4 Profit on Strong Trading Revenue",
+      "source": "Reuters",
+      "published_at": "2024-01-15T07:00:00Z",
+      "url": "https://example.com/jpmorgan-record-profit",
+      "summary": "JPMorgan Chase reported record Q4 profit of $9.3 billion, driven by strong trading revenue and investment banking fees.",
+      "content": "JPMorgan Chase reported record Q4 profit of $9.3 billion, driven by strong trading revenue and investment banking fees. The bank's revenue reached $38.6 billion, with fixed income trading contributing significantly. CEO Jamie Dimon highlighted strong performance across all business lines."
+    },
+    {
+      "id": "mock_jpm_002",
+      "title": "JPMorgan Chase Increases Dividend Following Stress Test Results",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T10:00:00Z",
+      "url": "https://example.com/jpmorgan-dividend-increase",
+      "summary": "JPMorgan Chase increased its dividend by 8% following strong stress test results from the Federal Reserve.",
+      "content": "JPMorgan Chase increased its dividend by 8% following strong stress test results from the Federal Reserve. The bank passed all stress test scenarios, demonstrating strong capital position. The dividend increase reflects confidence in the bank's financial strength."
+    },
+    {
+      "id": "mock_jpm_003",
+      "title": "JPMorgan Chase Investment Banking Fees Rise 15%",
+      "source": "CNBC",
+      "published_at": "2024-01-14T07:30:00Z",
+      "url": "https://example.com/jpmorgan-investment-banking-fees",
+      "summary": "JPMorgan Chase's investment banking fees rose 15% year-over-year, driven by strong M&A and IPO activity.",
+      "content": "JPMorgan Chase's investment banking fees rose 15% year-over-year, driven by strong M&A and IPO activity. The bank ranked #1 in global M&A advisory and equity underwriting. Strong capital markets activity supported the fee growth."
+    },
+    {
+      "id": "mock_jpm_004",
+      "title": "JPMorgan Chase Expands Digital Banking Services",
+      "source": "Financial Times",
+      "published_at": "2024-01-13T13:45:00Z",
+      "url": "https://example.com/jpmorgan-digital-banking",
+      "summary": "JPMorgan Chase announced expansion of digital banking services, investing $2 billion in technology infrastructure.",
+      "content": "JPMorgan Chase announced expansion of digital banking services, investing $2 billion in technology infrastructure. The investment will improve mobile banking, online services, and AI-powered features. Digital banking is a key growth area as customers shift away from branches."
+    },
+    {
+      "id": "mock_jpm_005",
+      "title": "JPMorgan Chase Consumer Banking Revenue Grows 6%",
+      "source": "Reuters",
+      "published_at": "2024-01-13T10:00:00Z",
+      "url": "https://example.com/jpmorgan-consumer-banking",
+      "summary": "JPMorgan Chase's consumer banking revenue grew 6% year-over-year, driven by higher interest rates and loan growth.",
+      "content": "JPMorgan Chase's consumer banking revenue grew 6% year-over-year, driven by higher interest rates and loan growth. The bank's net interest margin improved as the Federal Reserve raised rates. Strong loan demand from consumers and businesses supported growth."
+    },
+    {
+      "id": "mock_jpm_006",
+      "title": "JPMorgan Chase Faces Regulatory Fine Over Trading Practices",
+      "source": "Bloomberg",
+      "published_at": "2024-01-12T14:30:00Z",
+      "url": "https://example.com/jpmorgan-regulatory-fine",
+      "summary": "JPMorgan Chase faces a $200 million regulatory fine over alleged trading practice violations.",
+      "content": "JPMorgan Chase faces a $200 million regulatory fine over alleged trading practice violations. The fine relates to record-keeping and communication practices in trading operations. JPMorgan is cooperating with regulators and has implemented corrective measures."
+    },
+    {
+      "id": "mock_jpm_007",
+      "title": "JPMorgan Chase Wealth Management Assets Reach $3 Trillion",
+      "source": "CNBC",
+      "published_at": "2024-01-12T09:15:00Z",
+      "url": "https://example.com/jpmorgan-wealth-management",
+      "summary": "JPMorgan Chase's wealth management division reached $3 trillion in assets under management.",
+      "content": "JPMorgan Chase's wealth management division reached $3 trillion in assets under management. The division serves high-net-worth individuals and families, providing investment and banking services. Strong market performance and new client acquisitions drove asset growth."
+    },
+    {
+      "id": "mock_jpm_008",
+      "title": "JPMorgan Chase Announces $30 Billion Share Buyback",
+      "source": "Financial Times",
+      "published_at": "2024-01-11T15:30:00Z",
+      "url": "https://example.com/jpmorgan-share-buyback",
+      "summary": "JPMorgan Chase announced a $30 billion share buyback program, returning excess capital to shareholders.",
+      "content": "JPMorgan Chase announced a $30 billion share buyback program, returning excess capital to shareholders. The program will be executed over the next 12 months. Strong capital generation enables the buyback while maintaining regulatory capital requirements."
+    },
+    {
+      "id": "mock_jpm_009",
+      "title": "JPMorgan Chase Credit Card Spending Increases 12%",
+      "source": "Reuters",
+      "published_at": "2024-01-11T11:00:00Z",
+      "url": "https://example.com/jpmorgan-credit-card-spending",
+      "summary": "JPMorgan Chase credit card spending increased 12% year-over-year, indicating strong consumer confidence.",
+      "content": "JPMorgan Chase credit card spending increased 12% year-over-year, indicating strong consumer confidence. The bank's credit card portfolio is one of the largest in the United States. Higher spending drives interchange fees and interest income."
+    },
+    {
+      "id": "mock_jpm_010",
+      "title": "JPMorgan Chase Expands Commercial Banking Services",
+      "source": "Bloomberg",
+      "published_at": "2024-01-10T12:45:00Z",
+      "url": "https://example.com/jpmorgan-commercial-banking",
+      "summary": "JPMorgan Chase announced expansion of commercial banking services, targeting mid-market companies.",
+      "content": "JPMorgan Chase announced expansion of commercial banking services, targeting mid-market companies. The expansion includes new lending products, treasury services, and advisory capabilities. Commercial banking is a key growth area as businesses seek financing and banking services."
+    }
+  ],
+  "BAC": [
+    {
+      "id": "mock_bac_001",
+      "title": "Bank of America Reports Strong Q4 Earnings on Net Interest Income",
+      "source": "Reuters",
+      "published_at": "2024-01-15T07:30:00Z",
+      "url": "https://example.com/bank-of-america-q4-earnings",
+      "summary": "Bank of America reported strong Q4 earnings, with net interest income rising 8% due to higher interest rates.",
+      "content": "Bank of America reported strong Q4 earnings, with net interest income rising 8% due to higher interest rates. The bank's revenue reached $24.5 billion, with consumer banking contributing significantly. CEO Brian Moynihan highlighted strong loan growth and deposit stability."
+    },
+    {
+      "id": "mock_bac_002",
+      "title": "Bank of America Digital Banking Users Reach 35 Million",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T10:30:00Z",
+      "url": "https://example.com/bank-of-america-digital-users",
+      "summary": "Bank of America's digital banking users reached 35 million, with mobile app usage increasing 20%.",
+      "content": "Bank of America's digital banking users reached 35 million, with mobile app usage increasing 20%. The bank's digital strategy focuses on providing seamless banking experiences. High digital adoption reduces branch costs and improves customer satisfaction."
+    },
+    {
+      "id": "mock_bac_003",
+      "title": "Bank of America Investment Banking Revenue Declines 10%",
+      "source": "CNBC",
+      "published_at": "2024-01-14T08:00:00Z",
+      "url": "https://example.com/bank-of-america-investment-banking",
+      "summary": "Bank of America's investment banking revenue declined 10% as M&A and IPO activity slowed.",
+      "content": "Bank of America's investment banking revenue declined 10% as M&A and IPO activity slowed. The decline reflects broader market conditions rather than bank-specific issues. The bank remains well-positioned for when capital markets activity recovers."
+    },
+    {
+      "id": "mock_bac_004",
+      "title": "Bank of America Expands Small Business Lending Program",
+      "source": "Financial Times",
+      "published_at": "2024-01-13T14:15:00Z",
+      "url": "https://example.com/bank-of-america-small-business",
+      "summary": "Bank of America announced expansion of its small business lending program, committing $10 billion in loans.",
+      "content": "Bank of America announced expansion of its small business lending program, committing $10 billion in loans. The program targets underserved small businesses and provides flexible financing options. Small business lending is a key growth area and supports local economies."
+    },
+    {
+      "id": "mock_bac_005",
+      "title": "Bank of America Wealth Management Assets Grow 8%",
+      "source": "Reuters",
+      "published_at": "2024-01-13T10:30:00Z",
+      "url": "https://example.com/bank-of-america-wealth-management",
+      "summary": "Bank of America's wealth management assets grew 8% year-over-year, reaching $1.5 trillion.",
+      "content": "Bank of America's wealth management assets grew 8% year-over-year, reaching $1.5 trillion. The division serves affluent clients through Merrill Lynch and private banking. Strong market performance and new client acquisitions drove asset growth."
+    },
+    {
+      "id": "mock_bac_006",
+      "title": "Bank of America Faces Mortgage Lending Slowdown",
+      "source": "Bloomberg",
+      "published_at": "2024-01-12T15:00:00Z",
+      "url": "https://example.com/bank-of-america-mortgage-slowdown",
+      "summary": "Bank of America's mortgage lending declined 15% as higher interest rates reduced home buying activity.",
+      "content": "Bank of America's mortgage lending declined 15% as higher interest rates reduced home buying activity. The decline reflects broader housing market trends. The bank is focusing on refinancing and home equity loans to offset the decline."
+    },
+    {
+      "id": "mock_bac_007",
+      "title": "Bank of America Announces $25 Billion Share Buyback",
+      "source": "CNBC",
+      "published_at": "2024-01-12T09:45:00Z",
+      "url": "https://example.com/bank-of-america-share-buyback",
+      "summary": "Bank of America announced a $25 billion share buyback program, returning capital to shareholders.",
+      "content": "Bank of America announced a $25 billion share buyback program, returning capital to shareholders. The program will be executed over the next 12 months. Strong capital generation and regulatory approval enable the buyback."
+    },
+    {
+      "id": "mock_bac_008",
+      "title": "Bank of America Credit Card Delinquency Rates Remain Low",
+      "source": "Financial Times",
+      "published_at": "2024-01-11T16:15:00Z",
+      "url": "https://example.com/bank-of-america-credit-delinquency",
+      "summary": "Bank of America's credit card delinquency rates remained low at 1.2%, indicating healthy consumer credit.",
+      "content": "Bank of America's credit card delinquency rates remained low at 1.2%, indicating healthy consumer credit. Low delinquency rates reflect strong employment and consumer financial health. The bank maintains conservative underwriting standards."
+    },
+    {
+      "id": "mock_bac_009",
+      "title": "Bank of America Expands ESG Investment Products",
+      "source": "Reuters",
+      "published_at": "2024-01-11T11:30:00Z",
+      "url": "https://example.com/bank-of-america-esg-products",
+      "summary": "Bank of America announced expansion of ESG investment products, responding to growing investor demand.",
+      "content": "Bank of America announced expansion of ESG investment products, responding to growing investor demand. The products focus on environmental, social, and governance criteria. ESG investing is a rapidly growing segment of the wealth management market."
+    },
+    {
+      "id": "mock_bac_010",
+      "title": "Bank of America Branch Network Optimization Continues",
+      "source": "Bloomberg",
+      "published_at": "2024-01-10T13:00:00Z",
+      "url": "https://example.com/bank-of-america-branch-optimization",
+      "summary": "Bank of America continues optimizing its branch network, closing underperforming locations while opening new ones in growth markets.",
+      "content": "Bank of America continues optimizing its branch network, closing underperforming locations while opening new ones in growth markets. The strategy balances digital banking growth with physical presence where needed. Branch optimization improves efficiency while maintaining customer access."
+    }
+  ],
+  "GS": [
+    {
+      "id": "mock_gs_001",
+      "title": "Goldman Sachs Reports Strong Q4 Trading Revenue",
+      "source": "Reuters",
+      "published_at": "2024-01-15T08:00:00Z",
+      "url": "https://example.com/goldman-sachs-q4-trading",
+      "summary": "Goldman Sachs reported strong Q4 trading revenue, with fixed income trading contributing significantly to profits.",
+      "content": "Goldman Sachs reported strong Q4 trading revenue, with fixed income trading contributing significantly to profits. The bank's revenue reached $11.3 billion, with trading operations generating $4.2 billion. CEO David Solomon highlighted strong performance in volatile markets."
+    },
+    {
+      "id": "mock_gs_002",
+      "title": "Goldman Sachs Investment Banking Fees Decline 12%",
+      "source": "Bloomberg",
+      "published_at": "2024-01-14T11:15:00Z",
+      "url": "https://example.com/goldman-sachs-investment-banking",
+      "summary": "Goldman Sachs investment banking fees declined 12% as M&A and IPO activity slowed in the quarter.",
+      "content": "Goldman Sachs investment banking fees declined 12% as M&A and IPO activity slowed in the quarter. The decline reflects broader market conditions affecting all investment banks. Goldman remains the #1 M&A advisor globally despite the decline."
+    },
+    {
+      "id": "mock_gs_003",
+      "title": "Goldman Sachs Expands Consumer Banking Division",
+      "source": "CNBC",
+      "published_at": "2024-01-14T08:45:00Z",
+      "url": "https://example.com/goldman-sachs-consumer-banking",
+      "summary": "Goldman Sachs announced expansion of its consumer banking division, including Marcus savings and credit cards.",
+      "content": "Goldman Sachs announced expansion of its consumer banking division, including Marcus savings and credit cards. The division has grown to $100 billion in deposits and 15 million customers. Consumer banking diversifies Goldman's revenue beyond traditional investment banking."
+    },
+    {
+      "id": "mock_gs_004",
+      "title": "Goldman Sachs Asset Management AUM Reaches $2.5 Trillion",
+      "source": "Financial Times",
+      "published_at": "2024-01-13T15:00:00Z",
+      "url": "https://example.com/goldman-sachs-asset-management",
+      "summary": "Goldman Sachs asset management division reached $2.5 trillion in assets under management.",
+      "content": "Goldman Sachs asset management division reached $2.5 trillion in assets under management. The division includes institutional and retail funds, alternative investments, and wealth management. Strong market performance and new client acquisitions drove AUM growth."
+    },
+    {
+      "id": "mock_gs_005",
+      "title": "Goldman Sachs Announces Strategic Review of Consumer Business",
+      "source": "Reuters",
+      "published_at": "2024-01-13T11:15:00Z",
+      "url": "https://example.com/goldman-sachs-consumer-review",
+      "summary": "Goldman Sachs announced a strategic review of its consumer banking business, considering potential divestiture.",
+      "content": "Goldman Sachs announced a strategic review of its consumer banking business, considering potential divestiture. The review comes as the bank focuses on core investment banking and trading operations. Consumer banking has been challenging for Goldman compared to traditional banks."
+    },
+    {
+      "id": "mock_gs_006",
+      "title": "Goldman Sachs Trading Technology Investment Reaches $1 Billion",
+      "source": "Bloomberg",
+      "published_at": "2024-01-12T15:30:00Z",
+      "url": "https://example.com/goldman-sachs-trading-technology",
+      "summary": "Goldman Sachs invested $1 billion in trading technology, improving execution speed and efficiency.",
+      "content": "Goldman Sachs invested $1 billion in trading technology, improving execution speed and efficiency. The investment includes AI-powered trading algorithms and high-frequency trading infrastructure. Technology is a key competitive advantage in trading operations."
+    },
+    {
+      "id": "mock_gs_007",
+      "title": "Goldman Sachs Private Equity Returns Exceed Benchmarks",
+      "source": "CNBC",
+      "published_at": "2024-01-12T10:00:00Z",
+      "url": "https://example.com/goldman-sachs-private-equity",
+      "summary": "Goldman Sachs private equity funds generated returns exceeding market benchmarks by 5 percentage points.",
+      "content": "Goldman Sachs private equity funds generated returns exceeding market benchmarks by 5 percentage points. Strong performance drives management fees and performance fees. Private equity is a high-margin business for investment banks."
+    },
+    {
+      "id": "mock_gs_008",
+      "title": "Goldman Sachs Expands ESG Advisory Services",
+      "source": "Financial Times",
+      "published_at": "2024-01-11T16:45:00Z",
+      "url": "https://example.com/goldman-sachs-esg-advisory",
+      "summary": "Goldman Sachs announced expansion of ESG advisory services, helping companies with sustainability strategies.",
+      "content": "Goldman Sachs announced expansion of ESG advisory services, helping companies with sustainability strategies. The services include sustainability reporting, carbon offset strategies, and ESG-focused M&A. ESG advisory is a growing revenue stream as companies prioritize sustainability."
+    },
+    {
+      "id": "mock_gs_009",
+      "title": "Goldman Sachs Compensation Costs Rise 8%",
+      "source": "Reuters",
+      "published_at": "2024-01-11T12:00:00Z",
+      "url": "https://example.com/goldman-sachs-compensation",
+      "summary": "Goldman Sachs compensation costs rose 8% as the bank competes for top talent in investment banking.",
+      "content": "Goldman Sachs compensation costs rose 8% as the bank competes for top talent in investment banking. High compensation is necessary to attract and retain top performers. Compensation typically represents 40-50% of investment bank revenue."
+    },
+    {
+      "id": "mock_gs_010",
+      "title": "Goldman Sachs International Revenue Grows 15%",
+      "source": "Bloomberg",
+      "published_at": "2024-01-10T14:15:00Z",
+      "url": "https://example.com/goldman-sachs-international",
+      "summary": "Goldman Sachs international revenue grew 15%, driven by strong performance in Asia and Europe.",
+      "content": "Goldman Sachs international revenue grew 15%, driven by strong performance in Asia and Europe. The bank's global presence enables it to serve multinational clients and access international markets. International diversification reduces dependence on U.S. markets."
+    }
+  ]
+}
+
