@@ -8,11 +8,11 @@
   * {
     box-sizing: border-box;
   }
-  html, body {
+  html {
     height: 100%;
-    overflow: hidden;
   }
   body {
+    min-height: 100%;
     @apply bg-gray-950 text-gray-100;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }

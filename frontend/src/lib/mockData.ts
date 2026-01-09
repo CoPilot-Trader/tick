@@ -1,17 +1,44 @@
 import { StockData, PredictionPoint, OHLCVDataPoint, PriceLevel, TrendClassification, SentimentData, TechnicalIndicator, NewsEvent } from '@/types';
 
-// Top 10 S&P 500 stocks
+// S&P 500 stocks organized by sector
 export const SP500_STOCKS = [
-  { symbol: 'AAPL', name: 'Apple Inc.' },
-  { symbol: 'MSFT', name: 'Microsoft Corporation' },
-  { symbol: 'GOOGL', name: 'Alphabet Inc.' },
-  { symbol: 'AMZN', name: 'Amazon.com Inc.' },
-  { symbol: 'NVDA', name: 'NVIDIA Corporation' },
-  { symbol: 'META', name: 'Meta Platforms Inc.' },
-  { symbol: 'TSLA', name: 'Tesla Inc.' },
-  { symbol: 'BRK.B', name: 'Berkshire Hathaway Inc.' },
-  { symbol: 'V', name: 'Visa Inc.' },
-  { symbol: 'JNJ', name: 'Johnson & Johnson' },
+  // Technology
+  { symbol: 'AAPL', name: 'Apple Inc.', sector: 'Technology' },
+  { symbol: 'MSFT', name: 'Microsoft Corporation', sector: 'Technology' },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.', sector: 'Technology' },
+  { symbol: 'GOOG', name: 'Alphabet Inc. (Class C)', sector: 'Technology' },
+  { symbol: 'AMZN', name: 'Amazon.com Inc.', sector: 'Technology' },
+  { symbol: 'META', name: 'Meta Platforms Inc.', sector: 'Technology' },
+  { symbol: 'NVDA', name: 'NVIDIA Corporation', sector: 'Technology' },
+  { symbol: 'TSLA', name: 'Tesla Inc.', sector: 'Technology' },
+  { symbol: 'NFLX', name: 'Netflix Inc.', sector: 'Technology' },
+  { symbol: 'INTC', name: 'Intel Corporation', sector: 'Technology' },
+  // Energy
+  { symbol: 'XOM', name: 'Exxon Mobil Corporation', sector: 'Energy' },
+  { symbol: 'CVX', name: 'Chevron Corporation', sector: 'Energy' },
+  { symbol: 'SLB', name: 'Schlumberger Limited', sector: 'Energy' },
+  { symbol: 'COP', name: 'ConocoPhillips', sector: 'Energy' },
+  { symbol: 'EOG', name: 'EOG Resources Inc.', sector: 'Energy' },
+  // Healthcare
+  { symbol: 'JNJ', name: 'Johnson & Johnson', sector: 'Healthcare' },
+  { symbol: 'PFE', name: 'Pfizer Inc.', sector: 'Healthcare' },
+  { symbol: 'UNH', name: 'UnitedHealth Group Inc.', sector: 'Healthcare' },
+  { symbol: 'ABBV', name: 'AbbVie Inc.', sector: 'Healthcare' },
+  { symbol: 'TMO', name: 'Thermo Fisher Scientific Inc.', sector: 'Healthcare' },
+  // Finance
+  { symbol: 'JPM', name: 'JPMorgan Chase & Co.', sector: 'Finance' },
+  { symbol: 'BAC', name: 'Bank of America Corp.', sector: 'Finance' },
+  { symbol: 'GS', name: 'Goldman Sachs Group Inc.', sector: 'Finance' },
+  { symbol: 'MS', name: 'Morgan Stanley', sector: 'Finance' },
+  { symbol: 'WFC', name: 'Wells Fargo & Company', sector: 'Finance' },
+  { symbol: 'BRK.B', name: 'Berkshire Hathaway Inc.', sector: 'Finance' },
+  { symbol: 'V', name: 'Visa Inc.', sector: 'Finance' },
+  // Consumer
+  { symbol: 'WMT', name: 'Walmart Inc.', sector: 'Consumer' },
+  { symbol: 'PG', name: 'The Procter & Gamble Company', sector: 'Consumer' },
+  { symbol: 'KO', name: 'The Coca-Cola Company', sector: 'Consumer' },
+  { symbol: 'PEP', name: 'PepsiCo Inc.', sector: 'Consumer' },
+  { symbol: 'MCD', name: "McDonald's Corporation", sector: 'Consumer' },
 ];
 
 // Generate mock historical data - last 24 hours with 5-minute intervals
@@ -258,16 +285,43 @@ function generatePredictions(
 
 // Base prices for each stock
 const BASE_PRICES: Record<string, number> = {
+  // Technology
   AAPL: 180,
   MSFT: 380,
   GOOGL: 140,
+  GOOG: 142,
   AMZN: 150,
-  NVDA: 500,
   META: 350,
+  NVDA: 500,
   TSLA: 250,
+  NFLX: 480,
+  INTC: 45,
+  // Energy
+  XOM: 105,
+  CVX: 150,
+  SLB: 52,
+  COP: 115,
+  EOG: 125,
+  // Healthcare
+  JNJ: 160,
+  PFE: 30,
+  UNH: 520,
+  ABBV: 165,
+  TMO: 550,
+  // Finance
+  JPM: 175,
+  BAC: 35,
+  GS: 380,
+  MS: 95,
+  WFC: 55,
   'BRK.B': 360,
   V: 250,
-  JNJ: 160,
+  // Consumer
+  WMT: 165,
+  PG: 155,
+  KO: 60,
+  PEP: 175,
+  MCD: 290,
 };
 
 export function generateMockStockData(symbol: string): StockData {
