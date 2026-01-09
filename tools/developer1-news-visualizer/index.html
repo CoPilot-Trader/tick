@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Agent Pipeline Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📰 News Agent Pipeline Visualizer</h1>
+            <p class="subtitle">Step-by-step visualization of News Fetch → LLM Sentiment → Aggregator pipeline</p>
+        </header>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="ticker-select">Stock Ticker:</label>
+                <select id="ticker-select" class="ticker-select">
+                    <!-- Technology -->
+                    <option value="AAPL">AAPL - Apple Inc.</option>
+                    <option value="MSFT">MSFT - Microsoft Corporation</option>
+                    <option value="GOOGL">GOOGL - Alphabet Inc.</option>
+                    <option value="GOOG">GOOG - Alphabet Inc. (Class C)</option>
+                    <option value="AMZN">AMZN - Amazon.com Inc.</option>
+                    <option value="META">META - Meta Platforms Inc.</option>
+                    <option value="NVDA">NVDA - NVIDIA Corporation</option>
+                    <option value="TSLA">TSLA - Tesla Inc.</option>
+                    <option value="NFLX">NFLX - Netflix Inc.</option>
+                    <option value="INTC">INTC - Intel Corporation</option>
+                    <!-- Energy -->
+                    <option value="XOM">XOM - Exxon Mobil Corporation</option>
+                    <option value="CVX">CVX - Chevron Corporation</option>
+                    <option value="SLB">SLB - Schlumberger Limited</option>
+                    <option value="COP">COP - ConocoPhillips</option>
+                    <option value="EOG">EOG - EOG Resources Inc.</option>
+                    <!-- Healthcare -->
+                    <option value="JNJ">JNJ - Johnson & Johnson</option>
+                    <option value="PFE">PFE - Pfizer Inc.</option>
+                    <option value="UNH">UNH - UnitedHealth Group Inc.</option>
+                    <option value="ABBV">ABBV - AbbVie Inc.</option>
+                    <option value="TMO">TMO - Thermo Fisher Scientific Inc.</option>
+                    <!-- Finance -->
+                    <option value="JPM">JPM - JPMorgan Chase & Co.</option>
+                    <option value="BAC">BAC - Bank of America Corp.</option>
+                    <option value="GS">GS - Goldman Sachs Group Inc.</option>
+                    <option value="MS">MS - Morgan Stanley</option>
+                    <option value="WFC">WFC - Wells Fargo & Company</option>
+                    <!-- Consumer -->
+                    <option value="WMT">WMT - Walmart Inc.</option>
+                    <option value="PG">PG - The Procter & Gamble Company</option>
+                    <option value="KO">KO - The Coca-Cola Company</option>
+                    <option value="PEP">PEP - PepsiCo Inc.</option>
+                    <option value="MCD">MCD - McDonald's Corporation</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="min-relevance">Min Relevance:</label>
+                <input 
+                    type="number" 
+                    id="min-relevance" 
+                    min="0" 
+                    max="1" 
+                    step="0.1" 
+                    value="0.3"
+                >
+            </div>
+            <div class="input-group">
+                <label for="max-articles">Max Articles:</label>
+                <input 
+                    type="number" 
+                    id="max-articles" 
+                    min="1" 
+                    value="10"
+                >
+            </div>
+            <button id="process-btn" class="process-btn">🚀 Process Pipeline</button>
+        </div>
+
+        <div id="loading-indicator" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Processing pipeline...</p>
+        </div>
+
+        <div id="error-message" class="error-message hidden"></div>
+
+        <div id="pipeline-container" class="pipeline-container hidden">
+            <!-- Pipeline steps will be inserted here -->
+        </div>
+
+        <div id="final-result" class="final-result hidden">
+            <!-- Final result will be displayed here -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

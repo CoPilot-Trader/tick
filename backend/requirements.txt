@@ -38,3 +38,7 @@ mypy==1.7.1
 
 # Agent-specific dependencies should be added to individual agent requirements.txt files
 
+# News Agent dependencies
+# requests is already included above
+# Note: sentence-transformers is optional (for semantic caching)
+# sentence-transformers>=2.2.0  # Uncomment if using semantic caching
