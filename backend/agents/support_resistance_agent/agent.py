@@ -1,89 +1,52 @@
-"""
-Support/Resistance Agent - Main agent implementation.
-"""
-
-from typing import Dict, Any, Optional, List
-from core.interfaces.base_agent import BaseAgent
-
+import json
+import os
+import pandas as pd
+from ..base_agent import BaseAgent
+from .levels_algo import SupportResistanceAlgo
 
 class SupportResistanceAgent(BaseAgent):
-    """
-    Support/Resistance Agent for identifying key price levels.
-    
-    Developer: Developer 2
-    Milestone: M2 - Core Prediction Models
-    """
-    
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize Support/Resistance Agent."""
-        super().__init__(name="support_resistance_agent", config=config)
-        self.version = "1.0.0"
-    
-    def initialize(self) -> bool:
-        """
-        Initialize the Support/Resistance Agent.
+    def __init__(self, window=10):
+        super().__init__()
+        self.algo = SupportResistanceAlgo(window=window)
+        self.cached_levels = []
         
-        TODO: Implement initialization
-        - Set up DBSCAN parameters
-        - Initialize extrema detection
-        - Set up validation framework
+    def train(self, data_path: str, **kwargs):
         """
-        # TODO: Developer 2 - Implement initialization
-        self.initialized = True
-        return True
-    
-    def process(self, symbol: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        algorithm isn't 'trained' via gradient descent, but we can 
+        pre-calculate levels from historical data here.
         """
-        Detect support/resistance levels for a given symbol.
-        
-        Args:
-            symbol: Stock symbol
-            params: Optional parameters (min_strength, max_levels)
+        print(f"SRAgent: Finding levels in {data_path}...")
+        try:
+            with open(data_path, 'r') as f:
+                data = json.load(f)
+            df = pd.DataFrame(data)
+            # Ensure proper casting
+            df['high'] = df['high'].astype(float)
+            df['low'] = df['low'].astype(float)
             
-        Returns:
-            Dictionary with support/resistance levels
-        """
-        # TODO: Developer 2 - Implement processing logic
-        return {
-            "symbol": symbol,
-            "status": "not_implemented",
-            "message": "Support/Resistance Agent processing not yet implemented"
-        }
-    
-    def detect_levels(self, symbol: str, min_strength: int = 50, max_levels: int = 5) -> Dict[str, Any]:
-        """
-        Detect support and resistance levels.
-        
-        Args:
-            symbol: Stock symbol
-            min_strength: Minimum strength score (0-100)
-            max_levels: Maximum number of levels to return
-            
-        Returns:
-            Dictionary with detected levels
-        """
-        # TODO: Implement level detection
-        pass
-    
-    def validate_levels(self, symbol: str, levels: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Validate levels against historical price reactions.
-        
-        Args:
-            symbol: Stock symbol
-            levels: List of levels to validate
-            
-        Returns:
-            Dictionary with validation results
-        """
-        # TODO: Implement level validation
-        pass
-    
-    def health_check(self) -> Dict[str, Any]:
-        """Check Support/Resistance Agent health."""
-        return {
-            "status": "healthy" if self.initialized else "not_initialized",
-            "agent": self.name,
-            "version": self.version
-        }
+            self.cached_levels = self.algo.find_levels(df)
+            print(f"SRAgent: Found {len(self.cached_levels)} levels.")
+        except Exception as e:
+            print(f"SRAgent Error: {e}")
 
+    def predict(self, input_data):
+        """
+        For S/R, 'predict' might mean returning the list of active levels 
+        relevant to the current price, or just all levels.
+        """
+        # input_data is ignored in this simple version, typically we'd filter for tiers close to current price
+        return self.cached_levels
+
+    def save(self, path: str):
+        # We save the computed levels
+        with open(path, 'w') as f:
+            json.dump(self.cached_levels, f)
+        print(f"SRAgent: Levels saved to {path}")
+
+    def load(self, path: str):
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                self.cached_levels = json.load(f)
+            print(f"SRAgent: Levels loaded from {path}")
+        else:
+            print(f"SRAgent: No state found at {path}")

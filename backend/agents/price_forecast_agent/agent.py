@@ -1,92 +1,77 @@
-"""
-Price Forecast Agent - Main agent implementation.
-"""
-
-from typing import Dict, Any, Optional, List
-from core.interfaces.base_agent import BaseAgent
-
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import os
+from ..base_agent import BaseAgent
+from .model import LSTMPredictor
+from .data_loader import DataLoaderManager
 
 class PriceForecastAgent(BaseAgent):
-    """
-    Price Forecast Agent for multi-horizon price prediction.
-    
-    Developer: Developer 2
-    Milestone: M2 - Core Prediction Models
-    """
-    
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize Price Forecast Agent."""
-        super().__init__(name="price_forecast_agent", config=config)
-        self.version = "1.0.0"
-        self.supported_horizons = ["1h", "4h", "1d", "1w"]
-    
-    def initialize(self) -> bool:
-        """
-        Initialize the Price Forecast Agent.
+    def __init__(self, model_path: str = "lstm_model.pth", device: str = None):
+        super().__init__()
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
+        self.model_path = model_path
         
-        TODO: Implement initialization
-        - Load Prophet model (baseline)
-        - Load LSTM model (primary)
-        - Set up model registry
-        - Initialize training pipeline
-        """
-        # TODO: Developer 2 - Implement initialization
-        self.initialized = True
-        return True
-    
-    def process(self, symbol: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """
-        Generate price forecasts for a given symbol.
+        self.model = LSTMPredictor().to(self.device)
+        self.criterion = nn.MSELoss()
+        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
         
-        Args:
-            symbol: Stock symbol
-            params: Optional parameters (horizons, use_baseline)
+    def train(self, data_path: str, epochs: int = 10, batch_size: int = 32):
+        print(f"PriceAgent: Training on device: {self.device}")
+        
+        loader_manager = DataLoaderManager(data_path)
+        train_loader, test_loader = loader_manager.get_dataloaders(batch_size=batch_size)
+        
+        self.model.train()
+        for epoch in range(epochs):
+            total_loss = 0
+            for sequences, targets in train_loader:
+                sequences, targets = sequences.to(self.device), targets.to(self.device)
+                
+                # Forward pass
+                outputs = self.model(sequences)
+                loss = self.criterion(outputs.squeeze(), targets)
+                
+                # Backward and optimize
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+                
+                total_loss += loss.item()
             
-        Returns:
-            Dictionary with price predictions for all horizons
-        """
-        # TODO: Developer 2 - Implement processing logic
-        return {
-            "symbol": symbol,
-            "status": "not_implemented",
-            "message": "Price Forecast Agent processing not yet implemented"
-        }
-    
-    def predict(self, symbol: str, horizons: Optional[List[str]] = None, use_baseline: bool = False) -> Dict[str, Any]:
-        """
-        Generate price predictions for specified horizons.
-        
-        Args:
-            symbol: Stock symbol
-            horizons: List of horizons (default: all supported)
-            use_baseline: Use Prophet instead of LSTM
+            # avg_loss = total_loss / len(train_loader)
+            # print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.6f}")
             
-        Returns:
-            Dictionary with predictions
-        """
-        # TODO: Implement prediction logic
-        pass
-    
-    def train_models(self, symbol: str, walk_forward: bool = True) -> Dict[str, Any]:
-        """
-        Train models for a symbol.
-        
-        Args:
-            symbol: Stock symbol
-            walk_forward: Use walk-forward validation
-            
-        Returns:
-            Dictionary with training results
-        """
-        # TODO: Implement model training
-        pass
-    
-    def health_check(self) -> Dict[str, Any]:
-        """Check Price Forecast Agent health."""
-        return {
-            "status": "healthy" if self.initialized else "not_initialized",
-            "agent": self.name,
-            "version": self.version,
-            "supported_horizons": self.supported_horizons
-        }
+        print("PriceAgent: Training complete.")
+        self.save(self.model_path)
 
+    def predict(self, input_data):
+        """
+        Predicts the next value for a single sequence.
+        Args:
+            input_data: Numpy array or Tensor of shape (seq_len, input_dim) or (1, seq_len, input_dim)
+        """
+        self.model.eval()
+        with torch.no_grad():
+            sequence = input_data
+            if not isinstance(sequence, torch.Tensor):
+                sequence = torch.FloatTensor(sequence)
+            
+            if sequence.dim() == 2:
+                sequence = sequence.unsqueeze(0) # Add batch dim
+                
+            sequence = sequence.to(self.device)
+            prediction = self.model(sequence)
+            return prediction.item()
+
+    def save(self, path: str):
+        torch.save(self.model.state_dict(), path)
+        print(f"PriceAgent: Model saved to {path}")
+
+    def load(self, path: str):
+        if os.path.exists(path):
+            self.model.load_state_dict(torch.load(path, map_location=self.device))
+            self.model.eval()
+            print(f"PriceAgent: Model loaded from {path}")
+        else:
+            print(f"PriceAgent: No saved model found at {path}")

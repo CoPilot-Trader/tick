@@ -1,90 +1,48 @@
-"""
-Trend Classification Agent - Main agent implementation.
-"""
-
-from typing import Dict, Any, Optional
-from core.interfaces.base_agent import BaseAgent
-
+import os
+import joblib
+import numpy as np
+from ..base_agent import BaseAgent
+from .data_loader import TrendDataLoader
+from .model import TrendClassifier
 
 class TrendClassificationAgent(BaseAgent):
-    """
-    Trend Classification Agent for directional signals.
-    
-    Developer: Developer 2
-    Milestone: M2 - Core Prediction Models
-    """
-    
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize Trend Classification Agent."""
-        super().__init__(name="trend_classification_agent", config=config)
-        self.version = "1.0.0"
-        self.supported_timeframes = ["1h", "1d"]
-    
-    def initialize(self) -> bool:
-        """
-        Initialize the Trend Classification Agent.
+    def __init__(self, model_path: str = "trend_xgb.json"):
+        super().__init__()
+        self.model_path = model_path
+        self.model_wrapper = TrendClassifier()
         
-        TODO: Implement initialization
-        - Load LightGBM/XGBoost classifier
-        - Set up feature engineering pipeline
-        - Initialize model registry
-        """
-        # TODO: Developer 2 - Implement initialization
-        self.initialized = True
-        return True
-    
-    def process(self, symbol: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """
-        Classify trend for a given symbol.
+    def train(self, data_path: str, **kwargs):
+        print(f"TrendAgent: Loading data from {data_path}...")
+        loader = TrendDataLoader(data_path)
+        df = loader.load_data()
+        X, y = loader.prepare_features_and_targets(df)
         
-        Args:
-            symbol: Stock symbol
-            params: Optional parameters (timeframe)
-            
-        Returns:
-            Dictionary with trend classification (BUY/SELL/HOLD)
-        """
-        # TODO: Developer 2 - Implement processing logic
-        return {
-            "symbol": symbol,
-            "status": "not_implemented",
-            "message": "Trend Classification Agent processing not yet implemented"
-        }
-    
-    def classify(self, symbol: str, timeframe: str = "1d") -> Dict[str, Any]:
-        """
-        Classify trend direction.
-        
-        Args:
-            symbol: Stock symbol
-            timeframe: Timeframe (1h or 1d)
-            
-        Returns:
-            Dictionary with classification result
-        """
-        # TODO: Implement classification logic
-        pass
-    
-    def train(self, symbol: str, timeframe: str = "1d") -> Dict[str, Any]:
-        """
-        Train classifier for a symbol.
-        
-        Args:
-            symbol: Stock symbol
-            timeframe: Timeframe
-            
-        Returns:
-            Dictionary with training results
-        """
-        # TODO: Implement training logic
-        pass
-    
-    def health_check(self) -> Dict[str, Any]:
-        """Check Trend Classification Agent health."""
-        return {
-            "status": "healthy" if self.initialized else "not_initialized",
-            "agent": self.name,
-            "version": self.version,
-            "supported_timeframes": self.supported_timeframes
-        }
+        print("TrendAgent: Training XGBoost...")
+        self.model_wrapper.fit(X, y)
+        print("TrendAgent: Training complete.")
+        self.save(self.model_path)
 
+    def predict(self, input_data):
+        """
+        Input: numpy array or list of features.
+        Output: "BULLISH" or "BEARISH"
+        """
+        if isinstance(input_data, list):
+            input_data = np.array(input_data)
+        if len(input_data.shape) == 1:
+            input_data = input_data.reshape(1, -1)
+            
+        prediction = self.model_wrapper.predict(input_data)
+        return "BULLISH" if prediction[0] == 1 else "BEARISH"
+
+    def save(self, path: str):
+        # XGBoost prefers saving in JSON or UBJSON for compatibility
+        self.model_wrapper.model.save_model(path)
+        print(f"TrendAgent: Model saved to {path}")
+
+    def load(self, path: str):
+        if os.path.exists(path):
+            self.model_wrapper.model.load_model(path)
+            print(f"TrendAgent: Model loaded from {path}")
+        else:
+            print(f"TrendAgent: No model found at {path}")
