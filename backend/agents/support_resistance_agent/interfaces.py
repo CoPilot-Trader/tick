@@ -14,8 +14,12 @@ class PriceLevel(BaseModel):
     type: str  # "support" or "resistance"
     touches: int  # Number of times price touched this level
     validated: bool
+    breakout_probability: float  # 0-100% probability of breakout
     first_touch: datetime
     last_touch: datetime
+    volume: float = None  # Optional: volume at this level
+    volume_percentile: float = None  # Optional: volume percentile (0-100)
+    has_volume_confirmation: bool = False  # Optional: whether volume confirms this level
 
 
 class SupportResistanceResponse(BaseModel):

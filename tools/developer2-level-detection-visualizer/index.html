@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Detection Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Level Detection Visualizer</h1>
+            <p class="subtitle">Support & Resistance Level Detection for Stock Prices</p>
+        </header>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="ticker-select">Stock Ticker:</label>
+                <select id="ticker-select" class="ticker-select">
+                    <!-- Technology -->
+                    <option value="AAPL">AAPL - Apple Inc.</option>
+                    <option value="MSFT">MSFT - Microsoft Corporation</option>
+                    <option value="GOOGL">GOOGL - Alphabet Inc.</option>
+                    <option value="GOOG">GOOG - Alphabet Inc. (Class C)</option>
+                    <option value="AMZN">AMZN - Amazon.com Inc.</option>
+                    <option value="META">META - Meta Platforms Inc.</option>
+                    <option value="NVDA">NVDA - NVIDIA Corporation</option>
+                    <option value="TSLA">TSLA - Tesla Inc.</option>
+                    <option value="NFLX">NFLX - Netflix Inc.</option>
+                    <option value="INTC">INTC - Intel Corporation</option>
+                    <!-- Energy -->
+                    <option value="XOM">XOM - Exxon Mobil Corporation</option>
+                    <option value="CVX">CVX - Chevron Corporation</option>
+                    <option value="SLB">SLB - Schlumberger Limited</option>
+                    <option value="COP">COP - ConocoPhillips</option>
+                    <option value="EOG">EOG - EOG Resources Inc.</option>
+                    <!-- Healthcare -->
+                    <option value="JNJ">JNJ - Johnson & Johnson</option>
+                    <option value="PFE">PFE - Pfizer Inc.</option>
+                    <option value="UNH">UNH - UnitedHealth Group Inc.</option>
+                    <option value="ABBV">ABBV - AbbVie Inc.</option>
+                    <option value="TMO">TMO - Thermo Fisher Scientific Inc.</option>
+                    <!-- Finance -->
+                    <option value="JPM">JPM - JPMorgan Chase & Co.</option>
+                    <option value="BAC">BAC - Bank of America Corp.</option>
+                    <option value="GS">GS - Goldman Sachs Group Inc.</option>
+                    <option value="MS">MS - Morgan Stanley</option>
+                    <option value="WFC">WFC - Wells Fargo & Company</option>
+                    <!-- Consumer -->
+                    <option value="WMT">WMT - Walmart Inc.</option>
+                    <option value="PG">PG - The Procter & Gamble Company</option>
+                    <option value="KO">KO - The Coca-Cola Company</option>
+                    <option value="PEP">PEP - PepsiCo Inc.</option>
+                    <option value="MCD">MCD - McDonald's Corporation</option>
+                    <!-- Index -->
+                    <option value="SPY">SPY - SPDR S&P 500 ETF Trust</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="min-strength">Min Strength (0-100):</label>
+                <input 
+                    type="number" 
+                    id="min-strength" 
+                    min="0" 
+                    max="100" 
+                    step="5" 
+                    value="50"
+                >
+            </div>
+            <div class="input-group">
+                <label for="max-levels">Max Levels (1-20):</label>
+                <input 
+                    type="number" 
+                    id="max-levels" 
+                    min="1" 
+                    max="20" 
+                    value="5"
+                >
+            </div>
+            <div class="input-group">
+                <label for="timeframe-select">Timeframe:</label>
+                <select id="timeframe-select" class="ticker-select">
+                    <option value="1m">1 Minute</option>
+                    <option value="5m">5 Minutes</option>
+                    <option value="15m">15 Minutes</option>
+                    <option value="30m">30 Minutes</option>
+                    <option value="1h">1 Hour</option>
+                    <option value="4h">4 Hours</option>
+                    <option value="1d" selected>1 Day</option>
+                    <option value="1w">1 Week</option>
+                    <option value="1mo">1 Month</option>
+                    <option value="1y">1 Year</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="project-future">
+                    <input type="checkbox" id="project-future" style="margin-right: 5px;">
+                    Predict Future Levels
+                </label>
+            </div>
+            <div class="input-group" id="projection-periods-group" style="display: none;">
+                <label for="projection-periods">Projection Periods:</label>
+                <input 
+                    type="number" 
+                    id="projection-periods" 
+                    min="1" 
+                    max="100" 
+                    value="20"
+                    title="Number of periods ahead to predict (e.g., 20 days for 1d timeframe)"
+                >
+            </div>
+            <div class="input-group">
+                <label for="lookback-days">Lookback Days (optional):</label>
+                <input 
+                    type="number" 
+                    id="lookback-days" 
+                    min="1" 
+                    max="3650" 
+                    placeholder="Auto (based on timeframe)"
+                    title="Custom lookback period in days. Leave empty to use default based on timeframe."
+                >
+            </div>
+            <button id="detect-btn" class="detect-btn">🔍 Detect Levels</button>
+        </div>
+
+        <div id="loading-indicator" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Detecting support and resistance levels...</p>
+        </div>
+
+        <div id="error-message" class="error-message hidden"></div>
+
+        <!-- Current Price & Nearest Levels -->
+        <div id="price-overview" class="price-overview hidden">
+            <div class="current-price-card">
+                <div class="current-price-label">Current Price</div>
+                <div class="current-price-value" id="current-price-value">$0.00</div>
+                <div class="current-price-symbol" id="current-price-symbol"></div>
+            </div>
+            <div class="nearest-levels">
+                <div class="nearest-level support">
+                    <div class="nearest-label">Nearest Support</div>
+                    <div class="nearest-price" id="nearest-support">N/A</div>
+                    <div class="nearest-distance" id="support-distance"></div>
+                </div>
+                <div class="nearest-level resistance">
+                    <div class="nearest-label">Nearest Resistance</div>
+                    <div class="nearest-price" id="nearest-resistance">N/A</div>
+                    <div class="nearest-distance" id="resistance-distance"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Levels Container -->
+        <div id="levels-container" class="levels-container hidden">
+            <div class="levels-section">
+                <h2 class="section-title support-title">🟢 Support Levels</h2>
+                <div id="support-levels" class="levels-list">
+                    <!-- Support levels will be inserted here -->
+                </div>
+            </div>
+            <div class="levels-section">
+                <h2 class="section-title resistance-title">🔴 Resistance Levels</h2>
+                <div id="resistance-levels" class="levels-list">
+                    <!-- Resistance levels will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Predicted Future Levels Section -->
+        <div id="predicted-levels-section" class="levels-container hidden">
+            <div class="levels-section" style="grid-column: 1 / -1;">
+                <h2 class="section-title" style="color: #2196F3;">🔮 Predicted Future Levels</h2>
+                <div id="predicted-levels" class="levels-list">
+                    <!-- Predicted levels will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Metadata Section -->
+        <div id="metadata-section" class="metadata-section hidden">
+            <h3 class="metadata-title">Processing Information</h3>
+            <div class="metadata-grid" id="metadata-grid">
+                <!-- Metadata will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

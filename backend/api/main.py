@@ -36,8 +36,9 @@ async def health_check():
 
 
 # Import and include agent routers
-from api.routers import news_pipeline_visualizer
+from api.routers import news_pipeline_visualizer, support_resistance_agent
 app.include_router(news_pipeline_visualizer.router)
+app.include_router(support_resistance_agent.router)
 
 # TODO: Import and include other agent routers
 # from api.routers import news_agent, price_prediction_agent
