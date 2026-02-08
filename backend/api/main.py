@@ -37,11 +37,26 @@ async def health_check():
 
 # Import and include agent routers
 from api.routers import news_pipeline_visualizer, support_resistance_agent
+from api.routers import price_forecast, trend_classification
+from api.routers import sentiment, fusion
+from api.routers import backtest, alerts
+from api.routers import data
+
 app.include_router(news_pipeline_visualizer.router)
 app.include_router(support_resistance_agent.router)
 
-# TODO: Import and include other agent routers
-# from api.routers import news_agent, price_prediction_agent
-# app.include_router(news_agent.router, prefix="/api/v1/news", tags=["news"])
-# app.include_router(price_prediction_agent.router, prefix="/api/v1/predictions", tags=["predictions"])
+# M2 Prediction Agents
+app.include_router(price_forecast.router)
+app.include_router(trend_classification.router)
+
+# M3 Sentiment & Fusion Agents
+app.include_router(sentiment.router)
+app.include_router(fusion.router)
+
+# M4 Backtesting & Alerts
+app.include_router(backtest.router)
+app.include_router(alerts.router)
+
+# Data endpoints
+app.include_router(data.router)
 

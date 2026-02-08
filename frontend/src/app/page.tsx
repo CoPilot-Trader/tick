@@ -9,7 +9,7 @@ import StockOverview from '@/components/StockOverview';
 import ModernPriceChart from '@/components/ModernPriceChart';
 import ComparisonChart from '@/components/ComparisonChart';
 import PredictionDetail from '@/components/PredictionDetail';
-import { ChevronDown, LayoutDashboard, Newspaper } from 'lucide-react';
+import { ChevronDown, LayoutDashboard, Newspaper, Layers, Database, Zap, LineChart, Bell } from 'lucide-react';
 
 const defaultFilters: GraphFilters = {
   showActualPrice: true,
@@ -27,7 +27,12 @@ const defaultFilters: GraphFilters = {
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/fusion', label: 'Trading Signals', icon: Zap },
+  { href: '/backtest', label: 'Backtesting', icon: LineChart },
+  { href: '/alerts', label: 'Alerts', icon: Bell },
   { href: '/news', label: 'News & Sentiment', icon: Newspaper },
+  { href: '/levels', label: 'Support & Resistance', icon: Layers },
+  { href: '/pipeline', label: 'Data Pipeline', icon: Database },
 ];
 
 export default function Home() {
@@ -92,10 +97,10 @@ export default function Home() {
               {navOpen && (
                 <>
                   <div
-                    className="fixed inset-0 z-10"
+                    className="fixed inset-0 z-40"
                     onClick={() => setNavOpen(false)}
                   />
-                  <div className="absolute left-0 z-20 mt-1 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden">
+                  <div className="absolute left-0 z-50 mt-1 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-hidden">
                     {navItems.map((item) => (
                       <Link
                         key={item.href}

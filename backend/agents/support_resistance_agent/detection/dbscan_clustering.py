@@ -17,11 +17,62 @@ How it works:
 """
 
 import numpy as np
-from sklearn.cluster import DBSCAN
 from typing import List, Dict, Any
 from ..utils.logger import get_logger
 
+# Optional sklearn import with fallback
+try:
+    from sklearn.cluster import DBSCAN
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+
 logger = get_logger(__name__)
+
+
+def _simple_cluster(prices: np.ndarray, eps: float, min_samples: int) -> np.ndarray:
+    """
+    Simple distance-based clustering fallback when sklearn is not available.
+
+    Groups points within eps distance of each other.
+
+    Args:
+        prices: 1-D array of price values
+        eps: Maximum distance between points in same cluster
+        min_samples: Minimum number of points to form a cluster
+
+    Returns:
+        Array of cluster labels (-1 for noise)
+    """
+    n = len(prices)
+    labels = np.full(n, -1, dtype=int)  # -1 means noise
+    cluster_id = 0
+
+    visited = np.zeros(n, dtype=bool)
+
+    for i in range(n):
+        if visited[i]:
+            continue
+
+        # Find all points within eps distance
+        neighbors = []
+        for j in range(n):
+            if abs(prices[i] - prices[j]) <= eps:
+                neighbors.append(j)
+
+        # If enough neighbors, form a cluster
+        if len(neighbors) >= min_samples:
+            # Mark all neighbors as part of this cluster
+            for j in neighbors:
+                if labels[j] == -1:  # Only assign if not already in a cluster
+                    labels[j] = cluster_id
+                    visited[j] = True
+
+            cluster_id += 1
+        else:
+            visited[i] = True
+
+    return labels
 
 
 class DBSCANClusterer:
@@ -91,11 +142,14 @@ class DBSCANClusterer:
         median_price = np.median(prices)
         scaled_eps = self.eps * median_price
         
-        logger.debug(f"Running DBSCAN: {len(prices)} points, scaled_eps={scaled_eps:.2f}")
-        clustering = DBSCAN(eps=scaled_eps, min_samples=self.min_samples).fit(prices_2d)
-        
-        # Get cluster labels
-        labels = clustering.labels_
+        logger.debug(f"Running clustering: {len(prices)} points, scaled_eps={scaled_eps:.2f}")
+
+        if SKLEARN_AVAILABLE:
+            clustering = DBSCAN(eps=scaled_eps, min_samples=self.min_samples).fit(prices_2d)
+            labels = clustering.labels_
+        else:
+            logger.info("sklearn not available, using simple clustering fallback")
+            labels = _simple_cluster(prices, scaled_eps, self.min_samples)
         
         # Group points by cluster (keep track of indices for timestamp access)
         clusters = {}

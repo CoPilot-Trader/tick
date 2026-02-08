@@ -77,12 +77,15 @@ export default function ModernPriceChart({
     const points: ChartDataPoint[] = [];
     const now = new Date();
 
-    // Add historical data (actual prices) - last 24 hours
-    const historical = data.historical_data.slice(-288); // 5-min intervals for 24h
+    // Add historical data (actual prices)
+    const historical = data.historical_data;
+    const today = new Date();
     historical.forEach((point) => {
+      const pointDate = new Date(point.timestamp);
+      const isToday = pointDate.toDateString() === today.toDateString();
       points.push({
         timestamp: point.timestamp,
-        time: format(new Date(point.timestamp), 'HH:mm'),
+        time: isToday ? format(pointDate, 'HH:mm') : format(pointDate, 'MM/dd HH:mm'),
         actual: point.close,
         predicted: null,
         upper_bound: null,
@@ -105,9 +108,10 @@ export default function ModernPriceChart({
     if (lastActual) {
       const firstPrediction = data.predictions[0];
       if (firstPrediction) {
+        const nowIsToday = now.toDateString() === today.toDateString();
         points.push({
           timestamp: now.toISOString(),
-          time: format(now, 'HH:mm'),
+          time: nowIsToday ? format(now, 'HH:mm') : format(now, 'MM/dd HH:mm'),
           actual: lastActual.close,
           predicted: firstPrediction.predicted_price,
           upper_bound: firstPrediction.upper_bound,
@@ -127,11 +131,13 @@ export default function ModernPriceChart({
       }
     }
 
-    // Add predictions (every 5 minutes, showing every 6th point for readability = 30min intervals)
-    data.predictions.filter((_, index) => index % 6 === 0).forEach((prediction) => {
+    // Add all prediction points (6 points at 10-min intervals for 1 hour)
+    data.predictions.forEach((prediction) => {
+      const predDate = new Date(prediction.timestamp);
+      const isToday = predDate.toDateString() === today.toDateString();
       points.push({
         timestamp: prediction.timestamp,
-        time: format(new Date(prediction.timestamp), 'HH:mm'),
+        time: isToday ? format(predDate, 'HH:mm') : format(predDate, 'MM/dd HH:mm'),
         actual: null,
         predicted: prediction.predicted_price,
         upper_bound: prediction.upper_bound,

@@ -21,8 +21,14 @@ python-dateutil==2.8.2  # For date parsing in level projection
 
 # Machine Learning (common dependencies)
 scikit-learn==1.3.2
-lightgbm==4.1.0  # For ML-based future level prediction (optional - graceful fallback if not available)
-xgboost==2.0.3  # Alternative ML library (optional - graceful fallback if not available)
+lightgbm==4.1.0  # For ML-based level prediction and trend classification
+xgboost==2.0.3  # Alternative ML library for trend classification
+joblib==1.3.2  # For model serialization
+
+# Deep Learning & Time Series (M2 - Price Forecast Agent)
+# Note: These are optional - agents gracefully fall back if not available
+# tensorflow>=2.13.0  # For LSTM model (optional - requires significant disk space)
+prophet>=1.1.1  # For Prophet baseline model
 
 # Environment & Config
 python-dotenv==1.0.0

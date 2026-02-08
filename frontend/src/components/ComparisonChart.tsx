@@ -86,7 +86,7 @@ export default function ComparisonChart({
     filteredHistorical.forEach((point) => {
       const chartPoint: ChartDataPoint = {
         timestamp: point.timestamp,
-        time: format(new Date(point.timestamp), 'HH:mm'),
+        time: format(new Date(point.timestamp), 'MMM dd'),
       };
 
       // Add actual prices for all stocks at this timestamp
@@ -121,7 +121,7 @@ export default function ComparisonChart({
     if (historicalEnd && baseStock.predictions.length > 0) {
       const transitionPoint: ChartDataPoint = {
         timestamp: now.toISOString(),
-        time: format(now, 'HH:mm'),
+        time: format(now, 'MMM dd'),
       };
 
       stocksData.forEach((stock, stockIndex) => {
@@ -148,7 +148,7 @@ export default function ComparisonChart({
     filteredPredictions.forEach((prediction) => {
       const chartPoint: ChartDataPoint = {
         timestamp: prediction.timestamp,
-        time: format(new Date(prediction.timestamp), 'HH:mm'),
+        time: format(new Date(prediction.timestamp), 'MMM dd'),
       };
 
       // Add predicted prices for all stocks at this timestamp

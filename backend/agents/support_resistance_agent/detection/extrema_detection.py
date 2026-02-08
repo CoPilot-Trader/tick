@@ -19,11 +19,46 @@ Implementation:
 
 import pandas as pd
 import numpy as np
-from scipy.signal import argrelextrema
 from typing import List, Dict, Any, Tuple
 from ..utils.logger import get_logger
 
+# Optional scipy import with fallback
+try:
+    from scipy.signal import argrelextrema
+    SCIPY_AVAILABLE = True
+except ImportError:
+    SCIPY_AVAILABLE = False
+
 logger = get_logger(__name__)
+
+
+def _numpy_argrelextrema(data: np.ndarray, comparator, order: int = 1):
+    """
+    Fallback implementation of argrelextrema when scipy is not available.
+
+    Finds indices of relative extrema (local max/min) in 1-D data.
+
+    Args:
+        data: 1-D numpy array of values
+        comparator: np.greater for maxima, np.less for minima
+        order: Number of points on each side to use for comparison
+
+    Returns:
+        Tuple containing array of indices of extrema
+    """
+    indices = []
+    n = len(data)
+
+    for i in range(order, n - order):
+        is_extrema = True
+        for j in range(1, order + 1):
+            if not comparator(data[i], data[i - j]) or not comparator(data[i], data[i + j]):
+                is_extrema = False
+                break
+        if is_extrema:
+            indices.append(i)
+
+    return (np.array(indices),)
 
 
 class ExtremaDetector:
@@ -77,10 +112,13 @@ class ExtremaDetector:
         
         highs = df['high'].values
         
-        # Use scipy.signal.argrelextrema for peak detection
+        # Use scipy.signal.argrelextrema for peak detection (or fallback if not available)
         # order parameter = window_size (number of points on each side to compare)
         # This matches the specification requirement
-        peak_indices = argrelextrema(highs, np.greater, order=self.window_size)[0]
+        if SCIPY_AVAILABLE:
+            peak_indices = argrelextrema(highs, np.greater, order=self.window_size)[0]
+        else:
+            peak_indices = _numpy_argrelextrema(highs, np.greater, order=self.window_size)[0]
         
         # Apply min_distance filter to avoid peaks too close together
         if len(peak_indices) > 0 and self.min_distance > 0:
@@ -129,10 +167,13 @@ class ExtremaDetector:
         
         lows = df['low'].values
         
-        # Use scipy.signal.argrelextrema for valley detection
+        # Use scipy.signal.argrelextrema for valley detection (or fallback if not available)
         # order parameter = window_size (number of points on each side to compare)
         # This matches the specification requirement
-        valley_indices = argrelextrema(lows, np.less, order=self.window_size)[0]
+        if SCIPY_AVAILABLE:
+            valley_indices = argrelextrema(lows, np.less, order=self.window_size)[0]
+        else:
+            valley_indices = _numpy_argrelextrema(lows, np.less, order=self.window_size)[0]
         
         # Apply min_distance filter to avoid valleys too close together
         if len(valley_indices) > 0 and self.min_distance > 0:
