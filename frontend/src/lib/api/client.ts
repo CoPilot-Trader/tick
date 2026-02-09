@@ -396,7 +396,7 @@ export class ApiClient {
   // ==========================================================================
 
   async getSentiment(symbol: string): Promise<SentimentResponse> {
-    return this.get(`/api/v1/sentiment/${symbol}/aggregate`);
+    return this.get(`/api/v1/sentiment/${symbol}`);
   }
 
   async getNewsPipeline(symbol: string, minRelevance: number = 0.3, maxArticles: number = 10): Promise<any> {

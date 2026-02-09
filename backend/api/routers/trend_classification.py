@@ -139,9 +139,9 @@ async def get_classification(
         start_date = end_date - timedelta(days=days)
 
         df = data_agent.fetch_historical_sync(
-            ticker=ticker,
-            start=start_date.strftime("%Y-%m-%d"),
-            end=end_date.strftime("%Y-%m-%d"),
+            symbol=ticker,
+            start_date=start_date,
+            end_date=end_date,
             timeframe=timeframe
         )
 
@@ -205,9 +205,9 @@ async def train_classifiers(
         start_date = end_date - timedelta(days=request.days)
 
         df = data_agent.fetch_historical_sync(
-            ticker=ticker,
-            start=start_date.strftime("%Y-%m-%d"),
-            end=end_date.strftime("%Y-%m-%d"),
+            symbol=ticker,
+            start_date=start_date,
+            end_date=end_date,
             timeframe=request.timeframe
         )
 
@@ -257,9 +257,9 @@ async def cross_validate(
         start_date = end_date - timedelta(days=days)
 
         df = data_agent.fetch_historical_sync(
-            ticker=ticker,
-            start=start_date.strftime("%Y-%m-%d"),
-            end=end_date.strftime("%Y-%m-%d"),
+            symbol=ticker,
+            start_date=start_date,
+            end_date=end_date,
             timeframe=timeframe
         )
 
@@ -307,9 +307,9 @@ async def compare_models(
         start_date = end_date - timedelta(days=days)
 
         df = data_agent.fetch_historical_sync(
-            ticker=ticker,
-            start=start_date.strftime("%Y-%m-%d"),
-            end=end_date.strftime("%Y-%m-%d"),
+            symbol=ticker,
+            start_date=start_date,
+            end_date=end_date,
             timeframe=timeframe
         )
 

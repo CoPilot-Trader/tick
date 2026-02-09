@@ -9,8 +9,32 @@ Provides REST endpoints for:
 
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
+import json
+import numpy as np
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+
+
+def _sanitize(obj):
+    """Convert numpy/pandas types to Python native for JSON serialization."""
+    if isinstance(obj, dict):
+        return {k: _sanitize(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize(v) for v in obj]
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, (np.floating,)):
+        return float(obj)
+    if isinstance(obj, (np.bool_,)):
+        return bool(obj)
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    if hasattr(obj, 'isoformat'):
+        return obj.isoformat()
+    if hasattr(obj, 'item'):
+        return obj.item()
+    return obj
 
 # Import agents
 import sys
@@ -211,7 +235,7 @@ async def run_backtest(ticker: str, request: BacktestRequest) -> Dict[str, Any]:
                 "total_trades": result.get("total_trades")
             }
 
-        return result
+        return JSONResponse(content=_sanitize(result))
 
     except HTTPException:
         raise
@@ -317,7 +341,7 @@ async def run_walk_forward(ticker: str, request: WalkForwardRequest) -> Dict[str
             step_days=request.step_days
         )
 
-        return result
+        return JSONResponse(content=_sanitize(result))
 
     except HTTPException:
         raise
