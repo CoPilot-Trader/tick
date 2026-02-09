@@ -127,16 +127,29 @@ class YFinanceCollector(BaseCollector):
         try:
             # Create ticker object
             stock = yf.Ticker(ticker)
-            
-            # Fetch data
-            df = stock.history(
-                start=start_date.strftime("%Y-%m-%d"),
-                end=end_date.strftime("%Y-%m-%d"),
-                interval=yf_interval,
-                auto_adjust=True,  # Adjust for splits/dividends
-                prepost=False,  # Regular hours only
-            )
-            
+
+            # For intraday timeframes, use period-based fetch to handle
+            # weekends/holidays (explicit date ranges return empty on non-trading days)
+            is_intraday = yf_interval in ("1m", "5m", "15m", "30m", "1h", "4h")
+            requested_days = max(1, (end_date - start_date).days)
+
+            if is_intraday and requested_days <= 5:
+                # Use period='5d' which auto-returns most recent trading day(s)
+                df = stock.history(
+                    period=f"{min(requested_days + 2, 60)}d",
+                    interval=yf_interval,
+                    auto_adjust=True,
+                    prepost=False,
+                )
+            else:
+                df = stock.history(
+                    start=start_date.strftime("%Y-%m-%d"),
+                    end=end_date.strftime("%Y-%m-%d"),
+                    interval=yf_interval,
+                    auto_adjust=True,
+                    prepost=False,
+                )
+
             if df.empty:
                 return CollectorResult(
                     success=False,
