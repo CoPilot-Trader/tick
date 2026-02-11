@@ -109,7 +109,14 @@ Thumbs.db
 data/raw/
 data/processed/
 models/saved/
+**/saved_models/
 *.pkl
 *.h5
 *.ckpt
+
+# Claude Code sessions
+.claude/
+
+# Client repo copy
+_client-repo/
 
