@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies for scipy, lightgbm, etc.
+# Install system dependencies for scipy, lightgbm, prophet, etc.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgomp1 \
