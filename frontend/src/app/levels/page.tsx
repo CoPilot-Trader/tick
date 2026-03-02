@@ -310,7 +310,7 @@ export default function LevelsPage() {
           {levelsData && !loading && (
             <div className="space-y-6">
               {/* Overview Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 {/* Current Price */}
                 <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-gray-400 text-xs font-medium mb-2">
@@ -424,7 +424,7 @@ export default function LevelsPage() {
                     <BarChart3 className="w-4 h-4" />
                     Detection Metadata
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
                     <MetricCard label="Peaks Detected" value={levelsData.metadata.peaks_detected} />
                     <MetricCard label="Valleys Detected" value={levelsData.metadata.valleys_detected} />
                     <MetricCard label="Data Points" value={levelsData.metadata.data_points} />
@@ -510,7 +510,7 @@ function LevelCard({
       </div>
 
       {/* Details Grid */}
-      <div className="grid grid-cols-3 gap-2 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 text-xs">
         <div>
           <span className="text-gray-500">Touches:</span>
           <span className="text-white ml-1">{level.touches}</span>

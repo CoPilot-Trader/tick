@@ -25,21 +25,29 @@ export interface FusionSignalResponse {
       score: number;
       confidence: number;
       predicted_price?: number;
+      weight?: number;
+      status?: string;
     };
     trend_classification?: {
       signal: string;
       score: number;
       confidence: number;
+      weight?: number;
+      status?: string;
     };
     support_resistance?: {
       signal: string;
       score: number;
       confidence: number;
+      weight?: number;
+      status?: string;
     };
     sentiment?: {
       signal: string;
       score: number;
       confidence: number;
+      weight?: number;
+      status?: string;
     };
   };
   reasoning: string;

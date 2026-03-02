@@ -42,9 +42,9 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-      <div className="bg-gray-900 border border-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">
+      <div className="bg-gray-900 border border-gray-800 rounded-lg shadow-xl w-full max-w-[95vw] sm:max-w-2xl mx-2 sm:mx-4 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-gray-900 border-b border-gray-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <h2 className="text-lg sm:text-xl font-semibold text-white">
             Prediction Details
           </h2>
           <button
@@ -55,7 +55,7 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Timestamp */}
           <div>
             <p className="text-sm text-gray-400">Time</p>
@@ -70,10 +70,10 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
               <BarChart3 className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-300">Price Prediction</h3>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <p className="text-sm text-blue-400">Predicted Price</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-xl sm:text-2xl font-bold text-white">
                   ${prediction.predicted_price.toFixed(2)}
                 </p>
               </div>
@@ -99,6 +99,7 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
           </div>
 
           {/* Trend Classification */}
+          {prediction.trend && (
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="w-5 h-5 text-gray-400" />
@@ -112,7 +113,7 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
                 <span className="font-semibold">{prediction.trend.signal}</span>
                 <span className="text-sm">({(prediction.trend.confidence * 100).toFixed(1)}% confidence)</span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                 <div className="text-center p-2 bg-gray-900 rounded border border-gray-700">
                   <p className="text-xs text-gray-400">BUY</p>
                   <p className="font-semibold text-white">
@@ -134,8 +135,10 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
               </div>
             </div>
           </div>
+          )}
 
           {/* News Sentiment */}
+          {prediction.sentiment && (
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center gap-2 mb-3">
               <MessageSquare className="w-5 h-5 text-gray-400" />
@@ -195,7 +198,8 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
               )}
             </div>
           </div>
-          
+          )}
+
           {/* Technical Indicators */}
           {prediction.technical_indicators && (
             <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
@@ -203,7 +207,7 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
                 <BarChart3 className="w-5 h-5 text-gray-400" />
                 <h3 className="font-semibold text-white">Technical Indicators</h3>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {prediction.technical_indicators.rsi !== undefined && (
                   <div>
                     <p className="text-xs text-gray-400">RSI</p>
@@ -258,16 +262,17 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
           )}
 
           {/* Support/Resistance Levels */}
+          {(prediction.support_levels?.length || prediction.resistance_levels?.length) ? (
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-5 h-5 text-gray-400" />
               <h3 className="font-semibold text-white">Support & Resistance Levels</h3>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-semibold text-success-400 mb-2">Support Levels</p>
                 <div className="space-y-2">
-                  {prediction.support_levels.map((level, index) => (
+                  {(prediction.support_levels || []).map((level, index) => (
                     <div key={index} className="bg-gray-900 rounded p-2 border border-success-800">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-white">
@@ -287,7 +292,7 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
               <div>
                 <p className="text-sm font-semibold text-danger-400 mb-2">Resistance Levels</p>
                 <div className="space-y-2">
-                  {prediction.resistance_levels.map((level, index) => (
+                  {(prediction.resistance_levels || []).map((level, index) => (
                     <div key={index} className="bg-gray-900 rounded p-2 border border-danger-800">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-white">
@@ -306,8 +311,10 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
               </div>
             </div>
           </div>
+          ) : null}
 
           {/* Fused Signal */}
+          {prediction.fused_signal && (
           <div className={`rounded-lg p-4 border ${getSignalColor(prediction.fused_signal)}`}>
             <div className="flex items-center justify-between">
               <div>
@@ -322,11 +329,12 @@ export default function PredictionDetail({ prediction, onClose }: PredictionDeta
               <div className="text-right">
                 <p className="text-sm text-gray-400 mb-1">Confidence</p>
                 <p className="text-2xl font-bold text-white">
-                  {(prediction.fused_confidence * 100).toFixed(1)}%
+                  {((prediction.fused_confidence ?? 0) * 100).toFixed(1)}%
                 </p>
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

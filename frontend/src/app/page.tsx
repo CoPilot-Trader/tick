@@ -138,12 +138,12 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden grid grid-rows-[auto_1fr] gap-4 p-4">
+      <main className="flex-1 overflow-hidden grid grid-rows-[auto_1fr] gap-2 sm:gap-4 p-2 sm:p-4">
         {/* Stock Overview - Show primary stock or compact comparison summary */}
         <div className="flex-shrink-0">
           {isComparisonMode ? (
             <div className="bg-gray-900 border border-gray-800 rounded-lg px-3 py-2">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <span className="text-xs text-gray-400 font-medium">Comparison:</span>
                 {stocksData.map((stock, index) => {
                   const isPositive = stock.price_change >= 0;

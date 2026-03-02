@@ -348,7 +348,7 @@ export default function NewsPage() {
                         {pipelineData.total_duration_ms}ms
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                       {/* Symbol */}
                       <ResultCard label="Symbol" value={pipelineData.final_result.symbol} />
 
@@ -430,7 +430,7 @@ export default function NewsPage() {
           </div>
 
           {/* Right Column - News Feed */}
-          <div className="lg:w-[420px] flex-shrink-0">
+          <div className="w-full lg:w-[420px] flex-shrink-0">
             <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden sticky top-20">
               <div className="p-4 border-b border-gray-800 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">

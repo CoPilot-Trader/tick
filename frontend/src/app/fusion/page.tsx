@@ -249,10 +249,10 @@ export default function FusionPage() {
             <div className="space-y-6">
               {/* Main Signal Card */}
               <div className={`bg-gray-900 border ${getSignalColor(fusionData.signal).border} rounded-xl overflow-hidden`}>
-                <div className={`${getSignalColor(fusionData.signal).bg} p-6`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-16 h-16 rounded-xl ${getSignalColor(fusionData.signal).bg} border ${getSignalColor(fusionData.signal).border} flex items-center justify-center ${getSignalColor(fusionData.signal).text}`}>
+                <div className={`${getSignalColor(fusionData.signal).bg} p-4 sm:p-6`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl ${getSignalColor(fusionData.signal).bg} border ${getSignalColor(fusionData.signal).border} flex items-center justify-center ${getSignalColor(fusionData.signal).text} flex-shrink-0`}>
                         {getSignalIcon(fusionData.signal)}
                       </div>
                       <div>
@@ -265,17 +265,17 @@ export default function FusionPage() {
                             </span>
                           )}
                         </div>
-                        <div className={`text-4xl font-bold ${getSignalColor(fusionData.signal).text}`}>
+                        <div className={`text-2xl sm:text-4xl font-bold ${getSignalColor(fusionData.signal).text}`}>
                           {fusionData.signal}
                         </div>
-                        <div className="text-gray-400 text-sm mt-1">
+                        <div className="text-gray-400 text-xs sm:text-sm mt-1">
                           {fusionData.symbol} - {new Date(fusionData.timestamp).toLocaleString()}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                       <div className="text-xs text-gray-400 mb-1">Confidence</div>
-                      <div className={`text-3xl font-bold ${getConfidenceLevel(fusionData.confidence).color}`}>
+                      <div className={`text-2xl sm:text-3xl font-bold ${getConfidenceLevel(fusionData.confidence).color}`}>
                         {(fusionData.confidence * 100).toFixed(1)}%
                       </div>
                       <div className={`text-sm ${getConfidenceLevel(fusionData.confidence).color}`}>
@@ -286,7 +286,7 @@ export default function FusionPage() {
                 </div>
 
                 {/* Fused Score */}
-                <div className="p-6 border-t border-gray-800">
+                <div className="p-4 sm:p-6 border-t border-gray-800">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm text-gray-400">Fused Score</span>
                     <span className={`text-lg font-bold ${getScoreColor(fusionData.fused_score)}`}>
@@ -312,7 +312,7 @@ export default function FusionPage() {
               </div>
 
               {/* Component Breakdown */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Price Forecast */}
                 <ComponentCard
                   title="Price Forecast"
@@ -408,6 +408,10 @@ function ComponentCard({
     score: number;
     confidence: number;
     predicted_price?: number;
+    weight?: number;
+    status?: string;
+    signal_value?: number;
+    contribution?: number;
   };
   weight?: number;
 }) {

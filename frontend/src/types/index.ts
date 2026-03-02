@@ -70,12 +70,12 @@ export interface PredictionPoint {
   confidence: number;
   upper_bound: number;
   lower_bound: number;
-  trend: TrendClassification;
-  sentiment: SentimentData;
-  support_levels: PriceLevel[];
-  resistance_levels: PriceLevel[];
-  fused_signal: "BUY" | "SELL" | "HOLD";
-  fused_confidence: number;
+  trend?: TrendClassification;
+  sentiment?: SentimentData;
+  support_levels?: PriceLevel[];
+  resistance_levels?: PriceLevel[];
+  fused_signal?: "BUY" | "SELL" | "HOLD";
+  fused_confidence?: number;
   technical_indicators?: TechnicalIndicator;
   news_events?: NewsEvent[];
   timing_score?: number;

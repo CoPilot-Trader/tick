@@ -165,7 +165,7 @@ export default function AlertsPage() {
         <div className="max-w-[1400px] mx-auto">
           {/* Summary Cards */}
           {summary && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-gray-400 text-xs font-medium mb-2">
                   <Bell className="w-4 h-4" />
@@ -390,10 +390,10 @@ function AlertCard({ alert, onAcknowledge }: { alert: Alert; onAcknowledge: () =
   const colors = getPriorityColor(alert.priority);
 
   return (
-    <div className={`p-4 hover:bg-gray-800/50 transition-colors ${!alert.acknowledged ? colors.bg : ''}`}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
+    <div className={`p-3 sm:p-4 hover:bg-gray-800/50 transition-colors ${!alert.acknowledged ? colors.bg : ''}`}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-2 flex-wrap">
             <span className={`px-2 py-0.5 rounded text-xs font-semibold uppercase ${colors.bg} ${colors.text}`}>
               {alert.priority}
             </span>

@@ -344,8 +344,8 @@ export function generateMockStockData(symbol: string): StockData {
     price_change_percent: priceChangePercent,
     historical_data: historicalData,
     predictions,
-    support_levels: latestPrediction.support_levels,
-    resistance_levels: latestPrediction.resistance_levels,
+    support_levels: latestPrediction.support_levels || [],
+    resistance_levels: latestPrediction.resistance_levels || [],
     last_updated: new Date().toISOString(),
   };
 }

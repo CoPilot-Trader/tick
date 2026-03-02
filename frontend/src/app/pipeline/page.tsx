@@ -132,7 +132,7 @@ function FeatureCategory({
         </div>
         <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? 'rotate-90' : ''}`} />
       </button>
-      <div className="px-4 py-3 grid grid-cols-2 gap-2">
+      <div className="px-3 sm:px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
         {displayEntries.map(([key, value]) => (
           <div key={key} className="flex items-center justify-between py-1.5 px-3 bg-gray-800/30 rounded-lg">
             <span className="text-xs text-gray-400 font-mono">{key}</span>
@@ -340,9 +340,9 @@ export default function PipelinePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto p-4 space-y-6">
+      <main className="max-w-7xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
         {/* Health Status Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           {/* Data Agent Card */}
           <Card className="p-4">
             <div className="flex items-start justify-between mb-4">
@@ -454,7 +454,7 @@ export default function PipelinePage() {
               {backfillResult.error ? (
                 <p className="text-red-400 text-sm">{backfillResult.error}</p>
               ) : (
-                <div className="grid grid-cols-4 gap-4 text-center">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
                   <div>
                     <p className="text-2xl font-bold text-emerald-400">{backfillResult.tickers}</p>
                     <p className="text-xs text-gray-400">Tickers</p>

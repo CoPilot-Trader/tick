@@ -27,12 +27,12 @@ export default function GraphFilters({ filters, onFilterChange }: GraphFiltersPr
   ];
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
       {filterButtons.map((filter) => (
         <button
           key={filter.key}
           onClick={() => updateFilter(filter.key, !filters[filter.key])}
-          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-all ${
             filters[filter.key]
               ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
               : 'bg-gray-800 text-gray-400 hover:bg-gray-750 hover:text-gray-300 border border-gray-700'

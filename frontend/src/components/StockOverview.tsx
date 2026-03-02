@@ -13,15 +13,15 @@ export default function StockOverview({ data }: StockOverviewProps) {
   const latestPrediction = data.predictions[0];
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-lg px-3 sm:px-4 py-2">
+      <div className="flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div>
-            <h2 className="text-lg font-bold text-white">{data.symbol}</h2>
-            <p className="text-xs text-gray-400">{data.name}</p>
+            <h2 className="text-base sm:text-lg font-bold text-white">{data.symbol}</h2>
+            <p className="text-xs text-gray-400 hidden sm:block">{data.name}</p>
           </div>
-          <div className="border-l border-gray-800 pl-4">
-            <p className="text-xl font-bold text-white">
+          <div className="border-l border-gray-800 pl-2 sm:pl-4">
+            <p className="text-lg sm:text-xl font-bold text-white">
               ${data.current_price.toFixed(2)}
             </p>
             <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-success-400' : 'text-danger-400'}`}>
@@ -34,7 +34,7 @@ export default function StockOverview({ data }: StockOverviewProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-1.5">
             <BarChart3 className="w-3 h-3 text-gray-400" />
             <span className="text-xs text-gray-400">Support:</span>
