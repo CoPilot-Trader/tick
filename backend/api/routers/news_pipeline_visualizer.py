@@ -91,13 +91,24 @@ def _get_agents():
         print(f"[News Agent] Initialized collectors: {', '.join(collector_names)}")
     
         if _llm_agent is None:
+            openai_key = os.getenv("OPENAI_API_KEY", "")
+            has_openai = bool(openai_key and openai_key.strip())
+
             # Try to enable cache, but disable if sentence-transformers is not available
             try:
                 import sentence_transformers
                 use_cache = True
             except ImportError:
                 use_cache = False
-            _llm_agent = LLMSentimentAgent(config={"use_mock_data": True, "use_cache": use_cache})
+
+            llm_config = {
+                "use_mock_data": not has_openai,
+                "use_cache": use_cache,
+            }
+            if has_openai:
+                llm_config["openai_api_key"] = openai_key.strip()
+
+            _llm_agent = LLMSentimentAgent(config=llm_config)
             _llm_agent.initialize()
     
     if _aggregator_agent is None:

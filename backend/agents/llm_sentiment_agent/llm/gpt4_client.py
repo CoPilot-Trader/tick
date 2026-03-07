@@ -125,66 +125,93 @@ class GPT4Client:
     def analyze_sentiment(self, article: Dict[str, Any], symbol: str, prompt: Optional[str] = None) -> Dict[str, Any]:
         """
         Analyze sentiment for an article using GPT-4.
-        
+
         Args:
             article: News article dictionary
             symbol: Stock symbol
             prompt: Optional formatted prompt (if not provided, will be generated)
-        
+
         Returns:
-            Dictionary with sentiment analysis result:
-            {
-                "sentiment_score": float (-1.0 to +1.0),
-                "sentiment_label": str (positive/neutral/negative),
-                "confidence": float (0.0 to 1.0),
-                "reasoning": str,
-                "model": str,
-                "cached": bool,
-                "processed_at": str
-            }
-        
-        Raises:
-            ConnectionError: If API request fails
-            ValueError: If response cannot be parsed
-            KeyError: If API key is invalid
-        
-        Example:
-            from llm.prompt_templates import PromptTemplates
-            prompt = PromptTemplates.get_sentiment_prompt(article, "AAPL")
-            response = client.analyze_sentiment(article, "AAPL", prompt)
+            Dictionary with sentiment analysis result
         """
-        # TODO: Implement GPT-4 API call
-        # 1. Get OpenAI client
-        # 2. Make API call with prompt
-        # 3. Handle errors (rate limits, invalid key, etc.)
-        # 4. Parse response
-        # 5. Extract sentiment data
-        # 6. Return formatted result
-        
-        # Placeholder implementation
-        raise NotImplementedError("GPT4Client.analyze_sentiment not yet implemented. Use MockGPT4Client for testing.")
+        try:
+            client = self._get_client()
+
+            title = article.get("title", "")
+            content = article.get("content", article.get("summary", title))
+
+            if not prompt:
+                prompt = (
+                    f"Analyze the sentiment of this financial news article about {symbol}.\n\n"
+                    f"Title: {title}\n"
+                    f"Content: {content[:1500]}\n\n"
+                    "Respond ONLY with a JSON object (no markdown, no extra text):\n"
+                    '{"sentiment_score": <float -1.0 to 1.0>, '
+                    '"sentiment_label": "<positive|neutral|negative>", '
+                    '"confidence": <float 0.0 to 1.0>, '
+                    '"reasoning": "<brief explanation>"}'
+                )
+
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a financial sentiment analyst. Analyze stock market news "
+                            "and return sentiment scores as JSON. Be precise and concise."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+            )
+
+            response_text = response.choices[0].message.content
+            parsed = self._parse_response(response_text)
+
+            return {
+                "sentiment_score": parsed["sentiment_score"],
+                "sentiment_label": parsed["sentiment_label"],
+                "confidence": parsed["confidence"],
+                "reasoning": parsed.get("reasoning", ""),
+                "model": self.model,
+                "cached": False,
+                "processed_at": datetime.utcnow().isoformat() + "Z",
+            }
+
+        except ImportError:
+            raise
+        except Exception as e:
+            raise ConnectionError(f"GPT-4 API error: {str(e)}")
     
     def batch_analyze_sentiment(self, articles: List[Dict[str, Any]], symbol: str, prompts: List[str]) -> List[Dict[str, Any]]:
         """
         Batch analyze sentiment for multiple articles.
-        
+
         Args:
             articles: List of news articles
             symbol: Stock symbol
             prompts: List of formatted prompts
-        
+
         Returns:
             List of sentiment analysis results
-        
-        Note:
-            Batch processing may be more cost-effective but slower.
-            Consider using parallel requests for better performance.
         """
-        # TODO: Implement batch processing
-        # 1. Process articles in batches
-        # 2. Make parallel API calls (if supported)
-        # 3. Handle errors gracefully
-        # 4. Return all results
-        
-        raise NotImplementedError("GPT4Client.batch_analyze_sentiment not yet implemented.")
+        results = []
+        for article, prompt in zip(articles, prompts):
+            try:
+                result = self.analyze_sentiment(article, symbol, prompt=prompt)
+                results.append(result)
+            except Exception as e:
+                results.append({
+                    "sentiment_score": 0.0,
+                    "sentiment_label": "neutral",
+                    "confidence": 0.0,
+                    "reasoning": f"Error: {str(e)}",
+                    "model": self.model,
+                    "cached": False,
+                    "processed_at": datetime.utcnow().isoformat() + "Z",
+                })
+        return results
 

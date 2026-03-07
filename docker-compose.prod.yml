@@ -3,17 +3,18 @@ services:
   timescaledb:
     image: timescale/timescaledb:latest-pg15
     container_name: tick-db
+    restart: always
     environment:
-      POSTGRES_USER: tick_user
-      POSTGRES_PASSWORD: tick_password
-      POSTGRES_DB: tick_db
+      POSTGRES_USER: ${POSTGRES_USER:-tick_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tick_password}
+      POSTGRES_DB: ${POSTGRES_DB:-tick_db}
     ports:
       - "5433:5432"
     volumes:
       - tick_timescale_data:/var/lib/postgresql/data
       - ./backend/infrastructure/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tick_user -d tick_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tick_user} -d ${POSTGRES_DB:-tick_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,6 +25,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: tick-redis
+    restart: always
     ports:
       - "6380:6379"
     volumes:
@@ -43,25 +45,23 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: tick-backend
+    restart: always
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://tick_user:tick_password@timescaledb:5432/tick_db
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-tick_user}:${POSTGRES_PASSWORD:-tick_password}@timescaledb:5432/${POSTGRES_DB:-tick_db}
       - REDIS_URL=redis://redis:6379/0
-      - FINNHUB_API_KEY=${FINNHUB_API_KEY:-d5d3rmpr01qvl80nhh40d5d3rmpr01qvl80nhh4g}
-      - NEWSAPI_KEY=${NEWSAPI_KEY:-6fd53b5d6c584a2d9052bcf48988d9be}
-      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY:-2JSGRZ6R9VRMW7OL}
-      - TIINGO_API_KEY=${TIINGO_API_KEY:-9e7e7ef41ad8cefe4bfa3f57e7bb60b5d81e3d14}
-      - FMP_API_KEY=${FMP_API_KEY:-W8Qj3LfEWEh5EGBo8gBlCQ4QNT36rZ8j}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
+      - NEWSAPI_KEY=${NEWSAPI_KEY}
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
+      - TIINGO_API_KEY=${TIINGO_API_KEY}
+      - FMP_API_KEY=${FMP_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       timescaledb:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - /app/venv
     networks:
       - tick_network
 
@@ -70,16 +70,16 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     container_name: tick-frontend
+    restart: always
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     depends_on:
       - backend
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
     networks:
       - tick_network
 

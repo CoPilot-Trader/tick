@@ -53,3 +53,6 @@ mypy==1.7.1
 # requests is already included above
 # Note: sentence-transformers is optional (for semantic caching)
 # sentence-transformers>=2.2.0  # Uncomment if using semantic caching
+
+# LLM Sentiment Agent - OpenAI for GPT-4 sentiment analysis
+openai>=1.0.0

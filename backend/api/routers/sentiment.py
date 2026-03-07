@@ -7,10 +7,12 @@ Provides REST endpoints for:
 - Sentiment aggregation
 """
 
+import os
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
+from dotenv import load_dotenv
 
 # Import agents
 import sys
@@ -21,6 +23,8 @@ from agents.news_fetch_agent.agent import NewsFetchAgent
 from agents.llm_sentiment_agent.agent import LLMSentimentAgent
 from agents.sentiment_aggregator.agent import SentimentAggregator
 
+load_dotenv()
+
 router = APIRouter(prefix="/api/v1/sentiment", tags=["Sentiment Analysis"])
 
 # Global agent instances
@@ -30,19 +34,53 @@ _aggregator: Optional[SentimentAggregator] = None
 
 
 def get_news_agent() -> NewsFetchAgent:
-    """Get or create News Fetch Agent instance."""
+    """Get or create News Fetch Agent instance with live API keys."""
     global _news_agent
     if _news_agent is None:
-        _news_agent = NewsFetchAgent()
+        finnhub_key = os.getenv("FINNHUB_API_KEY", "")
+        newsapi_key = os.getenv("NEWSAPI_KEY", "")
+        alphavantage_key = os.getenv("ALPHA_VANTAGE_API_KEY", "")
+
+        has_finnhub = bool(finnhub_key and finnhub_key.strip())
+        has_newsapi = bool(newsapi_key and newsapi_key.strip())
+        has_alphavantage = bool(alphavantage_key and alphavantage_key.strip())
+
+        use_mock = not (has_finnhub or has_newsapi or has_alphavantage)
+
+        news_config: Dict[str, Any] = {"use_mock_data": use_mock}
+        if has_finnhub:
+            news_config["finnhub_api_key"] = finnhub_key.strip()
+        if has_newsapi:
+            news_config["newsapi_key"] = newsapi_key.strip()
+        if has_alphavantage:
+            news_config["alpha_vantage_api_key"] = alphavantage_key.strip()
+
+        _news_agent = NewsFetchAgent(config=news_config)
         _news_agent.initialize()
     return _news_agent
 
 
 def get_llm_agent() -> LLMSentimentAgent:
-    """Get or create LLM Sentiment Agent instance."""
+    """Get or create LLM Sentiment Agent instance with live OpenAI key."""
     global _llm_agent
     if _llm_agent is None:
-        _llm_agent = LLMSentimentAgent()
+        openai_key = os.getenv("OPENAI_API_KEY", "")
+        has_openai = bool(openai_key and openai_key.strip())
+
+        try:
+            import sentence_transformers
+            use_cache = True
+        except ImportError:
+            use_cache = False
+
+        llm_config: Dict[str, Any] = {
+            "use_mock_data": not has_openai,
+            "use_cache": use_cache,
+        }
+        if has_openai:
+            llm_config["openai_api_key"] = openai_key.strip()
+
+        _llm_agent = LLMSentimentAgent(config=llm_config)
         _llm_agent.initialize()
     return _llm_agent
 
@@ -51,7 +89,7 @@ def get_aggregator() -> SentimentAggregator:
     """Get or create Sentiment Aggregator instance."""
     global _aggregator
     if _aggregator is None:
-        _aggregator = SentimentAggregator()
+        _aggregator = SentimentAggregator(config={"use_time_weighting": True})
         _aggregator.initialize()
     return _aggregator
 
