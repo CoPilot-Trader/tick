@@ -55,6 +55,24 @@ export interface FusionSignalResponse {
   rules_applied: string[];
 }
 
+export interface TimeframeSignal {
+  signal: string;
+  confidence: number;
+  fused_score: number;
+  reasoning: string;
+  components: Record<string, any>;
+}
+
+export interface MultiTimeframeResponse {
+  status: string;
+  symbol: string;
+  current_price: number;
+  timestamp: string;
+  timeframes: Record<string, TimeframeSignal>;
+  agreement: 'ALIGNED' | 'CONFLICTING';
+  consensus_signal: string;
+}
+
 export interface BacktestRequest {
   ticker: string;
   days: number;
@@ -257,6 +275,10 @@ export class ApiClient {
 
   async getQuickFusionSignal(symbol: string): Promise<FusionSignalResponse> {
     return this.get(`/api/v1/fusion/${symbol}/quick`);
+  }
+
+  async getMultiTimeframeSignal(symbol: string): Promise<MultiTimeframeResponse> {
+    return this.get(`/api/v1/fusion/${symbol}/multi-timeframe`);
   }
 
   async getFusionConfig(): Promise<Record<string, any>> {

@@ -21,7 +21,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { SP500_STOCKS } from '@/lib/mockData';
-import { apiClient, FusionSignalResponse } from '@/lib/api/client';
+import { apiClient, FusionSignalResponse, MultiTimeframeResponse } from '@/lib/api/client';
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -33,6 +33,8 @@ export default function FusionPage() {
   const [error, setError] = useState<string | null>(null);
   const [fusionData, setFusionData] = useState<FusionSignalResponse | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [multiTfData, setMultiTfData] = useState<MultiTimeframeResponse | null>(null);
+  const [multiTfLoading, setMultiTfLoading] = useState(false);
 
   const handleGetSignal = async () => {
     setLoading(true);
@@ -45,6 +47,18 @@ export default function FusionPage() {
       setError(`Failed to get trading signal: ${err instanceof Error ? err.message : 'Unknown error'}. Make sure the backend is running on ${API_BASE_URL}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMultiTimeframe = async () => {
+    setMultiTfLoading(true);
+    try {
+      const data = await apiClient.getMultiTimeframeSignal(selectedSymbol);
+      setMultiTfData(data);
+    } catch (err) {
+      setError(`Multi-timeframe failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setMultiTfLoading(false);
     }
   };
 
@@ -218,6 +232,25 @@ export default function FusionPage() {
                   </>
                 )}
               </button>
+
+              {/* Multi-Timeframe Button */}
+              <button
+                onClick={handleMultiTimeframe}
+                disabled={multiTfLoading}
+                className="px-6 py-2 bg-gray-800 hover:bg-gray-700 disabled:bg-gray-800/50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center gap-2 border border-gray-700"
+              >
+                {multiTfLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-4 h-4" />
+                    Multi-Timeframe
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -374,6 +407,69 @@ export default function FusionPage() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Multi-Timeframe Results */}
+          {multiTfData && !multiTfLoading && (
+            <div className="mt-6 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-gray-800">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Multi-Timeframe Analysis - {multiTfData.symbol}
+                  </h3>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    multiTfData.agreement === 'ALIGNED'
+                      ? 'bg-success-500/20 text-success-400 border border-success-500/50'
+                      : 'bg-amber-500/20 text-amber-400 border border-amber-500/50'
+                  }`}>
+                    {multiTfData.agreement}
+                  </span>
+                </div>
+                {multiTfData.agreement === 'ALIGNED' && (
+                  <p className="text-success-400 text-sm mt-2">
+                    Both timeframes agree on <strong>{multiTfData.consensus_signal}</strong> - stronger conviction
+                  </p>
+                )}
+                {multiTfData.agreement === 'CONFLICTING' && (
+                  <p className="text-amber-400 text-sm mt-2">
+                    Timeframes disagree - exercise caution, mixed signals detected
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-800">
+                {Object.entries(multiTfData.timeframes).map(([tf, tfData]) => {
+                  const signalColor = tfData.signal === 'BUY' ? 'text-success-400' : tfData.signal === 'SELL' ? 'text-danger-400' : 'text-gray-400';
+                  const bgColor = tfData.signal === 'BUY' ? 'bg-success-500/10' : tfData.signal === 'SELL' ? 'bg-danger-500/10' : 'bg-gray-500/10';
+                  return (
+                    <div key={tf} className={`p-4 sm:p-6 ${bgColor}`}>
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                        {tf === '1h' ? 'Short-Term (1 Hour)' : 'Long-Term (1 Day)'}
+                      </div>
+                      <div className={`text-2xl font-bold ${signalColor} mb-2`}>
+                        {tfData.signal}
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Confidence</span>
+                          <span className="text-white font-semibold">{(tfData.confidence * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Fused Score</span>
+                          <span className={`font-semibold ${tfData.fused_score > 0.3 ? 'text-success-400' : tfData.fused_score < -0.3 ? 'text-danger-400' : 'text-amber-400'}`}>
+                            {tfData.fused_score.toFixed(3)}
+                          </span>
+                        </div>
+                        {tfData.reasoning && (
+                          <p className="text-gray-400 text-xs mt-2">{tfData.reasoning}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 

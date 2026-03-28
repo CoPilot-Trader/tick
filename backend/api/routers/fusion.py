@@ -509,3 +509,108 @@ async def get_component_status() -> Dict[str, Any]:
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{ticker}/multi-timeframe")
+async def get_multi_timeframe_signal(
+    ticker: str,
+    days: int = Query(365, ge=100, le=1825),
+) -> Dict[str, Any]:
+    """
+    Get trading signals across multiple timeframes (1h and 1d).
+
+    Returns independent fusion signals for each timeframe so traders
+    can see whether short-term and long-term views agree or conflict.
+    """
+    try:
+        data_agent = get_data_agent()
+        feature_agent = get_feature_agent()
+        fusion_agent = get_fusion_agent()
+
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+
+        df = data_agent.fetch_historical_sync(
+            symbol=ticker,
+            start_date=start_date,
+            end_date=end_date,
+            timeframe="1d",
+        )
+
+        if df is None or len(df) < 100:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient data for {ticker}",
+            )
+
+        current_price = float(df["close"].iloc[-1])
+        df_with_features = feature_agent.calculate_all(df)
+
+        timeframe_results: Dict[str, Any] = {}
+
+        for tf in ["1h", "1d"]:
+            components: Dict[str, Any] = {}
+
+            # Trend Classification
+            try:
+                trend_agent = get_trend_agent()
+                components["trend_classification"] = trend_agent.classify(
+                    symbol=ticker, df=df_with_features, timeframe=tf
+                )
+            except Exception:
+                components["trend_classification"] = {}
+
+            # Price Forecast
+            try:
+                price_agent = get_price_forecast_agent()
+                components["price_forecast"] = price_agent.forecast(
+                    symbol=ticker, df=df_with_features, timeframe=tf, horizon=5
+                )
+            except Exception:
+                components["price_forecast"] = {}
+
+            # Support/Resistance (same for all timeframes)
+            try:
+                sr_agent = get_sr_agent()
+                components["support_resistance"] = sr_agent.process(
+                    ticker, params={"df": df_with_features, "current_price": current_price}
+                )
+            except Exception:
+                components["support_resistance"] = {}
+
+            # Fuse
+            fused = fusion_agent.fuse_signals(
+                price_forecast=components.get("price_forecast", {}),
+                trend_classification=components.get("trend_classification", {}),
+                support_resistance=components.get("support_resistance", {}),
+                sentiment={},
+                symbol=ticker,
+                current_price=current_price,
+            )
+
+            timeframe_results[tf] = {
+                "signal": fused.get("signal", "HOLD"),
+                "confidence": fused.get("confidence", 0.0),
+                "fused_score": fused.get("fused_score", 0.0),
+                "reasoning": fused.get("reasoning", ""),
+                "components": fused.get("components", {}),
+            }
+
+        # Determine agreement
+        signals = [v["signal"] for v in timeframe_results.values()]
+        agreement = "ALIGNED" if len(set(signals)) == 1 else "CONFLICTING"
+
+        return {
+            "status": "success",
+            "symbol": ticker,
+            "current_price": current_price,
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timeframes": timeframe_results,
+            "agreement": agreement,
+            "consensus_signal": signals[0] if agreement == "ALIGNED" else "HOLD",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
