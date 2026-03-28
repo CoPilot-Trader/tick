@@ -174,6 +174,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const rsiContainerRef = useRef<HTMLDivElement>(null);
   const macdContainerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const rsiChartRef = useRef<IChartApi | null>(null);
   const macdChartRef = useRef<IChartApi | null>(null);
@@ -513,6 +514,51 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
     chart.timeScale().fitContent();
 
+    // ─── News tooltip on crosshair hover ─────────────────────────────
+    if (filters.showNewsEvents && (data.news_events || []).length > 0) {
+      // Build time->news lookup (within 1 hour tolerance)
+      const newsLookup = new Map<number, { title: string; source: string; sentiment: number }>();
+      (data.news_events || []).forEach((evt) => {
+        const t = Math.floor(new Date(evt.timestamp).getTime() / 1000);
+        newsLookup.set(t, { title: evt.title, source: evt.source, sentiment: evt.sentiment });
+      });
+
+      chart.subscribeCrosshairMove((param) => {
+        const tooltip = tooltipRef.current;
+        if (!tooltip) return;
+
+        if (!param.time || !param.point) {
+          tooltip.style.display = 'none';
+          return;
+        }
+
+        const crosshairTime = param.time as number;
+        // Find nearest news within 1-hour window
+        let matched: { title: string; source: string; sentiment: number } | null = null;
+        for (const [t, news] of newsLookup.entries()) {
+          if (Math.abs(crosshairTime - t) < 3600) {
+            matched = news;
+            break;
+          }
+        }
+
+        if (matched) {
+          tooltip.style.display = 'block';
+          tooltip.style.left = `${param.point.x + 15}px`;
+          tooltip.style.top = `${param.point.y - 10}px`;
+          tooltip.innerHTML = `
+            <div style="font-weight:600;margin-bottom:2px;color:#d1d4dc">${matched.title.slice(0, 80)}${matched.title.length > 80 ? '...' : ''}</div>
+            <div style="font-size:10px;color:#787b86">${matched.source}</div>
+            <div style="font-size:10px;margin-top:2px;color:${matched.sentiment > 0 ? '#26a69a' : matched.sentiment < 0 ? '#ef5350' : '#787b86'}">
+              Sentiment: ${matched.sentiment > 0 ? '+' : ''}${matched.sentiment.toFixed(2)}
+            </div>
+          `;
+        } else {
+          tooltip.style.display = 'none';
+        }
+      });
+    }
+
     // ─── RSI sub-chart ──────────────────────────────────────────────
     if (filters.showRSI && rsiContainerRef.current) {
       const rsiChart = createChart(rsiContainerRef.current, {
@@ -688,8 +734,25 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       </div>
 
       {/* ─── Chart area ────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 min-h-0 flex flex-col relative">
         <div ref={chartContainerRef} className="flex-1 min-h-0" />
+        {/* News tooltip */}
+        <div
+          ref={tooltipRef}
+          style={{
+            display: 'none',
+            position: 'absolute',
+            zIndex: 50,
+            maxWidth: 280,
+            padding: '8px 10px',
+            background: '#1e222d',
+            border: '1px solid #2a2e39',
+            borderRadius: 6,
+            fontSize: 11,
+            pointerEvents: 'none',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          }}
+        />
 
         {/* RSI */}
         <div className={filters.showRSI ? '' : 'hidden'} style={{ borderTop: '1px solid #2a2e39' }}>
