@@ -1,0 +1,1 @@
+[{"timestamp": "2026-03-28T19:25:27.323594Z", "current_price": 273.2, "predictions": {"1h": {"predicted_price": 273.19, "confidence": 0.799, "direction": "DOWN", "upper": 273.46, "lower": 272.93}, "1d": {"predicted_price": 273.02, "confidence": 0.777, "direction": "DOWN", "upper": 279.39, "lower": 266.66}}}]

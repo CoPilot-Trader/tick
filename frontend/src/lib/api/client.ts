@@ -380,6 +380,32 @@ export class ApiClient {
   // Price Forecast
   // ==========================================================================
 
+  async getPredictionHistory(symbol: string, limit: number = 50): Promise<{
+    status: string;
+    symbol: string;
+    count: number;
+    predictions: {
+      predicted_at: string;
+      horizon: string;
+      base_price: number;
+      predicted_price: number;
+      confidence: number;
+      direction: string;
+      target_date: string;
+      actual_price: number | null;
+      error_pct: number | null;
+      direction_correct: boolean | null;
+    }[];
+    accuracy: {
+      mape: number;
+      directional_accuracy: number;
+      total_predictions: number;
+      resolved: number;
+    } | null;
+  }> {
+    return this.get(`/api/v1/forecast/${symbol}/history?limit=${limit}`);
+  }
+
   async getPriceForecast(symbol: string, horizons: string[] = ['1d']): Promise<PriceForecastResponse> {
     const horizonParam = horizons.join(',');
     const raw = await this.get<any>(`/api/v1/forecast/${symbol}?horizons=${horizonParam}&use_baseline=true&use_ensemble=false`);
@@ -429,6 +455,14 @@ export class ApiClient {
     return this.get(`/api/v1/sentiment/${symbol}`);
   }
 
+  async getSentimentWithArticles(symbol: string, days: number = 7): Promise<any> {
+    return this.get(`/api/v1/sentiment/${symbol}?days=${days}&max_articles=20`);
+  }
+
+  async getNewsArticles(symbol: string, days: number = 7): Promise<any> {
+    return this.get(`/api/v1/sentiment/news/${symbol}?days=${days}`);
+  }
+
   async getNewsPipeline(symbol: string, minRelevance: number = 0.3, maxArticles: number = 10): Promise<any> {
     return this.post('/api/v1/news-pipeline/visualize', {
       symbol,
@@ -463,13 +497,30 @@ export class ApiClient {
    * Get comprehensive stock data by calling multiple endpoints
    * This aggregates data from fusion, forecast, trend, levels, and sentiment
    */
-  async getStockData(symbol: string): Promise<StockData> {
+  async getStockData(symbol: string, range: string = '1D'): Promise<StockData> {
     try {
-      // Fetch real OHLCV data, forecast, and levels in parallel
-      const [ohlcvResult, forecastResult, levels] = await Promise.all([
-        this.getOHLCV(symbol, '5m', 1).catch(() => null),
+      // Map range to OHLCV params
+      const rangeConfig: Record<string, { timeframe: string; days: number }> = {
+        '1D': { timeframe: '5m', days: 1 },
+        '5D': { timeframe: '5m', days: 5 },
+        '1M': { timeframe: '1h', days: 30 },
+        '3M': { timeframe: '1d', days: 90 },
+        '6M': { timeframe: '1d', days: 180 },
+        'YTD': { timeframe: '1d', days: Math.ceil((Date.now() - new Date(new Date().getFullYear(), 0, 1).getTime()) / 86400000) },
+        '1Y': { timeframe: '1d', days: 365 },
+        '5Y': { timeframe: '1d', days: 1825 },
+        'All': { timeframe: '1d', days: 1825 },
+      };
+      const { timeframe: tf, days: rangeDays } = rangeConfig[range] || rangeConfig['1D'];
+      const clampedDays = Math.min(rangeDays, 60); // backend max is 60
+
+      // Fetch real OHLCV data, forecast, levels, news, and prediction history in parallel
+      const [ohlcvResult, forecastResult, levels, newsResult, predHistory] = await Promise.all([
+        this.getOHLCV(symbol, tf, clampedDays).catch(() => null),
         this.getPriceForecast(symbol, ['1h']).catch(() => null),
         this.getLevels(symbol, { max_levels: 3 }).catch(() => null),
+        this.getNewsArticles(symbol, 7).catch(() => null),
+        this.getPredictionHistory(symbol, 50).catch(() => null),
       ]);
 
       // Use real OHLCV data if available, otherwise generate intraday fallback
@@ -521,6 +572,20 @@ export class ApiClient {
         }
       }
 
+      // Extract news articles with timestamps for chart markers
+      const news_events: { timestamp: string; title: string; source: string; sentiment: number; impact: 'High' | 'Medium' | 'Low' }[] = [];
+      if (newsResult?.articles) {
+        for (const article of newsResult.articles) {
+          news_events.push({
+            timestamp: article.published_at || article.publishedAt || new Date().toISOString(),
+            title: article.title || 'News',
+            source: article.source || 'Unknown',
+            sentiment: article.relevance_score || 0,
+            impact: 'Medium',
+          });
+        }
+      }
+
       return {
         symbol,
         name: symbol,
@@ -531,6 +596,9 @@ export class ApiClient {
         predictions,
         support_levels: levels?.support_levels || [],
         resistance_levels: levels?.resistance_levels || [],
+        news_events,
+        prediction_history: predHistory?.predictions || [],
+        prediction_accuracy: predHistory?.accuracy || null,
         last_updated: new Date().toISOString(),
       };
     } catch (error) {
@@ -546,6 +614,7 @@ export class ApiClient {
         predictions: [],
         support_levels: [],
         resistance_levels: [],
+        news_events: [],
         last_updated: new Date().toISOString(),
       };
     }

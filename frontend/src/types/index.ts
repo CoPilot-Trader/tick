@@ -82,6 +82,26 @@ export interface PredictionPoint {
   volatility?: number;
 }
 
+export interface PredictionHistoryEntry {
+  predicted_at: string;
+  horizon: string;
+  base_price: number;
+  predicted_price: number;
+  confidence: number;
+  direction: string;
+  target_date: string;
+  actual_price: number | null;
+  error_pct: number | null;
+  direction_correct: boolean | null;
+}
+
+export interface PredictionAccuracy {
+  mape: number;
+  directional_accuracy: number;
+  total_predictions: number;
+  resolved: number;
+}
+
 export interface StockData {
   symbol: string;
   name: string;
@@ -92,6 +112,9 @@ export interface StockData {
   predictions: PredictionPoint[];
   support_levels: PriceLevel[];
   resistance_levels: PriceLevel[];
+  news_events?: NewsEvent[];
+  prediction_history?: PredictionHistoryEntry[];
+  prediction_accuracy?: PredictionAccuracy | null;
   last_updated: string;
 }
 

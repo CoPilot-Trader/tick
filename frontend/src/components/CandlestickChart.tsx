@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useMemo, useCallback, forwardRef, useImperativeHandle } from 'react';
 import {
   createChart,
   createSeriesMarkers,
@@ -16,7 +16,7 @@ import {
   Time,
   LineStyle,
 } from 'lightweight-charts';
-import { StockData, PredictionPoint, GraphFilters } from '@/types';
+import { StockData, PredictionPoint, GraphFilters, PredictionHistoryEntry } from '@/types';
 
 // ── Technical indicator helpers ─────────────────────────────────────────
 
@@ -146,6 +146,11 @@ function toTime(ts: string): Time {
 
 // ─────────────────────────────────────────────────────────────────────────
 
+export interface CandlestickChartHandle {
+  takeScreenshot: () => void;
+  resetView: () => void;
+}
+
 interface CandlestickChartProps {
   data: StockData;
   selectedPrediction: PredictionPoint | null;
@@ -153,16 +158,18 @@ interface CandlestickChartProps {
   filters: GraphFilters;
   onFilterChange: (filters: GraphFilters) => void;
   fusionSignal?: { signal: string; confidence: number } | null;
+  activeTool?: string;
 }
 
-export default function CandlestickChart({
+const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProps>(function CandlestickChart({
   data,
   selectedPrediction,
   onPredictionClick,
   filters,
   onFilterChange,
   fusionSignal,
-}: CandlestickChartProps) {
+  activeTool = 'crosshair',
+}, ref) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const rsiContainerRef = useRef<HTMLDivElement>(null);
@@ -170,6 +177,22 @@ export default function CandlestickChart({
   const chartRef = useRef<IChartApi | null>(null);
   const rsiChartRef = useRef<IChartApi | null>(null);
   const macdChartRef = useRef<IChartApi | null>(null);
+
+  // Expose screenshot & reset to parent
+  useImperativeHandle(ref, () => ({
+    takeScreenshot() {
+      if (!chartContainerRef.current) return;
+      const canvas = chartContainerRef.current.querySelector('canvas');
+      if (!canvas) return;
+      const link = document.createElement('a');
+      link.download = `${data.symbol}-chart-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    },
+    resetView() {
+      chartRef.current?.timeScale().fitContent();
+    },
+  }), [data.symbol]);
 
   // Pre-compute all data
   const chartData = useMemo(() => {
@@ -259,10 +282,43 @@ export default function CandlestickChart({
       }
     });
 
+    // News event markers
+    const newsMarkers: any[] = [];
+    (data.news_events || []).forEach((evt) => {
+      const evtTime = toTime(evt.timestamp);
+      const evtNum = evtTime as number;
+      // Only add if within chart's time range
+      if (candles.length > 0) {
+        const first = candles[0].time as number;
+        const last = candles[candles.length - 1].time as number;
+        if (evtNum >= first && evtNum <= last) {
+          newsMarkers.push({
+            time: evtTime,
+            position: 'aboveBar' as const,
+            color: evt.sentiment > 0 ? '#26a69a' : evt.sentiment < 0 ? '#ef5350' : '#ffb74d',
+            shape: 'circle' as const,
+            text: 'N',
+          });
+        }
+      }
+    });
+
+    // Backtracking: predicted vs actual price dots from history
+    const backtrackPredicted: LineData[] = [];
+    const backtrackActual: LineData[] = [];
+    (data.prediction_history || []).forEach((entry: PredictionHistoryEntry) => {
+      if (entry.actual_price !== null && entry.horizon === '1d') {
+        const targetTime = toTime(entry.target_date + 'T16:00:00');
+        backtrackPredicted.push({ time: targetTime, value: entry.predicted_price });
+        backtrackActual.push({ time: targetTime, value: entry.actual_price });
+      }
+    });
+
     return {
       candles, volume, sma50Data, sma200Data, bbUpperData, bbLowerData,
       rsiData, macdData, macdSignalData, macdHistData,
-      predictionData, upperBoundData, lowerBoundData, markers,
+      predictionData, upperBoundData, lowerBoundData, markers, newsMarkers,
+      backtrackPredicted, backtrackActual,
       currentPrice: closes[closes.length - 1] || 0,
     };
   }, [data]);
@@ -311,7 +367,7 @@ export default function CandlestickChart({
         horzLines: { color: gridColor },
       },
       crosshair: {
-        mode: CrosshairMode.Normal,
+        mode: activeTool === 'crosshair' ? CrosshairMode.Normal : CrosshairMode.Magnet,
         vertLine: { color: '#758696', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#2a2e39' },
         horzLine: { color: '#758696', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#2a2e39' },
       },
@@ -429,9 +485,30 @@ export default function CandlestickChart({
       }
     }
 
-    // Signal markers
-    if (chartData.markers.length > 0) {
-      createSeriesMarkers(candleSeries, chartData.markers);
+    // Backtracking: predicted vs actual overlay
+    if (chartData.backtrackPredicted.length > 0) {
+      const predLine = chart.addSeries(LineSeries, {
+        color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Predicted',
+        crosshairMarkerVisible: true,
+      });
+      predLine.setData(chartData.backtrackPredicted);
+    }
+    if (chartData.backtrackActual.length > 0) {
+      const actLine = chart.addSeries(LineSeries, {
+        color: '#4caf50', lineWidth: 2, title: 'Actual',
+        crosshairMarkerVisible: true,
+      });
+      actLine.setData(chartData.backtrackActual);
+    }
+
+    // Signal markers + news markers combined (must be sorted by time)
+    const allMarkers = [...chartData.markers];
+    if (filters.showNewsEvents && chartData.newsMarkers.length > 0) {
+      allMarkers.push(...chartData.newsMarkers);
+    }
+    if (allMarkers.length > 0) {
+      allMarkers.sort((a, b) => (a.time as number) - (b.time as number));
+      createSeriesMarkers(candleSeries, allMarkers);
     }
 
     chart.timeScale().fitContent();
@@ -524,7 +601,7 @@ export default function CandlestickChart({
       try { if (macdChartRef.current) { macdChartRef.current.remove(); } } catch { /* noop */ }
       macdChartRef.current = null;
     };
-  }, [chartData, filters, data.support_levels, data.resistance_levels]);
+  }, [chartData, filters, data.support_levels, data.resistance_levels, activeTool]);
 
   // Toggle helper
   const toggleFilter = useCallback(
@@ -542,6 +619,7 @@ export default function CandlestickChart({
     { key: 'showMACD', label: 'MACD', color: '#2962ff' },
     { key: 'showPredictedPrice', label: 'Forecast', color: '#42a5f5' },
     { key: 'showConfidenceBounds', label: 'Bounds', color: '#42a5f5' },
+    { key: 'showNewsEvents', label: 'News', color: '#ffb74d' },
   ];
 
   // Price info
@@ -563,6 +641,20 @@ export default function CandlestickChart({
           <span className="text-xs" style={{ color: isPositive ? '#26a69a' : '#ef5350' }}>
             {isPositive ? '+' : ''}{priceChange.toFixed(2)} ({isPositive ? '+' : ''}{priceChangePct.toFixed(2)}%)
           </span>
+          {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (
+            <span className="flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[10px]" style={{ background: '#1e222d', border: '1px solid #2a2e39' }}>
+              <span style={{ color: '#787b86' }}>MAPE</span>
+              <span style={{ color: data.prediction_accuracy.mape < 3 ? '#26a69a' : data.prediction_accuracy.mape < 5 ? '#ffb74d' : '#ef5350' }}>
+                {data.prediction_accuracy.mape}%
+              </span>
+              <span style={{ color: '#2a2e39' }}>|</span>
+              <span style={{ color: '#787b86' }}>Dir</span>
+              <span style={{ color: data.prediction_accuracy.directional_accuracy > 60 ? '#26a69a' : '#ffb74d' }}>
+                {data.prediction_accuracy.directional_accuracy}%
+              </span>
+              <span style={{ color: '#787b86' }}>({data.prediction_accuracy.resolved})</span>
+            </span>
+          )}
           {fusionSignal && (
             <span
               className="px-1.5 py-0.5 rounded text-[10px] font-bold"
@@ -613,4 +705,6 @@ export default function CandlestickChart({
       </div>
     </div>
   );
-}
+});
+
+export default CandlestickChart;

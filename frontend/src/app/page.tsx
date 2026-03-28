@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { StockData, PredictionPoint, GraphFilters } from '@/types';
 import { apiClient } from '@/lib/api/client';
@@ -46,26 +46,47 @@ export default function Home() {
   const [navOpen, setNavOpen] = useState(false);
   const [activeChartIndex, setActiveChartIndex] = useState(0);
   const [activeTool, setActiveTool] = useState<string>('crosshair');
+  const [activeTimeframe, setActiveTimeframe] = useState<string>('1D');
+  const chartRef = useRef<{ takeScreenshot: () => void; resetView: () => void } | null>(null);
+
+  const loadStocksData = useCallback(async (range: string = activeTimeframe) => {
+    setLoading(true);
+    try {
+      const data = await Promise.all(
+        selectedStocks.map(symbol => apiClient.getStockData(symbol, range))
+      );
+      setStocksData(data);
+    } catch (error) {
+      console.error('Error loading stock data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedStocks, activeTimeframe]);
 
   useEffect(() => {
-    const loadStocksData = async () => {
-      setLoading(true);
-      try {
-        const data = await Promise.all(
-          selectedStocks.map(symbol => apiClient.getStockData(symbol))
-        );
-        setStocksData(data);
-      } catch (error) {
-        console.error('Error loading stock data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (selectedStocks.length > 0) {
-      loadStocksData();
+      loadStocksData(activeTimeframe);
     }
-  }, [selectedStocks]);
+  }, [selectedStocks, activeTimeframe]);
+
+  const handleTimeframeChange = useCallback((tf: string) => {
+    setActiveTimeframe(tf);
+  }, []);
+
+  const handleToolbarAction = useCallback((actionId: string) => {
+    const chart = chartRef.current;
+    switch (actionId) {
+      case 'screenshot':
+        chart?.takeScreenshot();
+        break;
+      case 'reset':
+        chart?.resetView();
+        break;
+      case 'fullscreen':
+        document.documentElement.requestFullscreen?.();
+        break;
+    }
+  }, []);
 
   if (loading || stocksData.length === 0) {
     return (
@@ -219,6 +240,7 @@ export default function Home() {
           {actions.map((action) => (
             <button
               key={action.id}
+              onClick={() => handleToolbarAction(action.id)}
               className="w-8 h-8 flex items-center justify-center rounded transition-all hover:bg-[#2a2e39]"
               style={{ color: '#787b86' }}
               title={action.tooltip}
@@ -234,12 +256,14 @@ export default function Home() {
         {/* Chart Area */}
         <div className="flex-1 min-h-0 min-w-0">
           <CandlestickChart
-            key={activeStock.symbol}
+            ref={chartRef}
+            key={`${activeStock.symbol}-${activeTimeframe}`}
             data={activeStock}
             selectedPrediction={selectedPrediction}
             onPredictionClick={setSelectedPrediction}
             filters={filters}
             onFilterChange={setFilters}
+            activeTool={activeTool}
           />
         </div>
       </div>
@@ -250,8 +274,9 @@ export default function Home() {
           {['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'All'].map((tf) => (
             <button
               key={tf}
+              onClick={() => handleTimeframeChange(tf)}
               className="px-2 py-0.5 text-[10px] font-medium rounded transition-all hover:bg-[#2a2e39]"
-              style={{ color: tf === '1D' ? '#2962ff' : '#787b86' }}
+              style={{ color: tf === activeTimeframe ? '#2962ff' : '#787b86' }}
             >
               {tf}
             </button>

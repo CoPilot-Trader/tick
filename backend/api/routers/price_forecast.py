@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 import pandas as pd
+import json
+import os
 
 # Import agent
 import sys
@@ -167,6 +169,13 @@ async def get_prediction(
                 detail=result.get("error", "Prediction failed")
             )
 
+        # Log prediction for backtracking
+        try:
+            if result.get("predictions") and result.get("current_price"):
+                _store_prediction(ticker, result["current_price"], result["predictions"])
+        except Exception:
+            pass  # Don't fail the request if logging fails
+
         return {
             "success": True,
             "ticker": ticker,
@@ -287,3 +296,170 @@ async def clear_cache(ticker: Optional[str] = None) -> Dict[str, str]:
         "status": "success",
         "message": f"Cache cleared for {ticker if ticker else 'all tickers'}"
     }
+
+
+# ============================================================================
+# Prediction History / Backtracking
+# ============================================================================
+
+PREDICTION_LOG_DIR = Path(__file__).parent.parent.parent / "storage" / "prediction_logs"
+PREDICTION_LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _log_path(ticker: str) -> Path:
+    return PREDICTION_LOG_DIR / f"{ticker.upper()}_predictions.json"
+
+
+def _load_log(ticker: str) -> List[Dict[str, Any]]:
+    path = _log_path(ticker)
+    if path.exists():
+        try:
+            return json.loads(path.read_text())
+        except Exception:
+            return []
+    return []
+
+
+def _save_log(ticker: str, entries: List[Dict[str, Any]]):
+    path = _log_path(ticker)
+    # Keep last 500 entries max
+    entries = entries[-500:]
+    path.write_text(json.dumps(entries, default=str))
+
+
+def _store_prediction(ticker: str, current_price: float, predictions: Dict[str, Any]):
+    """Store a prediction for later backtracking."""
+    entries = _load_log(ticker)
+    entry = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "current_price": current_price,
+        "predictions": {},
+    }
+    for horizon, pred in predictions.items():
+        entry["predictions"][horizon] = {
+            "predicted_price": pred.get("price", pred.get("predicted_price")),
+            "confidence": pred.get("confidence", 0),
+            "direction": pred.get("direction", "NEUTRAL"),
+            "upper": pred.get("price_upper", pred.get("upper_bound")),
+            "lower": pred.get("price_lower", pred.get("lower_bound")),
+        }
+    entries.append(entry)
+    _save_log(ticker, entries)
+
+
+@router.get("/{ticker}/history")
+async def get_prediction_history(
+    ticker: str,
+    limit: int = Query(50, ge=1, le=200),
+) -> Dict[str, Any]:
+    """
+    Get prediction history with actual price comparison.
+
+    Returns past predictions alongside what the actual price turned out to be,
+    so we can see the gap between predicted and actual.
+    """
+    try:
+        entries = _load_log(ticker)
+        if not entries:
+            return {
+                "status": "success",
+                "symbol": ticker,
+                "count": 0,
+                "predictions": [],
+                "accuracy": None,
+            }
+
+        # Get current price data for backtracking
+        data_agent = get_data_agent()
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=30)
+        df = data_agent.fetch_historical_sync(
+            symbol=ticker, start_date=start_date, end_date=end_date, timeframe="1d"
+        )
+
+        # Build a date->price lookup from actual data
+        actual_prices: Dict[str, float] = {}
+        if df is not None and len(df) > 0:
+            for idx, row in df.iterrows():
+                ts = row.get("bar_ts", row.get("timestamp", idx))
+                if hasattr(ts, "strftime"):
+                    date_key = ts.strftime("%Y-%m-%d")
+                else:
+                    date_key = str(ts)[:10]
+                actual_prices[date_key] = float(row.get("close", 0))
+
+        # Enrich predictions with actual prices
+        enriched = []
+        total_error_pct = 0
+        direction_correct = 0
+        total_resolved = 0
+
+        for entry in entries[-limit:]:
+            pred_time = entry["timestamp"]
+            pred_date = pred_time[:10]
+            base_price = entry["current_price"]
+
+            for horizon, pred in entry.get("predictions", {}).items():
+                # Determine target date based on horizon
+                pred_dt = datetime.fromisoformat(pred_time.replace("Z", "+00:00").replace("+00:00", ""))
+                if horizon == "1h":
+                    target_dt = pred_dt + timedelta(hours=1)
+                elif horizon == "4h":
+                    target_dt = pred_dt + timedelta(hours=4)
+                elif horizon == "1d":
+                    target_dt = pred_dt + timedelta(days=1)
+                elif horizon == "1w":
+                    target_dt = pred_dt + timedelta(weeks=1)
+                else:
+                    target_dt = pred_dt + timedelta(days=1)
+
+                target_date = target_dt.strftime("%Y-%m-%d")
+                actual = actual_prices.get(target_date)
+
+                result_entry = {
+                    "predicted_at": pred_time,
+                    "horizon": horizon,
+                    "base_price": base_price,
+                    "predicted_price": pred["predicted_price"],
+                    "confidence": pred["confidence"],
+                    "direction": pred["direction"],
+                    "target_date": target_date,
+                    "actual_price": actual,
+                    "error_pct": None,
+                    "direction_correct": None,
+                }
+
+                if actual is not None and pred["predicted_price"]:
+                    error = abs(actual - pred["predicted_price"]) / actual * 100
+                    result_entry["error_pct"] = round(error, 2)
+                    total_error_pct += error
+                    total_resolved += 1
+
+                    # Check directional accuracy
+                    pred_direction = "UP" if pred["predicted_price"] > base_price else "DOWN"
+                    actual_direction = "UP" if actual > base_price else "DOWN"
+                    result_entry["direction_correct"] = pred_direction == actual_direction
+                    if result_entry["direction_correct"]:
+                        direction_correct += 1
+
+                enriched.append(result_entry)
+
+        accuracy = None
+        if total_resolved > 0:
+            accuracy = {
+                "mape": round(total_error_pct / total_resolved, 2),
+                "directional_accuracy": round(direction_correct / total_resolved * 100, 1),
+                "total_predictions": len(enriched),
+                "resolved": total_resolved,
+            }
+
+        return {
+            "status": "success",
+            "symbol": ticker,
+            "count": len(enriched),
+            "predictions": enriched,
+            "accuracy": accuracy,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
