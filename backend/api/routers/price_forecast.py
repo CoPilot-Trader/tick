@@ -369,24 +369,50 @@ async def get_prediction_history(
                 "accuracy": None,
             }
 
-        # Get current price data for backtracking
+        # Get current price data for backtracking (both daily and intraday)
         data_agent = get_data_agent()
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
-        df = data_agent.fetch_historical_sync(
-            symbol=ticker, start_date=start_date, end_date=end_date, timeframe="1d"
+
+        # Daily data for 1d/1w horizon matching
+        start_date_daily = end_date - timedelta(days=30)
+        df_daily = data_agent.fetch_historical_sync(
+            symbol=ticker, start_date=start_date_daily, end_date=end_date, timeframe="1d"
         )
 
-        # Build a date->price lookup from actual data
+        # Intraday data (5m bars, last 2 days) for 1h/4h horizon matching
+        start_date_intraday = end_date - timedelta(days=2)
+        df_intraday = None
+        try:
+            df_intraday = data_agent.fetch_historical_sync(
+                symbol=ticker, start_date=start_date_intraday, end_date=end_date, timeframe="5m"
+            )
+        except Exception:
+            pass
+
+        # Build date->price lookup from daily data
         actual_prices: Dict[str, float] = {}
-        if df is not None and len(df) > 0:
-            for idx, row in df.iterrows():
+        if df_daily is not None and len(df_daily) > 0:
+            for idx, row in df_daily.iterrows():
                 ts = row.get("bar_ts", row.get("timestamp", idx))
                 if hasattr(ts, "strftime"):
                     date_key = ts.strftime("%Y-%m-%d")
                 else:
                     date_key = str(ts)[:10]
                 actual_prices[date_key] = float(row.get("close", 0))
+
+        # Build timestamp->price lookup from intraday data (5-min resolution)
+        intraday_prices: Dict[int, float] = {}  # unix timestamp -> close price
+        if df_intraday is not None and len(df_intraday) > 0:
+            for idx, row in df_intraday.iterrows():
+                ts = row.get("bar_ts", row.get("timestamp", idx))
+                if hasattr(ts, "timestamp"):
+                    unix_ts = int(ts.timestamp())
+                else:
+                    try:
+                        unix_ts = int(datetime.fromisoformat(str(ts).replace("Z", "+00:00")).timestamp())
+                    except Exception:
+                        continue
+                intraday_prices[unix_ts] = float(row.get("close", 0))
 
         # Enrich predictions with actual prices
         enriched = []
@@ -414,7 +440,25 @@ async def get_prediction_history(
                     target_dt = pred_dt + timedelta(days=1)
 
                 target_date = target_dt.strftime("%Y-%m-%d")
-                actual = actual_prices.get(target_date)
+                target_timestamp = target_dt.strftime("%Y-%m-%dT%H:%M:%S")
+
+                # For short horizons (1h, 4h), try intraday data first
+                actual = None
+                if horizon in ("1h", "4h") and intraday_prices:
+                    target_unix = int(target_dt.timestamp())
+                    # Find closest candle within 10-minute window
+                    best_match = None
+                    best_diff = 600  # 10 minutes max
+                    for ts_unix, price in intraday_prices.items():
+                        diff = abs(ts_unix - target_unix)
+                        if diff < best_diff:
+                            best_diff = diff
+                            best_match = price
+                    actual = best_match
+
+                # For daily+ horizons, use daily data
+                if actual is None:
+                    actual = actual_prices.get(target_date)
 
                 result_entry = {
                     "predicted_at": pred_time,
@@ -424,6 +468,7 @@ async def get_prediction_history(
                     "confidence": pred["confidence"],
                     "direction": pred["direction"],
                     "target_date": target_date,
+                    "target_timestamp": target_timestamp,
                     "actual_price": actual,
                     "error_pct": None,
                     "direction_correct": None,

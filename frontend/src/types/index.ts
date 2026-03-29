@@ -90,6 +90,7 @@ export interface PredictionHistoryEntry {
   confidence: number;
   direction: string;
   target_date: string;
+  target_timestamp?: string;
   actual_price: number | null;
   error_pct: number | null;
   direction_correct: boolean | null;

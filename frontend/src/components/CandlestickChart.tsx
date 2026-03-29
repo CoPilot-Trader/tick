@@ -6,6 +6,7 @@ import {
   createSeriesMarkers,
   CandlestickSeries,
   LineSeries,
+  AreaSeries,
   HistogramSeries,
   IChartApi,
   CandlestickData,
@@ -307,11 +308,40 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     // Backtracking: predicted vs actual price dots from history
     const backtrackPredicted: LineData[] = [];
     const backtrackActual: LineData[] = [];
+
+    // Build a lookup of actual close prices from candle data (unix ts -> close)
+    const candleCloseLookup = new Map<number, number>();
+    candles.forEach((c) => {
+      candleCloseLookup.set(c.time as number, c.close);
+    });
+
+    const chartStart = candles.length > 0 ? (candles[0].time as number) : 0;
+    const chartEnd = candles.length > 0 ? (candles[candles.length - 1].time as number) : 0;
+
     (data.prediction_history || []).forEach((entry: PredictionHistoryEntry) => {
-      if (entry.actual_price !== null && entry.horizon === '1d') {
-        const targetTime = toTime(entry.target_date + 'T16:00:00');
-        backtrackPredicted.push({ time: targetTime, value: entry.predicted_price });
-        backtrackActual.push({ time: targetTime, value: entry.actual_price });
+      if (entry.actual_price === null) return; // Not yet resolved
+
+      // Use target_timestamp for intraday, fallback to target_date
+      const targetStr = entry.target_timestamp || (entry.target_date + 'T16:00:00');
+      const targetTs = Math.floor(new Date(targetStr).getTime() / 1000);
+
+      // Skip if outside chart's visible range
+      if (targetTs < chartStart || targetTs > chartEnd) return;
+
+      // Snap to nearest candle time for proper alignment
+      let snappedTime = targetTs;
+      let minDiff = Infinity;
+      for (const [ct] of candleCloseLookup.entries()) {
+        const diff = Math.abs(ct - targetTs);
+        if (diff < minDiff) {
+          minDiff = diff;
+          snappedTime = ct;
+        }
+      }
+
+      if (minDiff < 600) { // Within 10 minutes
+        backtrackPredicted.push({ time: snappedTime as unknown as Time, value: entry.predicted_price });
+        backtrackActual.push({ time: snappedTime as unknown as Time, value: entry.actual_price });
       }
     });
 
@@ -471,33 +501,86 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       });
     }
 
-    // Prediction line
+    // Prediction forecast — prominent area band + bold line
     if (filters.showPredictedPrice && chartData.predictionData.length > 1) {
+      // Upper confidence bound as filled area (shows the prediction zone)
+      if (chartData.upperBoundData.length > 1) {
+        const upperArea = chart.addSeries(AreaSeries, {
+          lineColor: 'rgba(66, 165, 245, 0.3)',
+          topColor: 'rgba(66, 165, 245, 0.25)',
+          bottomColor: 'rgba(66, 165, 245, 0.02)',
+          lineWidth: 1,
+          crosshairMarkerVisible: false,
+          priceLineVisible: false,
+        });
+        upperArea.setData(chartData.upperBoundData);
+      }
+
+      // Main forecast line — bold and visible
       const predSeries = chart.addSeries(LineSeries, {
-        color: '#42a5f5', lineWidth: 2, title: 'Forecast',
+        color: '#42a5f5', lineWidth: 3, title: 'Forecast',
+        crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 5,
       });
       predSeries.setData(chartData.predictionData);
 
+      // Show confidence bounds as dashed lines
       if (filters.showConfidenceBounds) {
-        const up = chart.addSeries(LineSeries, { color: '#42a5f5', lineWidth: 1, lineStyle: LineStyle.Dashed, title: '' });
-        up.setData(chartData.upperBoundData);
-        const lo = chart.addSeries(LineSeries, { color: '#42a5f5', lineWidth: 1, lineStyle: LineStyle.Dashed, title: '' });
-        lo.setData(chartData.lowerBoundData);
+        if (chartData.upperBoundData.length > 1) {
+          const up = chart.addSeries(LineSeries, { color: '#42a5f580', lineWidth: 1, lineStyle: LineStyle.Dashed, title: '' });
+          up.setData(chartData.upperBoundData);
+        }
+        if (chartData.lowerBoundData.length > 1) {
+          const lo = chart.addSeries(LineSeries, { color: '#42a5f580', lineWidth: 1, lineStyle: LineStyle.Dashed, title: '' });
+          lo.setData(chartData.lowerBoundData);
+        }
+      }
+
+      // Add price label at the forecast endpoint
+      const lastPred = chartData.predictionData[chartData.predictionData.length - 1];
+      if (lastPred) {
+        try {
+          predSeries.createPriceLine({
+            price: lastPred.value,
+            color: '#42a5f5',
+            lineWidth: 1,
+            lineStyle: LineStyle.Dotted,
+            axisLabelVisible: true,
+            title: `▸ ${lastPred.value.toFixed(2)}`,
+          });
+        } catch { /* noop */ }
       }
     }
 
-    // Backtracking: predicted vs actual overlay
+    // Backtracking: predicted vs actual overlay with markers
     if (chartData.backtrackPredicted.length > 0) {
       const predLine = chart.addSeries(LineSeries, {
-        color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Predicted',
+        color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Was Predicted',
         crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 4,
+        lastValueVisible: true,
+        priceLineVisible: false,
       });
       predLine.setData(chartData.backtrackPredicted);
+
+      // Add markers on predicted points
+      if (chartData.backtrackPredicted.length > 0) {
+        createSeriesMarkers(predLine, chartData.backtrackPredicted.map(p => ({
+          time: p.time,
+          position: 'aboveBar' as const,
+          color: '#ff9800',
+          shape: 'circle' as const,
+          text: `P:${p.value.toFixed(1)}`,
+        })));
+      }
     }
     if (chartData.backtrackActual.length > 0) {
       const actLine = chart.addSeries(LineSeries, {
-        color: '#4caf50', lineWidth: 2, title: 'Actual',
+        color: '#4caf50', lineWidth: 2, title: 'Actual Was',
         crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 4,
+        lastValueVisible: true,
+        priceLineVisible: false,
       });
       actLine.setData(chartData.backtrackActual);
     }
