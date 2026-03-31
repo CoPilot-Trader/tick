@@ -322,8 +322,8 @@ def _load_log(ticker: str) -> List[Dict[str, Any]]:
 
 def _save_log(ticker: str, entries: List[Dict[str, Any]]):
     path = _log_path(ticker)
-    # Keep last 500 entries max
-    entries = entries[-500:]
+    # Keep last 2000 entries max (~7 days of 5-min predictions)
+    entries = entries[-2000:]
     path.write_text(json.dumps(entries, default=str))
 
 
