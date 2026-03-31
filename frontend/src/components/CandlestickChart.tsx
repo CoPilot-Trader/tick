@@ -179,6 +179,10 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   const chartRef = useRef<IChartApi | null>(null);
   const rsiChartRef = useRef<IChartApi | null>(null);
   const macdChartRef = useRef<IChartApi | null>(null);
+  const candleSeriesRef = useRef<any>(null);
+  const volumeSeriesRef = useRef<any>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const livePriceRef = useRef<HTMLSpanElement>(null);
 
   // Expose screenshot & reset to parent
   useImperativeHandle(ref, () => ({
@@ -309,41 +313,39 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     const backtrackPredicted: LineData[] = [];
     const backtrackActual: LineData[] = [];
 
-    // Build a lookup of actual close prices from candle data (unix ts -> close)
-    const candleCloseLookup = new Map<number, number>();
-    candles.forEach((c) => {
-      candleCloseLookup.set(c.time as number, c.close);
-    });
+    if ((data.prediction_history || []).length > 0 && candles.length > 0) {
+      // Strategy: for each resolved prediction, find the nearest candle by
+      // scanning all candles and picking the closest one. This handles timezone
+      // mismatches between UTC predictions and timezone-aware candle data.
+      const candleTimes = candles.map(c => c.time as number);
+      const usedTimes = new Set<number>(); // avoid duplicate markers at same candle
 
-    const chartStart = candles.length > 0 ? (candles[0].time as number) : 0;
-    const chartEnd = candles.length > 0 ? (candles[candles.length - 1].time as number) : 0;
+      (data.prediction_history || []).forEach((entry: PredictionHistoryEntry) => {
+        if (entry.actual_price === null) return;
 
-    (data.prediction_history || []).forEach((entry: PredictionHistoryEntry) => {
-      if (entry.actual_price === null) return; // Not yet resolved
+        // Parse target timestamp — try target_timestamp first, then target_date
+        const targetStr = entry.target_timestamp || (entry.target_date + 'T16:00:00Z');
+        const targetTs = Math.floor(new Date(targetStr).getTime() / 1000);
 
-      // Use target_timestamp for intraday, fallback to target_date
-      const targetStr = entry.target_timestamp || (entry.target_date + 'T16:00:00');
-      const targetTs = Math.floor(new Date(targetStr).getTime() / 1000);
-
-      // Skip if outside chart's visible range
-      if (targetTs < chartStart || targetTs > chartEnd) return;
-
-      // Snap to nearest candle time for proper alignment
-      let snappedTime = targetTs;
-      let minDiff = Infinity;
-      for (const [ct] of candleCloseLookup.entries()) {
-        const diff = Math.abs(ct - targetTs);
-        if (diff < minDiff) {
-          minDiff = diff;
-          snappedTime = ct;
+        // Find closest candle (no max distance — just snap to nearest)
+        let bestCandle = candleTimes[0];
+        let bestDiff = Math.abs(candleTimes[0] - targetTs);
+        for (let i = 1; i < candleTimes.length; i++) {
+          const diff = Math.abs(candleTimes[i] - targetTs);
+          if (diff < bestDiff) {
+            bestDiff = diff;
+            bestCandle = candleTimes[i];
+          }
         }
-      }
 
-      if (minDiff < 600) { // Within 10 minutes
-        backtrackPredicted.push({ time: snappedTime as unknown as Time, value: entry.predicted_price });
-        backtrackActual.push({ time: snappedTime as unknown as Time, value: entry.actual_price });
-      }
-    });
+        // Only show if within 24 hours of a candle (handles cross-day)
+        if (bestDiff < 86400 && !usedTimes.has(bestCandle)) {
+          usedTimes.add(bestCandle);
+          backtrackPredicted.push({ time: bestCandle as unknown as Time, value: entry.predicted_price });
+          backtrackActual.push({ time: bestCandle as unknown as Time, value: entry.actual_price });
+        }
+      });
+    }
 
     return {
       candles, volume, sma50Data, sma200Data, bbUpperData, bbLowerData,
@@ -426,6 +428,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       wickDownColor: '#ef5350',
     });
     candleSeries.setData(chartData.candles);
+    candleSeriesRef.current = candleSeries;
 
     // Current price line
     if (chartData.currentPrice > 0) {
@@ -449,6 +452,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       priceScaleId: 'volume',
     });
     volumeSeries.setData(chartData.volume);
+    volumeSeriesRef.current = volumeSeries;
     chart.priceScale('volume').applyOptions({
       scaleMargins: { top: 0.85, bottom: 0 },
     });
@@ -732,6 +736,73 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     };
   }, [chartData, filters, data.support_levels, data.resistance_levels, activeTool]);
 
+  // ─── WebSocket live streaming ──────────────────────────────────────
+  useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const wsUrl = API_BASE.replace(/^http/, 'ws') + `/ws/stream/${data.symbol}`;
+
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout;
+
+    const connect = () => {
+      try {
+        ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+
+            if (msg.type === 'candle' && candleSeriesRef.current) {
+              // Update or add candle
+              const candleUpdate = {
+                time: Math.floor(new Date(msg.timestamp).getTime() / 1000) as Time,
+                open: msg.open,
+                high: msg.high,
+                low: msg.low,
+                close: msg.close,
+              };
+              candleSeriesRef.current.update(candleUpdate);
+
+              // Update volume
+              if (volumeSeriesRef.current) {
+                volumeSeriesRef.current.update({
+                  time: candleUpdate.time,
+                  value: msg.volume,
+                  color: msg.close >= msg.open ? 'rgba(38, 166, 154, 0.35)' : 'rgba(239, 83, 80, 0.35)',
+                });
+              }
+            }
+
+            if (msg.type === 'tick' && livePriceRef.current) {
+              livePriceRef.current.textContent = msg.price.toFixed(2);
+            }
+          } catch { /* ignore parse errors */ }
+        };
+
+        ws.onclose = () => {
+          // Reconnect after 3 seconds
+          reconnectTimeout = setTimeout(connect, 3000);
+        };
+
+        ws.onerror = () => {
+          ws?.close();
+        };
+      } catch { /* noop */ }
+    };
+
+    connect();
+
+    return () => {
+      clearTimeout(reconnectTimeout);
+      if (ws) {
+        ws.onclose = null; // Prevent reconnect on intentional close
+        ws.close();
+      }
+      wsRef.current = null;
+    };
+  }, [data.symbol]);
+
   // Toggle helper
   const toggleFilter = useCallback(
     (key: keyof GraphFilters) => {
@@ -765,7 +836,11 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold" style={{ color: '#d1d4dc' }}>{data.symbol}</span>
           <span className="text-sm font-semibold" style={{ color: isPositive ? '#26a69a' : '#ef5350' }}>
-            {lastPrice.toFixed(2)}
+            <span ref={livePriceRef}>{lastPrice.toFixed(2)}</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#26a69a' }} />
+            <span className="text-[9px]" style={{ color: '#787b86' }}>LIVE</span>
           </span>
           <span className="text-xs" style={{ color: isPositive ? '#26a69a' : '#ef5350' }}>
             {isPositive ? '+' : ''}{priceChange.toFixed(2)} ({isPositive ? '+' : ''}{priceChangePct.toFixed(2)}%)

@@ -440,7 +440,7 @@ async def get_prediction_history(
                     target_dt = pred_dt + timedelta(days=1)
 
                 target_date = target_dt.strftime("%Y-%m-%d")
-                target_timestamp = target_dt.strftime("%Y-%m-%dT%H:%M:%S")
+                target_timestamp = target_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
                 # For short horizons (1h, 4h), try intraday data first
                 actual = None
