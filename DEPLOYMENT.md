@@ -59,7 +59,7 @@ newgrp docker
 ## Step 4: Clone & Configure
 
 ```bash
-git clone https://github.com/CoPilot-Trader/tick.git && cd tick && git checkout feature/level-detection
+git clone https://github.com/CoPilot-Trader/tick.git && cd tick
 ```
 
 Create the `.env` file (replace `EXTERNAL_IP` with your VM's IP from Step 1):
@@ -126,7 +126,7 @@ docker compose -f docker-compose.prod.yml logs -f             # all services
 ### Restart after code update
 ```bash
 cd ~/tick
-git pull origin feature/level-detection
+git pull origin main
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
