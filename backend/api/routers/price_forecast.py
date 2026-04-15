@@ -379,8 +379,8 @@ async def get_prediction_history(
             symbol=ticker, start_date=start_date_daily, end_date=end_date, timeframe="1d"
         )
 
-        # Intraday data (5m bars, last 2 days) for 1h/4h horizon matching
-        start_date_intraday = end_date - timedelta(days=2)
+        # Intraday data (5m bars, last 10 days) for 1h/4h horizon matching
+        start_date_intraday = end_date - timedelta(days=10)
         df_intraday = None
         try:
             df_intraday = data_agent.fetch_historical_sync(
@@ -446,9 +446,9 @@ async def get_prediction_history(
                 actual = None
                 if horizon in ("1h", "4h") and intraday_prices:
                     target_unix = int(target_dt.timestamp())
-                    # Find closest candle within 10-minute window
+                    # Find closest candle within 30-minute window
                     best_match = None
-                    best_diff = 600  # 10 minutes max
+                    best_diff = 1800  # 30 minutes max
                     for ts_unix, price in intraday_prices.items():
                         diff = abs(ts_unix - target_unix)
                         if diff < best_diff:
