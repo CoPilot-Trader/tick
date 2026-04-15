@@ -386,7 +386,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
     // Calculate dynamic heights
     const toolbarHeight = 36; // toolbar above chart
-    const subChartCount = (filters.showRSI ? 1 : 0) + (filters.showMACD ? 1 : 0) + (filters.showPredictionAccuracy ? 1 : 0);
+    const subChartCount = (filters.showRSI ? 1 : 0) + (filters.showMACD ? 1 : 0);
     const subChartHeight = 120;
     const subChartLabelHeight = 20;
     const availableHeight = wrapperHeight - toolbarHeight;
@@ -688,11 +688,14 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       });
     }
 
-    // ─── Prediction Accuracy sub-chart ────────────────────────────────
+    // ─── Prediction Accuracy side panel chart ──────────────────────────
     if (filters.showPredictionAccuracy && predAccContainerRef.current && (chartData.backtrackPredicted.length > 0 || chartData.backtrackActual.length > 0)) {
+      const predAccWidth = predAccContainerRef.current.clientWidth || Math.floor(containerWidth * 0.3);
+      const predAccHeight = predAccContainerRef.current.clientHeight || mainChartHeight;
+
       const predAccChart = createChart(predAccContainerRef.current, {
-        width: containerWidth,
-        height: subChartHeight,
+        width: predAccWidth,
+        height: predAccHeight,
         layout: { background: { type: ColorType.Solid, color: bgColor }, textColor, fontSize: 10 },
         grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
         crosshair: {
@@ -700,23 +703,35 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           vertLine: { color: '#758696', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#2a2e39' },
           horzLine: { color: '#758696', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#2a2e39' },
         },
-        rightPriceScale: { borderColor },
-        timeScale: { visible: false },
+        rightPriceScale: { borderColor, scaleMargins: { top: 0.05, bottom: 0.05 } },
+        timeScale: { borderColor, timeVisible: true, secondsVisible: false, rightOffset: 2, barSpacing: 4 },
       });
       predAccChartRef.current = predAccChart;
 
       if (chartData.backtrackPredicted.length > 0) {
-        const ps = predAccChart.addSeries(LineSeries, { color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Predicted' });
+        const ps = predAccChart.addSeries(LineSeries, {
+          color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Predicted',
+          crosshairMarkerVisible: true, crosshairMarkerRadius: 3,
+        });
         ps.setData(chartData.backtrackPredicted);
       }
       if (chartData.backtrackActual.length > 0) {
-        const as2 = predAccChart.addSeries(LineSeries, { color: '#4caf50', lineWidth: 2, title: 'Actual' });
+        const as2 = predAccChart.addSeries(AreaSeries, {
+          lineColor: '#4caf50', lineWidth: 2, title: 'Actual',
+          topColor: 'rgba(76, 175, 80, 0.15)', bottomColor: 'rgba(76, 175, 80, 0.02)',
+          crosshairMarkerVisible: true, crosshairMarkerRadius: 3,
+        });
         as2.setData(chartData.backtrackActual);
       }
 
       predAccChart.timeScale().fitContent();
+
+      // Sync time axes both ways
       chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
         if (range) predAccChart.timeScale().setVisibleLogicalRange(range);
+      });
+      predAccChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (range) chart.timeScale().setVisibleLogicalRange(range);
       });
     }
 
@@ -725,12 +740,17 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       if (!chartContainerRef.current || !wrapperRef.current) return;
       const w = chartContainerRef.current.clientWidth;
       const wh = wrapperRef.current.clientHeight;
-      const sc = (filters.showRSI ? 1 : 0) + (filters.showMACD ? 1 : 0) + (filters.showPredictionAccuracy ? 1 : 0);
+      const sc = (filters.showRSI ? 1 : 0) + (filters.showMACD ? 1 : 0);
       const mh = Math.max(200, wh - toolbarHeight - sc * (subChartHeight + subChartLabelHeight));
       chart.applyOptions({ width: w, height: mh });
-      if (rsiChartRef.current) rsiChartRef.current.applyOptions({ width: w });
-      if (macdChartRef.current) macdChartRef.current.applyOptions({ width: w });
-      if (predAccChartRef.current) predAccChartRef.current.applyOptions({ width: w });
+      if (rsiChartRef.current) rsiChartRef.current.applyOptions({ width: w + (predAccContainerRef.current?.clientWidth || 0) });
+      if (macdChartRef.current) macdChartRef.current.applyOptions({ width: w + (predAccContainerRef.current?.clientWidth || 0) });
+      if (predAccChartRef.current && predAccContainerRef.current) {
+        predAccChartRef.current.applyOptions({
+          width: predAccContainerRef.current.clientWidth,
+          height: mh,
+        });
+      }
     };
     window.addEventListener('resize', handleResize);
 
@@ -908,25 +928,46 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       </div>
 
       {/* ─── Chart area ────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 flex flex-col relative">
-        <div ref={chartContainerRef} className="flex-1 min-h-0" />
-        {/* News tooltip */}
-        <div
-          ref={tooltipRef}
-          style={{
-            display: 'none',
-            position: 'absolute',
-            zIndex: 50,
-            maxWidth: 280,
-            padding: '8px 10px',
-            background: '#1e222d',
-            border: '1px solid #2a2e39',
-            borderRadius: 6,
-            fontSize: 11,
-            pointerEvents: 'none',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          }}
-        />
+      <div className="flex-1 min-h-0 flex flex-col">
+        {/* Main row: candlestick chart + prediction accuracy side panel */}
+        <div className="flex-1 min-h-0 flex relative">
+          {/* Main chart */}
+          <div ref={chartContainerRef} className={filters.showPredictionAccuracy ? 'min-h-0' : 'flex-1 min-h-0'} style={filters.showPredictionAccuracy ? { flex: '7 1 0%', minHeight: 0 } : undefined} />
+
+          {/* Predicted vs Actual — right side panel */}
+          {filters.showPredictionAccuracy && (
+            <div style={{ flex: '3 1 0%', minHeight: 0, borderLeft: '1px solid #2a2e39', display: 'flex', flexDirection: 'column' }}>
+              <div className="px-2 py-0.5 text-[10px] font-medium flex items-center gap-2 flex-shrink-0" style={{ background: '#1e222d', borderBottom: '1px solid #2a2e39' }}>
+                <span style={{ color: '#ff9800' }}>● Predicted</span>
+                <span style={{ color: '#4caf50' }}>● Actual</span>
+                {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (
+                  <span style={{ color: '#787b86' }}>
+                    MAPE {data.prediction_accuracy.mape}%
+                  </span>
+                )}
+              </div>
+              <div ref={predAccContainerRef} className="flex-1 min-h-0" />
+            </div>
+          )}
+
+          {/* News tooltip */}
+          <div
+            ref={tooltipRef}
+            style={{
+              display: 'none',
+              position: 'absolute',
+              zIndex: 50,
+              maxWidth: 280,
+              padding: '8px 10px',
+              background: '#1e222d',
+              border: '1px solid #2a2e39',
+              borderRadius: 6,
+              fontSize: 11,
+              pointerEvents: 'none',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+            }}
+          />
+        </div>
 
         {/* RSI */}
         <div className={filters.showRSI ? '' : 'hidden'} style={{ borderTop: '1px solid #2a2e39' }}>
@@ -938,20 +979,6 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         <div className={filters.showMACD ? '' : 'hidden'} style={{ borderTop: '1px solid #2a2e39' }}>
           <div className="px-2 py-0.5 text-[10px] font-medium" style={{ color: '#2962ff', background: '#131722' }}>MACD (12,26,9)</div>
           <div ref={macdContainerRef} />
-        </div>
-
-        {/* Predicted vs Actual */}
-        <div className={filters.showPredictionAccuracy ? '' : 'hidden'} style={{ borderTop: '1px solid #2a2e39' }}>
-          <div className="px-2 py-0.5 text-[10px] font-medium flex items-center gap-3" style={{ background: '#131722' }}>
-            <span style={{ color: '#ff9800' }}>● Predicted</span>
-            <span style={{ color: '#4caf50' }}>● Actual</span>
-            {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (
-              <span style={{ color: '#787b86' }}>
-                MAPE: {data.prediction_accuracy.mape}% | Direction: {data.prediction_accuracy.directional_accuracy}% | {data.prediction_accuracy.resolved} resolved
-              </span>
-            )}
-          </div>
-          <div ref={predAccContainerRef} />
         </div>
       </div>
     </div>
