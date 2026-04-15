@@ -576,8 +576,17 @@ export class ApiClient {
       const news_events: { timestamp: string; title: string; source: string; sentiment: number; impact: 'High' | 'Medium' | 'Low' }[] = [];
       if (newsResult?.articles) {
         for (const article of newsResult.articles) {
+          // Normalize timestamp — API may return "20260415T071857" (no dashes)
+          let rawTs = article.published_at || article.publishedAt || '';
+          if (rawTs && !rawTs.includes('-')) {
+            // Convert "20260415T071857" -> "2026-04-15T07:18:57"
+            rawTs = rawTs.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/, '$1-$2-$3T$4:$5:$6');
+          }
+          const parsedDate = new Date(rawTs);
+          const isoTs = isNaN(parsedDate.getTime()) ? new Date().toISOString() : parsedDate.toISOString();
+
           news_events.push({
-            timestamp: article.published_at || article.publishedAt || new Date().toISOString(),
+            timestamp: isoTs,
             title: article.title || 'News',
             source: article.source || 'Unknown',
             sentiment: article.relevance_score || 0,

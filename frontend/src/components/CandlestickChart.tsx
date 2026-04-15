@@ -309,25 +309,25 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       }
     });
 
-    // Backtracking: predicted vs actual price dots from history
+    // Backtracking: predicted vs actual price overlay from history
+    // Aggregate resolved predictions per candle (keep last prediction per candle time)
     const backtrackPredicted: LineData[] = [];
     const backtrackActual: LineData[] = [];
 
     if ((data.prediction_history || []).length > 0 && candles.length > 0) {
-      // Strategy: for each resolved prediction, find the nearest candle by
-      // scanning all candles and picking the closest one. This handles timezone
-      // mismatches between UTC predictions and timezone-aware candle data.
       const candleTimes = candles.map(c => c.time as number);
-      const usedTimes = new Set<number>(); // avoid duplicate markers at same candle
+
+      // Map: candle unix time -> { predicted, actual } (last write wins)
+      const candleMap = new Map<number, { predicted: number; actual: number }>();
 
       (data.prediction_history || []).forEach((entry: PredictionHistoryEntry) => {
         if (entry.actual_price === null) return;
 
-        // Parse target timestamp — try target_timestamp first, then target_date
         const targetStr = entry.target_timestamp || (entry.target_date + 'T16:00:00Z');
         const targetTs = Math.floor(new Date(targetStr).getTime() / 1000);
+        if (isNaN(targetTs)) return;
 
-        // Find closest candle (no max distance — just snap to nearest)
+        // Find closest candle
         let bestCandle = candleTimes[0];
         let bestDiff = Math.abs(candleTimes[0] - targetTs);
         for (let i = 1; i < candleTimes.length; i++) {
@@ -338,13 +338,22 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           }
         }
 
-        // Only show if within 24 hours of a candle (handles cross-day)
-        if (bestDiff < 86400 && !usedTimes.has(bestCandle)) {
-          usedTimes.add(bestCandle);
-          backtrackPredicted.push({ time: bestCandle as unknown as Time, value: entry.predicted_price });
-          backtrackActual.push({ time: bestCandle as unknown as Time, value: entry.actual_price });
+        // Only show if within 2 hours of a candle
+        if (bestDiff < 7200) {
+          candleMap.set(bestCandle, {
+            predicted: entry.predicted_price,
+            actual: entry.actual_price,
+          });
         }
       });
+
+      // Convert map to sorted arrays
+      const sortedKeys = Array.from(candleMap.keys()).sort((a, b) => a - b);
+      for (const t of sortedKeys) {
+        const v = candleMap.get(t)!;
+        backtrackPredicted.push({ time: t as unknown as Time, value: v.predicted });
+        backtrackActual.push({ time: t as unknown as Time, value: v.actual });
+      }
     }
 
     return {
@@ -556,31 +565,20 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       }
     }
 
-    // Backtracking: predicted vs actual overlay with markers
+    // Backtracking: predicted (orange dashed) vs actual (green) overlay
     if (chartData.backtrackPredicted.length > 0) {
       const predLine = chart.addSeries(LineSeries, {
-        color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Was Predicted',
+        color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Predicted',
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 4,
         lastValueVisible: true,
         priceLineVisible: false,
       });
       predLine.setData(chartData.backtrackPredicted);
-
-      // Add markers on predicted points
-      if (chartData.backtrackPredicted.length > 0) {
-        createSeriesMarkers(predLine, chartData.backtrackPredicted.map(p => ({
-          time: p.time,
-          position: 'aboveBar' as const,
-          color: '#ff9800',
-          shape: 'circle' as const,
-          text: `P:${p.value.toFixed(1)}`,
-        })));
-      }
     }
     if (chartData.backtrackActual.length > 0) {
       const actLine = chart.addSeries(LineSeries, {
-        color: '#4caf50', lineWidth: 2, title: 'Actual Was',
+        color: '#4caf50', lineWidth: 2, title: 'Actual',
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 4,
         lastValueVisible: true,
