@@ -175,10 +175,12 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const rsiContainerRef = useRef<HTMLDivElement>(null);
   const macdContainerRef = useRef<HTMLDivElement>(null);
+  const predAccContainerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const rsiChartRef = useRef<IChartApi | null>(null);
   const macdChartRef = useRef<IChartApi | null>(null);
+  const predAccChartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<any>(null);
   const volumeSeriesRef = useRef<any>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -376,13 +378,15 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     rsiChartRef.current = null;
     try { if (macdChartRef.current) { macdChartRef.current.remove(); } } catch { /* noop */ }
     macdChartRef.current = null;
+    try { if (predAccChartRef.current) { predAccChartRef.current.remove(); } } catch { /* noop */ }
+    predAccChartRef.current = null;
 
     const containerWidth = chartContainerRef.current.clientWidth;
     const wrapperHeight = wrapperRef.current.clientHeight;
 
     // Calculate dynamic heights
     const toolbarHeight = 36; // toolbar above chart
-    const subChartCount = (filters.showRSI ? 1 : 0) + (filters.showMACD ? 1 : 0);
+    const subChartCount = (filters.showRSI ? 1 : 0) + (filters.showMACD ? 1 : 0) + (filters.showPredictionAccuracy ? 1 : 0);
     const subChartHeight = 120;
     const subChartLabelHeight = 20;
     const availableHeight = wrapperHeight - toolbarHeight;
@@ -565,28 +569,6 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       }
     }
 
-    // Backtracking: predicted (orange dashed) vs actual (green) overlay
-    if (chartData.backtrackPredicted.length > 0) {
-      const predLine = chart.addSeries(LineSeries, {
-        color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Predicted',
-        crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 4,
-        lastValueVisible: true,
-        priceLineVisible: false,
-      });
-      predLine.setData(chartData.backtrackPredicted);
-    }
-    if (chartData.backtrackActual.length > 0) {
-      const actLine = chart.addSeries(LineSeries, {
-        color: '#4caf50', lineWidth: 2, title: 'Actual',
-        crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 4,
-        lastValueVisible: true,
-        priceLineVisible: false,
-      });
-      actLine.setData(chartData.backtrackActual);
-    }
-
     // Signal markers + news markers combined (must be sorted by time)
     const allMarkers = [...chartData.markers];
     if (filters.showNewsEvents && chartData.newsMarkers.length > 0) {
@@ -706,16 +688,49 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       });
     }
 
+    // ─── Prediction Accuracy sub-chart ────────────────────────────────
+    if (filters.showPredictionAccuracy && predAccContainerRef.current && (chartData.backtrackPredicted.length > 0 || chartData.backtrackActual.length > 0)) {
+      const predAccChart = createChart(predAccContainerRef.current, {
+        width: containerWidth,
+        height: subChartHeight,
+        layout: { background: { type: ColorType.Solid, color: bgColor }, textColor, fontSize: 10 },
+        grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
+        crosshair: {
+          mode: CrosshairMode.Normal,
+          vertLine: { color: '#758696', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#2a2e39' },
+          horzLine: { color: '#758696', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#2a2e39' },
+        },
+        rightPriceScale: { borderColor },
+        timeScale: { visible: false },
+      });
+      predAccChartRef.current = predAccChart;
+
+      if (chartData.backtrackPredicted.length > 0) {
+        const ps = predAccChart.addSeries(LineSeries, { color: '#ff9800', lineWidth: 2, lineStyle: LineStyle.Dashed, title: 'Predicted' });
+        ps.setData(chartData.backtrackPredicted);
+      }
+      if (chartData.backtrackActual.length > 0) {
+        const as2 = predAccChart.addSeries(LineSeries, { color: '#4caf50', lineWidth: 2, title: 'Actual' });
+        as2.setData(chartData.backtrackActual);
+      }
+
+      predAccChart.timeScale().fitContent();
+      chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (range) predAccChart.timeScale().setVisibleLogicalRange(range);
+      });
+    }
+
     // ─── Resize ──────────────────────────────────────────────────────
     const handleResize = () => {
       if (!chartContainerRef.current || !wrapperRef.current) return;
       const w = chartContainerRef.current.clientWidth;
       const wh = wrapperRef.current.clientHeight;
-      const sc = (filters.showRSI ? 1 : 0) + (filters.showMACD ? 1 : 0);
+      const sc = (filters.showRSI ? 1 : 0) + (filters.showMACD ? 1 : 0) + (filters.showPredictionAccuracy ? 1 : 0);
       const mh = Math.max(200, wh - toolbarHeight - sc * (subChartHeight + subChartLabelHeight));
       chart.applyOptions({ width: w, height: mh });
       if (rsiChartRef.current) rsiChartRef.current.applyOptions({ width: w });
       if (macdChartRef.current) macdChartRef.current.applyOptions({ width: w });
+      if (predAccChartRef.current) predAccChartRef.current.applyOptions({ width: w });
     };
     window.addEventListener('resize', handleResize);
 
@@ -731,6 +746,8 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       rsiChartRef.current = null;
       try { if (macdChartRef.current) { macdChartRef.current.remove(); } } catch { /* noop */ }
       macdChartRef.current = null;
+      try { if (predAccChartRef.current) { predAccChartRef.current.remove(); } } catch { /* noop */ }
+      predAccChartRef.current = null;
     };
   }, [chartData, filters, data.support_levels, data.resistance_levels, activeTool]);
 
@@ -818,6 +835,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     { key: 'showPredictedPrice', label: 'Forecast', color: '#42a5f5' },
     { key: 'showConfidenceBounds', label: 'Bounds', color: '#42a5f5' },
     { key: 'showNewsEvents', label: 'News', color: '#ffb74d' },
+    { key: 'showPredictionAccuracy', label: 'Pred vs Actual', color: '#ff9800' },
   ];
 
   // Price info
@@ -920,6 +938,20 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         <div className={filters.showMACD ? '' : 'hidden'} style={{ borderTop: '1px solid #2a2e39' }}>
           <div className="px-2 py-0.5 text-[10px] font-medium" style={{ color: '#2962ff', background: '#131722' }}>MACD (12,26,9)</div>
           <div ref={macdContainerRef} />
+        </div>
+
+        {/* Predicted vs Actual */}
+        <div className={filters.showPredictionAccuracy ? '' : 'hidden'} style={{ borderTop: '1px solid #2a2e39' }}>
+          <div className="px-2 py-0.5 text-[10px] font-medium flex items-center gap-3" style={{ background: '#131722' }}>
+            <span style={{ color: '#ff9800' }}>● Predicted</span>
+            <span style={{ color: '#4caf50' }}>● Actual</span>
+            {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (
+              <span style={{ color: '#787b86' }}>
+                MAPE: {data.prediction_accuracy.mape}% | Direction: {data.prediction_accuracy.directional_accuracy}% | {data.prediction_accuracy.resolved} resolved
+              </span>
+            )}
+          </div>
+          <div ref={predAccContainerRef} />
         </div>
       </div>
     </div>

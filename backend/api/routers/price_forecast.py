@@ -350,7 +350,7 @@ def _store_prediction(ticker: str, current_price: float, predictions: Dict[str, 
 @router.get("/{ticker}/history")
 async def get_prediction_history(
     ticker: str,
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(500, ge=1, le=2000),
 ) -> Dict[str, Any]:
     """
     Get prediction history with actual price comparison.

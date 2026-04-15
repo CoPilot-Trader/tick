@@ -520,7 +520,7 @@ export class ApiClient {
         this.getPriceForecast(symbol, ['1h']).catch(() => null),
         this.getLevels(symbol, { max_levels: 3 }).catch(() => null),
         this.getNewsArticles(symbol, 7).catch(() => null),
-        this.getPredictionHistory(symbol, 50).catch(() => null),
+        this.getPredictionHistory(symbol, 500).catch(() => null),
       ]);
 
       // Use real OHLCV data if available, otherwise generate intraday fallback

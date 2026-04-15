@@ -136,4 +136,5 @@ export interface GraphFilters {
   showMovingAverages: boolean;
   showNewsEvents: boolean;
   showTimingSignals: boolean;
+  showPredictionAccuracy: boolean;
 }
