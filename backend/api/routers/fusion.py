@@ -9,8 +9,9 @@ Provides REST endpoints for:
 
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
+from api.middleware.rate_limit import limiter
 
 # Import agents
 import sys
@@ -148,8 +149,17 @@ async def health_check():
     return fusion_agent.health_check()
 
 
+@router.get("/weights")
+async def get_weights() -> Dict[str, Any]:
+    """Get current component weights."""
+    fusion_agent = get_fusion_agent()
+    return {"weights": fusion_agent.component_weights}
+
+
 @router.get("/{ticker}")
+@limiter.limit("20/minute")
 async def get_fused_signal(
+    request: Request,
     ticker: str,
     days: int = Query(365, ge=100, le=1825, description="Days of price data"),
     news_days: int = Query(7, ge=1, le=30, description="Days of news data"),
@@ -432,13 +442,6 @@ async def get_quick_signal(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/weights")
-async def get_weights() -> Dict[str, float]:
-    """Get current component weights."""
-    fusion_agent = get_fusion_agent()
-    return fusion_agent.component_weights
 
 
 @router.put("/weights")

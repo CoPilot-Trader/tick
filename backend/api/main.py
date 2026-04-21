@@ -4,15 +4,20 @@ Main FastAPI application.
 
 import asyncio
 import logging
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from functools import partial
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
+
+from api.middleware.auth import verify_api_key
+from api.middleware.rate_limit import limiter, rate_limit_exceeded_handler
 
 logger = logging.getLogger(__name__)
 
@@ -127,14 +132,29 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS configuration
-# Allow all origins for development (including file:// for local HTML files)
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# CORS configuration — restrict origins in production via TICK_CORS_ORIGINS
+# (comma-separated list). In development leave unset to allow the local
+# Next.js dev server and common localhost variants.
+_cors_env = os.getenv("TICK_CORS_ORIGINS", "").strip()
+if _cors_env:
+    _cors_origins = [o.strip() for o in _cors_env.split(",") if o.strip()]
+else:
+    _cors_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key"],
 )
 
 
@@ -157,23 +177,25 @@ from api.routers import sentiment, fusion
 from api.routers import backtest, alerts
 from api.routers import data, streaming
 
-app.include_router(news_pipeline_visualizer.router)
-app.include_router(support_resistance_agent.router)
+_auth = [Depends(verify_api_key)]
+
+app.include_router(news_pipeline_visualizer.router, dependencies=_auth)
+app.include_router(support_resistance_agent.router, dependencies=_auth)
 
 # M2 Prediction Agents
-app.include_router(price_forecast.router)
-app.include_router(trend_classification.router)
+app.include_router(price_forecast.router, dependencies=_auth)
+app.include_router(trend_classification.router, dependencies=_auth)
 
 # M3 Sentiment & Fusion Agents
-app.include_router(sentiment.router)
-app.include_router(fusion.router)
+app.include_router(sentiment.router, dependencies=_auth)
+app.include_router(fusion.router, dependencies=_auth)
 
 # M4 Backtesting & Alerts
-app.include_router(backtest.router)
-app.include_router(alerts.router)
+app.include_router(backtest.router, dependencies=_auth)
+app.include_router(alerts.router, dependencies=_auth)
 
 # Data endpoints
-app.include_router(data.router)
+app.include_router(data.router, dependencies=_auth)
 
 # Real-time streaming
 app.include_router(streaming.router)

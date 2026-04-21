@@ -1,0 +1,25 @@
+[run]
+branch = False
+omit =
+    */tests/*
+    */test_*
+    api/routes/*
+    api/routers/news_pipeline_visualizer.py
+    agents/*/tests/*
+    agents/*/training/*
+    agents/*/models/lightgbm_*.py
+    agents/*/models/xgboost_*.py
+    agents/*/models/prophet_*.py
+    agents/*/models/lstm_*.py
+    agents/*/models/classifier_registry.py
+    agents/trend_classification_agent/training/*
+    agents/price_forecast_agent/training/*
+    agents/support_resistance_agent/utils/retry.py
+    agents/*/interfaces.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
