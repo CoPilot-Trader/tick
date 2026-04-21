@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M3 — Sentiment &amp; Fusion · TICK</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="l">
+      <div class="eye">DashGen Solutions · TICK</div>
+      <h1>M3 — Sentiment &amp; Fusion</h1>
+      <div class="sub">Injects qualitative news context into the quantitative pipeline and collapses every component into one unified trading signal — the milestone where the "multi-agent" value proposition pays off.</div>
+    </div>
+    <div class="r">
+      <span class="chip">COMPLETE</span><br>
+      2026-01-30<br>
+      $1,200 · 20%
+    </div>
+  </div>
+
+  <div class="nav-strip">
+    <a href="../index.html">← Hub</a>
+    <a href="m0-summary.html">M0</a>
+    <a href="m1-summary.html">M1</a>
+    <a href="m2-summary.html">M2</a>
+    <a href="m3-summary.html" class="active">M3</a>
+    <a href="m4-summary.html">M4</a>
+    <a href="m5-summary.html">M5</a>
+    <a href="../tick-delivery-report.html">Master Report →</a>
+  </div>
+
+  <div class="section">
+    <div class="stats">
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">New Agents</div></div>
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">News Sources</div></div>
+      <div class="stat"><div class="stat-n navy">3</div><div class="stat-l">Timeframes Fused</div></div>
+      <div class="stat"><div class="stat-n green">v2.0.0</div><div class="stat-l">Fusion Version</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Agents Delivered</div>
+    <div class="cards">
+      <div class="card">
+        <div class="num">AGENT 1 · NEWS</div>
+        <div class="title">News Fetch Agent</div>
+        <div class="d">Multi-source collection (Finnhub · NewsAPI · Alpha Vantage · Mock) with relevance filtering, dedupe, and dynamic windowing when news is sparse.</div>
+        <span class="chip">v1.0.0</span>
+      </div>
+      <div class="card">
+        <div class="num">AGENT 2 · LLM</div>
+        <div class="title">LLM Sentiment Agent</div>
+        <div class="d">GPT-4 sentiment scoring per article with semantic caching (80%+ hit rate) and a deterministic mock client for when no API key is set.</div>
+        <span class="chip">v1.0.0</span>
+      </div>
+      <div class="card">
+        <div class="num">AGENT 3 · AGG</div>
+        <div class="title">Sentiment Aggregator</div>
+        <div class="d">Weighted aggregation across sources with High / Medium / Low impact classification and per-source confidence tracking.</div>
+        <span class="chip">v1.0.0</span>
+      </div>
+      <div class="card">
+        <div class="num">AGENT 4 · FUSION</div>
+        <div class="title">Fusion Agent</div>
+        <div class="d">Collapses Price Forecast + Trend + S/R + Sentiment into a single BUY/SELL/HOLD with confidence, fused score, component breakdown, and plain-English reasoning.</div>
+        <span class="chip">v2.0.0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Fusion Capabilities</div>
+    <ul class="ch">
+      <li>Weighted fusion with runtime-tunable weights (<code>PUT /fusion/weights</code>)</li>
+      <li>Rule-based overrides for high-impact news events</li>
+      <li>Multi-timeframe alignment with ALIGNED / CONFLICTING agreement tag</li>
+      <li>Plain-English reasoning string for every signal — no black-box outputs</li>
+      <li>Component status endpoint aggregating health of every sub-agent</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Evidence</div>
+    <table>
+      <tr><th>Artifact</th><th>Where</th></tr>
+      <tr><td>Agents</td><td><code>backend/agents/news_fetch_agent/</code> · <code>llm_sentiment_agent/</code> · <code>sentiment_aggregator/</code> · <code>fusion_agent/</code></td></tr>
+      <tr><td>Routers</td><td><code>backend/api/routers/sentiment.py</code> · <code>fusion.py</code></td></tr>
+      <tr><td>Tests</td><td><code>tests/test_api_sentiment.py</code> · <code>test_api_fusion.py</code></td></tr>
+      <tr><td>Signoff</td><td><code>docs/MILESTONE_SIGNOFF_M3_Sentiment_Fusion.md</code></td></tr>
+      <tr><td>PM Testing Guide</td><td><code>reports/tick-delivery-report.html → Test M3</code></td></tr>
+    </table>
+  </div>
+
+  <div class="footer">DashGen Solutions · TICK · Milestone 3 Summary · Awaiting Client Sign-Off</div>
+</div>
+</body>
+</html>

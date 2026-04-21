@@ -15,6 +15,8 @@ from pydantic import BaseModel, Field
 import pandas as pd
 import json
 import os
+from fastapi import Request
+from api.middleware.rate_limit import limiter
 
 # Import agent
 import sys
@@ -116,7 +118,9 @@ async def health_check():
 
 
 @router.get("/{ticker}")
+@limiter.limit("30/minute")
 async def get_prediction(
+    request: Request,
     ticker: str,
     horizons: Optional[str] = Query(
         "1h,4h,1d,1w",

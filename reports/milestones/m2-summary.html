@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M2 — Core Prediction Models · TICK</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="l">
+      <div class="eye">DashGen Solutions · TICK</div>
+      <h1>M2 — Core Prediction Models</h1>
+      <div class="sub">Three prediction agents forming the platform&#39;s core intelligence: price-level forecaster, direction classifier, and support/resistance detector — each with training + inference + validation harnesses.</div>
+    </div>
+    <div class="r">
+      <span class="chip">SIGNED OFF</span><br>
+      2026-01-29<br>
+      $1,200 · 20%
+    </div>
+  </div>
+
+  <div class="nav-strip">
+    <a href="../index.html">← Hub</a>
+    <a href="m0-summary.html">M0</a>
+    <a href="m1-summary.html">M1</a>
+    <a href="m2-summary.html" class="active">M2</a>
+    <a href="m3-summary.html">M3</a>
+    <a href="m4-summary.html">M4</a>
+    <a href="m5-summary.html">M5</a>
+    <a href="../tick-delivery-report.html">Master Report →</a>
+  </div>
+
+  <div class="section">
+    <div class="stats">
+      <div class="stat"><div class="stat-n">3</div><div class="stat-l">Prediction Agents</div></div>
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">Price Models</div></div>
+      <div class="stat"><div class="stat-n navy">4</div><div class="stat-l">Horizons (1h–1w)</div></div>
+      <div class="stat"><div class="stat-n green">100%</div><div class="stat-l">SoW Met</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Agents Delivered</div>
+    <div class="cards">
+      <div class="card">
+        <div class="num">AGENT 1 · PRICE</div>
+        <div class="title">Price Forecast Agent</div>
+        <div class="d">Prophet + LSTM + baseline + ensemble. Multi-horizon 1h / 4h / 1d / 1w with 80%/95% confidence intervals, MAPE + directional accuracy stats, walk-forward validation.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card">
+        <div class="num">AGENT 2 · TREND</div>
+        <div class="title">Trend Classification Agent</div>
+        <div class="d">LightGBM + XGBoost ensemble with calibrated probabilities. BUY / SELL / HOLD signals, multi-timeframe (1h / 1d), &gt;55% directional accuracy target, feature-importance inspection.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card">
+        <div class="num">AGENT 3 · LEVELS</div>
+        <div class="title">Support / Resistance Agent</div>
+        <div class="d">DBSCAN clustering + local extrema detection. Strength score 0–100 combining touch count, volume, recency, distance. Volume profile with value area + POC.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card" style="border-left-color:var(--teal);">
+        <div class="num">REGISTRY</div>
+        <div class="title">Classifier Registry</div>
+        <div class="d">Pluggable model registry so new model backends can be added without changing the API surface. Currently hosts LightGBM + XGBoost; future-proof.</div>
+        <span class="chip" style="background:var(--teal-lt);color:var(--teal);">Infrastructure</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">API Endpoints</div>
+    <table>
+      <tr><th>Path</th><th>Purpose</th></tr>
+      <tr><td><code>GET /api/v1/forecast/:ticker</code></td><td>Multi-horizon price forecast</td></tr>
+      <tr><td><code>GET /api/v1/forecast/:ticker/compare</code></td><td>Baseline vs Prophet vs LSTM</td></tr>
+      <tr><td><code>GET /api/v1/trend/:ticker</code></td><td>BUY/SELL/HOLD with probabilities</td></tr>
+      <tr><td><code>GET /api/v1/trend/:ticker/cross-validate</code></td><td>CV evaluation harness</td></tr>
+      <tr><td><code>GET /api/v1/levels/:symbol</code></td><td>S/R levels with strength</td></tr>
+      <tr><td><code>GET /api/v1/levels/:symbol/nearest</code></td><td>Closest support/resistance to spot</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Evidence</div>
+    <table>
+      <tr><th>Artifact</th><th>Where</th></tr>
+      <tr><td>Source</td><td><code>backend/agents/price_forecast_agent/</code> · <code>trend_classification_agent/</code> · <code>support_resistance_agent/</code></td></tr>
+      <tr><td>Tests</td><td><code>tests/test_api_forecast.py</code>, <code>test_api_trend.py</code>, <code>test_api_levels.py</code></td></tr>
+      <tr><td>Signoff</td><td><code>docs/MILESTONE_SIGNOFF_M2_Core_Prediction_Models.md</code></td></tr>
+    </table>
+  </div>
+
+  <div class="footer">DashGen Solutions · TICK · Milestone 2 Summary · Complete</div>
+</div>
+</body>
+</html>

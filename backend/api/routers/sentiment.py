@@ -10,8 +10,9 @@ Provides REST endpoints for:
 import os
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
+from api.middleware.rate_limit import limiter
 from dotenv import load_dotenv
 
 # Import agents
@@ -170,7 +171,9 @@ async def fetch_news(
 
 
 @router.get("/{ticker}")
+@limiter.limit("20/minute")
 async def get_sentiment(
+    request: Request,
     ticker: str,
     days: int = Query(7, ge=1, le=30),
     max_articles: int = Query(20, ge=5, le=100),

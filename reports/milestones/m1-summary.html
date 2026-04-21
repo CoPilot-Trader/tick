@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M1 — Foundation &amp; Data Pipeline · TICK</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="l">
+      <div class="eye">DashGen Solutions · TICK</div>
+      <h1>M1 — Foundation &amp; Data Pipeline</h1>
+      <div class="sub">Production-grade data backbone: Dockerized infra, TimescaleDB + Redis, Data Agent with redundant sources, Feature Agent with 36+ technical indicators (80% above SoW target).</div>
+    </div>
+    <div class="r">
+      <span class="chip">SIGNED OFF</span><br>
+      2026-01-29<br>
+      $900 · 15%
+    </div>
+  </div>
+
+  <div class="nav-strip">
+    <a href="../index.html">← Hub</a>
+    <a href="m0-summary.html">M0</a>
+    <a href="m1-summary.html" class="active">M1</a>
+    <a href="m2-summary.html">M2</a>
+    <a href="m3-summary.html">M3</a>
+    <a href="m4-summary.html">M4</a>
+    <a href="m5-summary.html">M5</a>
+    <a href="../tick-delivery-report.html">Master Report →</a>
+  </div>
+
+  <div class="section">
+    <div class="stats">
+      <div class="stat"><div class="stat-n">36+</div><div class="stat-l">Indicators (vs 20 SoW)</div></div>
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">Data Sources</div></div>
+      <div class="stat"><div class="stat-n navy">2</div><div class="stat-l">DBs wired</div></div>
+      <div class="stat"><div class="stat-n green">100%</div><div class="stat-l">SoW Met</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Components Delivered</div>
+    <div class="cards">
+      <div class="card">
+        <div class="num">COMPONENT 1</div>
+        <div class="title">Data Agent</div>
+        <div class="d">Tiingo → yFinance → FRED → Mock fallback chain. 5m / 1h / 1d bars with UTC normalization, NaN guard, gap detection.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card">
+        <div class="num">COMPONENT 2</div>
+        <div class="title">Feature Agent</div>
+        <div class="d">36+ indicators: SMA, EMA, MACD, RSI, Stochastic, ADX, ATR, Bollinger, Keltner, OBV, VWAP, CMF and more.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card">
+        <div class="num">COMPONENT 3</div>
+        <div class="title">Infrastructure</div>
+        <div class="d">Docker Compose with FastAPI, TimescaleDB hypertables, Redis cache, health endpoints, prod override file.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card">
+        <div class="num">COMPONENT 4</div>
+        <div class="title">Storage Layer</div>
+        <div class="d">Dual Parquet + TimescaleDB persistence with hash-keyed feature cache and TTL invalidation.</div>
+        <span class="chip">Complete</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Indicators Inventory</div>
+    <table>
+      <tr><th>Family</th><th>Indicators</th></tr>
+      <tr><td>Trend</td><td>SMA (5/10/20/50/200) · EMA (5/10/12/20/26/50) · MACD · TRIX</td></tr>
+      <tr><td>Momentum</td><td>RSI (7/14/21) · Stochastic %K/%D · ROC · Momentum · ADX + DMI</td></tr>
+      <tr><td>Volatility</td><td>ATR (14) · Normalized ATR · Bollinger Bands · Keltner · Donchian</td></tr>
+      <tr><td>Volume</td><td>OBV · Volume Ratio · VWAP · Accumulation/Distribution · Chaikin MF</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Evidence</div>
+    <table>
+      <tr><th>Artifact</th><th>Where</th></tr>
+      <tr><td>Data Agent</td><td><code>backend/agents/data_agent/</code></td></tr>
+      <tr><td>Feature Agent</td><td><code>backend/agents/feature_agent/</code></td></tr>
+      <tr><td>OHLCV endpoint</td><td><code>GET /api/v1/data/:ticker/ohlcv</code></td></tr>
+      <tr><td>Signoff</td><td><code>docs/MILESTONE_SIGNOFF_M1_Foundation_Data_Pipeline.md</code></td></tr>
+    </table>
+  </div>
+
+  <div class="footer">DashGen Solutions · TICK · Milestone 1 Summary · Complete</div>
+</div>
+</body>
+</html>

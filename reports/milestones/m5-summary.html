@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M5 — Frontend &amp; Testing · TICK</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="l">
+      <div class="eye">DashGen Solutions · TICK</div>
+      <h1>M5 — Frontend &amp; Testing</h1>
+      <div class="sub">Takes the platform from feature-complete to production-ready: live WebSocket streaming, TradingView-quality dashboard, API-key authentication, rate limiting, CORS lock-down, and automated test coverage above the 70% SoW target.</div>
+    </div>
+    <div class="r">
+      <span class="chip">COMPLETE</span><br>
+      2026-04-16<br>
+      $900 · 15%
+    </div>
+  </div>
+
+  <div class="nav-strip">
+    <a href="../index.html">← Hub</a>
+    <a href="m0-summary.html">M0</a>
+    <a href="m1-summary.html">M1</a>
+    <a href="m2-summary.html">M2</a>
+    <a href="m3-summary.html">M3</a>
+    <a href="m4-summary.html">M4</a>
+    <a href="m5-summary.html" class="active">M5</a>
+    <a href="../tick-delivery-report.html">Master Report →</a>
+  </div>
+
+  <div class="section">
+    <div class="stats">
+      <div class="stat"><div class="stat-n green">89</div><div class="stat-l">Tests Passing</div></div>
+      <div class="stat"><div class="stat-n gold">74%</div><div class="stat-l">API Coverage</div></div>
+      <div class="stat"><div class="stat-n navy">31</div><div class="stat-l">Live Stocks</div></div>
+      <div class="stat"><div class="stat-n">9</div><div class="stat-l">E2E Flows</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Frontend Enhancements</div>
+    <div class="cards">
+      <div class="card">
+        <div class="num">UPGRADE 1</div>
+        <div class="title">TradingView-quality Dashboard</div>
+        <div class="d">Live OHLCV from backend, lightweight-charts v5 candlesticks, 5m/1h/1d timeframe selector, news markers with hover tooltips on crosshair.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card">
+        <div class="num">UPGRADE 2</div>
+        <div class="title">Live WebSocket Streaming</div>
+        <div class="d"><code>WS /ws/stream/:symbol</code> pushes 5-second candle + tick updates with graceful reconnect and fallback when data source is unavailable.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card">
+        <div class="num">UPGRADE 3</div>
+        <div class="title">Prediction Backtracking</div>
+        <div class="d">Predicted-vs-Actual sub-panel · overlay lines · MAPE + directional accuracy in the toolbar. Predictions auto-logged per symbol.</div>
+        <span class="chip">Complete</span>
+      </div>
+      <div class="card">
+        <div class="num">UPGRADE 4</div>
+        <div class="title">Parallel Auto-Prediction</div>
+        <div class="d">Background task runs 1h forecasts for all 31 tracked symbols every 5 minutes with 8 parallel workers — dashboard is always fresh.</div>
+        <span class="chip">Complete</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Security Hardening</div>
+    <table>
+      <tr><th>Control</th><th>Mechanism</th><th>Env Var</th></tr>
+      <tr><td>Authentication</td><td>API key via <code>X-API-Key</code> header or <code>api_key</code> query</td><td><code>TICK_AUTH_ENABLED</code></td></tr>
+      <tr><td>Valid keys</td><td>Comma-separated list</td><td><code>TICK_API_KEYS</code></td></tr>
+      <tr><td>Rate limiting</td><td>slowapi · 100 req/min default · per-endpoint overrides</td><td>Built-in</td></tr>
+      <tr><td>CORS lock-down</td><td>Explicit origin allowlist · restricted methods &amp; headers</td><td><code>TICK_CORS_ORIGINS</code></td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Test Suite Results</div>
+    <ul class="ch">
+      <li><strong>89 tests passing</strong> · 13 tests gracefully skipped for missing optional ML deps · 0 failing</li>
+      <li><strong>74% API coverage</strong> — above the 70% SoW target</li>
+      <li>End-to-end tests cover: data pipeline · forecast · fusion · alerts · auth gate · weights round-trip · dashboard fan-out</li>
+      <li>Legacy M1 script tests gated behind <code>M1_LIVE=1</code> so CI runs are deterministic</li>
+      <li>Fixed a route-ordering bug in the fusion router (<code>/weights</code> was being captured by <code>/{ticker}</code>)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Evidence</div>
+    <table>
+      <tr><th>Artifact</th><th>Where</th></tr>
+      <tr><td>Middleware</td><td><code>backend/api/middleware/</code></td></tr>
+      <tr><td>Streaming endpoint</td><td><code>backend/api/routers/streaming.py</code></td></tr>
+      <tr><td>Test suite</td><td><code>backend/tests/</code> (12 modules)</td></tr>
+      <tr><td>Coverage config</td><td><code>backend/.coveragerc</code></td></tr>
+      <tr><td>Signoff</td><td><code>docs/MILESTONE_SIGNOFF_M5_Frontend_Testing.md</code></td></tr>
+      <tr><td>PM Testing Guide</td><td><code>reports/tick-delivery-report.html → Test M5</code></td></tr>
+    </table>
+  </div>
+
+  <div class="footer">DashGen Solutions · TICK · Milestone 5 Summary · Awaiting Client Sign-Off</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M4 — Backtesting &amp; Integration · TICK</title>
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="l">
+      <div class="eye">DashGen Solutions · TICK</div>
+      <h1>M4 — Backtesting &amp; Integration</h1>
+      <div class="sub">Lets users quantify trust. Replays years of historical data as if the strategy had been live, showing equity curves, drawdowns, and risk-adjusted returns. Also ships a configurable alert system.</div>
+    </div>
+    <div class="r">
+      <span class="chip">COMPLETE</span><br>
+      2026-01-30<br>
+      $900 · 15%
+    </div>
+  </div>
+
+  <div class="nav-strip">
+    <a href="../index.html">← Hub</a>
+    <a href="m0-summary.html">M0</a>
+    <a href="m1-summary.html">M1</a>
+    <a href="m2-summary.html">M2</a>
+    <a href="m3-summary.html">M3</a>
+    <a href="m4-summary.html" class="active">M4</a>
+    <a href="m5-summary.html">M5</a>
+    <a href="../tick-delivery-report.html">Master Report →</a>
+  </div>
+
+  <div class="section">
+    <div class="stats">
+      <div class="stat"><div class="stat-n">20+</div><div class="stat-l">Performance Metrics</div></div>
+      <div class="stat"><div class="stat-n">7</div><div class="stat-l">Default Alert Rules</div></div>
+      <div class="stat"><div class="stat-n navy">18</div><div class="stat-l">API Endpoints</div></div>
+      <div class="stat"><div class="stat-n green">✓</div><div class="stat-l">Walk-forward</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Backtesting Engine</div>
+    <table>
+      <tr><th>Component</th><th>Responsibility</th></tr>
+      <tr><td>Simulator</td><td>Day-by-day replay of price data, orchestrates signals through the executor</td></tr>
+      <tr><td>Position Manager</td><td>P&amp;L tracking, stop-loss / take-profit enforcement, position limits</td></tr>
+      <tr><td>Trade Executor</td><td>Signal interpretation, confidence-based sizing, order validation</td></tr>
+      <tr><td>Metrics Calculator</td><td>Trade, return, risk, drawdown metrics — 20+ total</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Metrics Produced Per Run</div>
+    <div class="cards">
+      <div class="card">
+        <div class="num">TRADE</div>
+        <div class="title">Trade stats</div>
+        <div class="d">Total trades · winning · losing · win rate · profit factor · avg P&amp;L · max consecutive wins/losses · holding period.</div>
+      </div>
+      <div class="card">
+        <div class="num">RETURN</div>
+        <div class="title">Return profile</div>
+        <div class="d">Total P&amp;L · total return % · annualized return · daily mean &amp; std · daily distribution.</div>
+      </div>
+      <div class="card">
+        <div class="num">RISK</div>
+        <div class="title">Risk-adjusted</div>
+        <div class="d">Sharpe · Sortino · annual volatility · Calmar · VaR-style bounds.</div>
+      </div>
+      <div class="card">
+        <div class="num">DRAWDOWN</div>
+        <div class="title">Drawdown</div>
+        <div class="d">Max drawdown $ · max drawdown % · drawdown duration · current drawdown.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Alert Agent — Default Rules</div>
+    <table>
+      <tr><th>Rule</th><th>Priority</th><th>Cooldown</th></tr>
+      <tr><td>High-confidence BUY</td><td>High</td><td>30 min</td></tr>
+      <tr><td>High-confidence SELL</td><td>High</td><td>30 min</td></tr>
+      <tr><td>Strong bullish agreement</td><td>Medium</td><td>60 min</td></tr>
+      <tr><td>Strong bearish agreement</td><td>Medium</td><td>60 min</td></tr>
+      <tr><td>High-impact sentiment</td><td>Medium</td><td>120 min</td></tr>
+      <tr><td>Large drawdown warning</td><td>High</td><td>240 min</td></tr>
+      <tr><td>Position limit reached</td><td>Medium</td><td>60 min</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Evidence</div>
+    <table>
+      <tr><th>Artifact</th><th>Where</th></tr>
+      <tr><td>Agents</td><td><code>backend/agents/backtesting_agent/</code> · <code>alert_agent/</code></td></tr>
+      <tr><td>Routers</td><td><code>backend/api/routers/backtest.py</code> · <code>alerts.py</code></td></tr>
+      <tr><td>Tests</td><td><code>tests/test_api_backtest.py</code> · <code>test_api_alerts.py</code></td></tr>
+      <tr><td>Signoff</td><td><code>docs/MILESTONE_SIGNOFF_M4_Backtesting_Integration.md</code></td></tr>
+      <tr><td>PM Testing Guide</td><td><code>reports/tick-delivery-report.html → Test M4</code></td></tr>
+    </table>
+  </div>
+
+  <div class="footer">DashGen Solutions · TICK · Milestone 4 Summary · Awaiting Client Sign-Off</div>
+</div>
+</body>
+</html>

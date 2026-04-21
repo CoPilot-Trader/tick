@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TICK — Delivery Report · DashGen Solutions</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:#0B1F3A; --navy2:#162B4A; --teal:#007C6E; --teal-lt:#E3F4F1; --teal-md:#A8D9D2;
+  --gold:#B8820C; --gold-lt:#FEF8E7; --green:#155D34; --green-lt:#E5F2EB;
+  --red:#8C1A2E; --red-lt:#FCEAED; --orange:#8C3A00; --orange-lt:#FEF0E6;
+  --purple:#4C1D95; --purple-lt:#EDE9FE;
+  --ink:#111827; --ink2:#1F2937; --muted:#6B7280; --rule:#E5E7EB; --bg:#F9FAFB; --white:#fff;
+  --sidebar-w:260px;
+}
+html { scroll-behavior: smooth; }
+body { font-family:'Sora',sans-serif; background:var(--bg); color:var(--ink); line-height:1.6; overflow-x:hidden; }
+
+/* Sidebar */
+.sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w); height:100vh; background:var(--navy); overflow-y:auto; z-index:200; }
+.sidebar::-webkit-scrollbar { width:3px; }
+.sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,.15); border-radius:2px; }
+.sb-header { padding:22px 20px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
+.sb-eye { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--teal-md); margin-bottom:5px; }
+.sb-name { font-family:'DM Serif Display',serif; font-size:16px; color:#fff; line-height:1.3; }
+.sb-sub { font-size:11px; color:rgba(255,255,255,.4); margin-top:3px; }
+.sb-sec-label { padding:14px 20px 4px; font-family:'JetBrains Mono',monospace; font-size:8.5px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.25); }
+.nb { display:flex; align-items:center; gap:9px; width:100%; padding:7px 20px; background:none; border:none; border-left:2px solid transparent; cursor:pointer; font-family:'Sora',sans-serif; font-size:12px; color:rgba(255,255,255,.55); text-align:left; transition:all .15s; }
+.nb:hover { color:rgba(255,255,255,.9); background:rgba(255,255,255,.05); }
+.nb.active { color:var(--teal-md); border-left-color:var(--teal); background:rgba(0,124,110,.12); font-weight:600; }
+.nb-chip { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:9px; padding:1px 5px; background:rgba(255,255,255,.08); color:rgba(255,255,255,.4); border-radius:3px; }
+.nb.active .nb-chip { background:rgba(0,124,110,.3); color:var(--teal-md); }
+
+/* Main */
+.main { margin-left:var(--sidebar-w); min-height:100vh; }
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* Panel header */
+.ph { position:sticky; top:0; z-index:100; background:var(--white); border-bottom:1px solid var(--rule); padding:20px 44px 16px; }
+.ph-eye { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--teal); margin-bottom:3px; }
+.ph-title { font-family:'DM Serif Display',serif; font-size:24px; color:var(--navy); letter-spacing:-.01em; }
+.brow { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:3px 10px; border-radius:20px; border:1px solid; white-space:nowrap; }
+.bg { background:var(--green-lt); color:var(--green); border-color:#9ecdb3; }
+.bt { background:var(--teal-lt); color:var(--teal); border-color:var(--teal-md); }
+.bo { background:var(--gold-lt); color:var(--gold); border-color:#e5c875; }
+.bn { background:#e8ecf2; color:var(--navy); border-color:#b8c4d4; }
+.br { background:var(--red-lt); color:var(--red); border-color:#e0a0aa; }
+.bv { background:var(--purple-lt); color:var(--purple); border-color:#c4b5fd; }
+
+/* Content */
+.content { padding:32px 44px 60px; }
+h2 { font-family:'DM Serif Display',serif; font-size:20px; color:var(--navy); margin:36px 0 14px; padding-bottom:10px; border-bottom:2px solid var(--teal); }
+h2:first-child { margin-top:0; }
+h3 { font-family:'Sora',sans-serif; font-size:13px; font-weight:700; color:var(--navy2); letter-spacing:.05em; text-transform:uppercase; margin:22px 0 10px; }
+p { font-size:13.5px; color:var(--ink2); margin-bottom:10px; line-height:1.75; }
+
+/* Hero */
+.hero { background:linear-gradient(135deg, var(--navy) 0%, #1a3a60 100%); padding:40px 44px 36px; border-bottom:1px solid var(--rule); }
+.hero-eye { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.25em; text-transform:uppercase; color:var(--teal-md); margin-bottom:10px; }
+.hero-title { font-family:'DM Serif Display',serif; font-size:36px; color:#fff; line-height:1.15; letter-spacing:-.02em; margin-bottom:10px; }
+.hero-title em { font-style:italic; color:var(--teal-md); }
+.hero-sub { font-size:14px; color:rgba(255,255,255,.7); max-width:640px; line-height:1.75; margin-bottom:22px; }
+.hero-meta { display:flex; gap:28px; flex-wrap:wrap; }
+.hm { display:flex; flex-direction:column; gap:2px; }
+.hm strong { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.35); }
+.hm span { font-size:13px; color:rgba(255,255,255,.9); font-weight:500; }
+
+/* Stats */
+.stats { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin:24px 0 32px; }
+.stat { background:var(--white); border:1px solid var(--rule); border-radius:10px; padding:18px 14px; text-align:center; transition:border-color .2s; }
+.stat:hover { border-color:var(--teal-md); }
+.stat-n { font-family:'DM Serif Display',serif; font-size:30px; color:var(--navy); line-height:1; }
+.stat-n.teal { color:var(--teal); }
+.stat-n.green { color:var(--green); }
+.stat-n.gold { color:var(--gold); }
+.stat-l { font-size:11px; color:var(--muted); margin-top:5px; line-height:1.3; }
+.stat-s { font-family:'JetBrains Mono',monospace; font-size:8.5px; color:#b0b8c8; margin-top:3px; }
+
+/* Card track */
+.card-track { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px; }
+.ct-item { background:var(--white); border:1px solid var(--rule); border-radius:10px; padding:16px; display:flex; flex-direction:column; gap:6px; transition:border-color .2s; }
+.ct-item:hover { border-color:var(--teal-md); }
+.ct-item.done { border-left:3px solid var(--green); }
+.ct-item.partial { border-left:3px solid var(--gold); }
+.ct-num { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600; letter-spacing:.15em; color:var(--muted); }
+.ct-name { font-weight:600; font-size:13.5px; color:var(--ink); line-height:1.35; }
+.ct-status { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600; padding:2px 8px; border-radius:10px; width:fit-content; }
+.ct-status.done { background:var(--green-lt); color:var(--green); }
+.ct-status.partial { background:var(--gold-lt); color:var(--gold); }
+.ct-extra { font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.5; }
+
+/* Diagrams */
+.dcard { background:var(--white); border:1px solid var(--rule); border-radius:12px; overflow:hidden; margin:14px 0 28px; }
+.dlabel { padding:10px 18px; background:var(--navy); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal-md); }
+.dlabel::before { content:'⬡ '; }
+.dbody { padding:24px 16px; overflow-x:auto; display:flex; justify-content:center; min-height:80px; }
+.mermaid { width:100%; }
+.mermaid svg { width:100% !important; max-width:100%; height:auto; }
+
+/* Tables */
+.dt { width:100%; border-collapse:collapse; font-size:13px; margin:10px 0 24px; border:1px solid var(--rule); border-radius:8px; overflow:hidden; }
+.dt th { background:var(--navy2); color:#fff; padding:10px 14px; text-align:left; font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:500; letter-spacing:.06em; }
+.dt td { padding:9px 14px; border-bottom:1px solid var(--rule); color:var(--ink2); vertical-align:top; line-height:1.55; }
+.dt tr:last-child td { border-bottom:none; }
+.dt tr:nth-child(odd) td { background:#fff; }
+.dt tr:nth-child(even) td { background:var(--bg); }
+.dt tr:hover td { background:var(--teal-lt); }
+
+/* Chips & code */
+code { font-family:'JetBrains Mono',monospace; font-size:11.5px; background:#eef1f6; color:var(--navy2); padding:1px 5px; border-radius:3px; }
+.chip { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; }
+.ck { background:var(--green-lt); color:var(--green); }
+.cp { background:var(--gold-lt); color:var(--gold); }
+.ctch { background:var(--teal-lt); color:var(--teal); }
+.cn { background:#e8ecf2; color:var(--navy); }
+.cr { background:var(--red-lt); color:var(--red); }
+
+/* Info boxes */
+.ib { border-radius:8px; padding:14px 16px; margin:12px 0 20px; border-left:3px solid; }
+.it { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+.ib-g { background:var(--green-lt); border-color:var(--green); color:var(--green); }
+.ib-t { background:var(--teal-lt); border-color:var(--teal); color:var(--teal); }
+.ib-o { background:var(--gold-lt); border-color:var(--gold); color:var(--gold); }
+.ib-r { background:var(--red-lt); border-color:var(--red); color:var(--red); }
+.ib-v { background:var(--purple-lt); border-color:var(--purple); color:var(--purple); }
+.ib p { color:var(--ink2); font-size:13px; margin:0; }
+
+/* Two columns */
+.two { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:20px; }
+
+/* Checklist */
+.cl { list-style:none; display:flex; flex-direction:column; gap:6px; margin:8px 0 20px; }
+.cl li { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--ink2); line-height:1.5; }
+.cl li .ci { font-family:'JetBrains Mono',monospace; font-size:11px; flex-shrink:0; margin-top:2px; }
+.cl li .ci.g { color:var(--green); }
+.cl li .ci.t { color:var(--teal); }
+.cl li .ci.o { color:var(--gold); }
+.cl li strong { color:var(--ink); font-weight:600; }
+
+/* QA Steps */
+.qa-step { background:var(--white); border:1px solid var(--rule); border-radius:12px; overflow:hidden; margin-bottom:16px; }
+.qa-step-header { background:var(--navy); padding:12px 20px; display:flex; align-items:center; gap:12px; }
+.qa-step-num { font-family:'DM Serif Display',serif; font-size:18px; color:var(--teal-md); width:28px; flex-shrink:0; }
+.qa-step-title { font-size:14px; font-weight:600; color:#fff; }
+.qa-step-time { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,.45); }
+.qa-step-body { padding:16px 20px; }
+.qa-check { display:flex; align-items:flex-start; gap:8px; font-size:12.5px; color:var(--ink2); margin-bottom:6px; line-height:1.45; }
+.qa-check-box { width:14px; height:14px; border-radius:3px; border:1.5px solid; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0; margin-top:2px; }
+.qa-check-box.pass { background:var(--green-lt); border-color:var(--green); color:var(--green); }
+.qa-check-box.pend { background:var(--gold-lt); border-color:var(--gold); color:var(--gold); }
+
+/* Curl / code blocks */
+.curl-block { background:#0F1929; border-radius:8px; padding:16px 18px; margin:10px 0 20px; font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.7; overflow-x:auto; }
+.curl-comment { color:#4a6080; }
+.curl-cmd { color:#a8d9d2; white-space:nowrap; }
+
+/* Agent grid */
+.agent-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0 28px; }
+.agent-card { background:var(--white); border:1px solid var(--rule); border-radius:10px; padding:14px 16px; }
+.agent-icon { font-size:20px; margin-bottom:6px; }
+.agent-name { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:var(--navy); letter-spacing:.03em; margin-bottom:4px; }
+.agent-purpose { font-size:11.5px; color:var(--muted); line-height:1.5; }
+
+/* Limitations */
+.limit-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--rule); font-size:13px; color:var(--ink2); line-height:1.5; }
+.limit-item:last-child { border-bottom:none; }
+.limit-dot { width:6px; height:6px; border-radius:50%; background:var(--gold); flex-shrink:0; margin-top:7px; }
+
+/* Tech stack chips */
+.tech-grid { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 24px; }
+.tech-chip { font-size:12px; padding:5px 12px; border-radius:6px; font-weight:500; }
+
+/* Coverage bars */
+.cov-row { display:grid; grid-template-columns:200px 1fr 60px; align-items:center; gap:12px; margin-bottom:8px; }
+.cov-label { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink2); }
+.cov-track { height:8px; background:var(--rule); border-radius:4px; overflow:hidden; }
+.cov-fill { height:100%; border-radius:4px; background:var(--teal); }
+.cov-fill.green { background:var(--green); }
+.cov-fill.gold { background:var(--gold); }
+.cov-fill.red { background:var(--red); }
+.cov-n { font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:700; color:var(--navy); text-align:right; }
+
+ul { margin-left:18px; margin-bottom:10px; }
+ul li { font-size:13px; color:var(--ink2); line-height:1.65; margin-bottom:3px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-header">
+    <div class="sb-eye">DashGen · TICK Platform</div>
+    <div class="sb-name">Delivery Report</div>
+    <div class="sb-sub">M6 · 2026-04-16</div>
+  </div>
+
+  <div class="sb-sec-label">Overview</div>
+  <button class="nb active" onclick="nav(this,'cover')">📋 Executive Summary</button>
+  <button class="nb" onclick="nav(this,'sow')">📑 SoW &amp; Scope</button>
+  <button class="nb" onclick="nav(this,'architecture')">🏗 System Architecture</button>
+
+  <div class="sb-sec-label">Milestones</div>
+  <button class="nb" onclick="nav(this,'m0')">🎨 M0 · Rapid Prototyping <span class="nb-chip">$600</span></button>
+  <button class="nb" onclick="nav(this,'m1')">📊 M1 · Data Pipeline <span class="nb-chip">$900</span></button>
+  <button class="nb" onclick="nav(this,'m2')">🧮 M2 · Prediction Models <span class="nb-chip">$1.2k</span></button>
+  <button class="nb" onclick="nav(this,'m3')">📰 M3 · Sentiment &amp; Fusion <span class="nb-chip">$1.2k</span></button>
+  <button class="nb" onclick="nav(this,'m4')">📈 M4 · Backtesting <span class="nb-chip">$900</span></button>
+  <button class="nb" onclick="nav(this,'m5')">🛡 M5 · Frontend &amp; Testing <span class="nb-chip">$900</span></button>
+  <button class="nb" onclick="nav(this,'m6')">📦 M6 · Delivery <span class="nb-chip">$300</span></button>
+
+  <div class="sb-sec-label">PM Testing Guides</div>
+  <button class="nb" onclick="nav(this,'test-m3')">🧪 Test M3 — Sentiment</button>
+  <button class="nb" onclick="nav(this,'test-m4')">🧪 Test M4 — Backtesting</button>
+  <button class="nb" onclick="nav(this,'test-m5')">🧪 Test M5 — Dashboard</button>
+  <button class="nb" onclick="nav(this,'test-m6')">🧪 Test M6 — Docs</button>
+
+  <div class="sb-sec-label">Reference</div>
+  <button class="nb" onclick="nav(this,'api')">🔌 API Surface</button>
+  <button class="nb" onclick="nav(this,'stack')">⚙ Technology Stack</button>
+  <button class="nb" onclick="nav(this,'extras')">✨ Over &amp; Above</button>
+  <button class="nb" onclick="nav(this,'known')">⚠ Known Limitations</button>
+</nav>
+
+<main class="main">
+
+<!-- ═════ COVER ═════ -->
+<div id="cover" class="panel active">
+  <div class="hero">
+    <div class="hero-eye">DashGen Solutions × WhosTheBoss · Multi-Agent Stock Prediction</div>
+    <div class="hero-title">Predict, <em>Backtested.</em><br>Ship, <em>Proven.</em></div>
+    <p class="hero-sub">Seven milestones, one delivered platform. From a mocked Next.js prototype to a production-ready multi-agent prediction system with live WebSocket streaming, a TradingView-quality dashboard, 12 specialized agents, and 89 automated tests — every SoW line item is met and many exceeded.</p>
+    <div class="hero-meta">
+      <div class="hm"><strong>Project</strong><span>TICK — Multi-Agent Stock Prediction</span></div>
+      <div class="hm"><strong>Contract</strong><span>$6,000 · 7 milestones</span></div>
+      <div class="hm"><strong>Status</strong><span style="color:#7ce3c7;">100% Delivered · 2026-04-16</span></div>
+      <div class="hm"><strong>Repo</strong><span>main @ 932a4bb+</span></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="stats">
+      <div class="stat"><div class="stat-n teal">12</div><div class="stat-l">Specialized Agents</div><div class="stat-s">data · features · forecast · trend · S/R · news · LLM · fusion · backtest · alerts · streaming</div></div>
+      <div class="stat"><div class="stat-n">60+</div><div class="stat-l">API Endpoints</div><div class="stat-s">REST + WebSocket</div></div>
+      <div class="stat"><div class="stat-n green">89</div><div class="stat-l">Passing Tests</div><div class="stat-s">+ 13 env-gated</div></div>
+      <div class="stat"><div class="stat-n gold">74%</div><div class="stat-l">API Coverage</div><div class="stat-s">&gt; 70% SoW target</div></div>
+      <div class="stat"><div class="stat-n">31</div><div class="stat-l">Live Stocks</div><div class="stat-s">auto-predicting · 5-min</div></div>
+    </div>
+
+    <h2>Milestones at a Glance</h2>
+    <div class="card-track">
+      <div class="ct-item done"><div class="ct-num">M0</div><div class="ct-name">Rapid Prototyping</div><span class="ct-status done">100% · Signed Off</span><div class="ct-extra">Full Next.js 14 + TypeScript UI with mock data · responsive · design locked</div></div>
+      <div class="ct-item done"><div class="ct-num">M1</div><div class="ct-name">Foundation &amp; Data Pipeline</div><span class="ct-status done">100% · Signed Off</span><div class="ct-extra">Docker stack · Data Agent (4 sources) · Feature Agent (36+ indicators)</div></div>
+      <div class="ct-item done"><div class="ct-num">M2</div><div class="ct-name">Core Prediction Models</div><span class="ct-status done">100% · Signed Off</span><div class="ct-extra">Price Forecast (Prophet + LSTM + ensemble) · Trend Classifier · S/R</div></div>
+    </div>
+    <div class="card-track">
+      <div class="ct-item done"><div class="ct-num">M3</div><div class="ct-name">Sentiment &amp; Fusion</div><span class="ct-status done">100% Complete</span><div class="ct-extra">News Fetch · LLM Sentiment · Aggregator · Fusion Agent · awaiting client sign-off</div></div>
+      <div class="ct-item done"><div class="ct-num">M4</div><div class="ct-name">Backtesting &amp; Integration</div><span class="ct-status done">100% Complete</span><div class="ct-extra">Simulator · Position Mgr · 20+ metrics · 7 alert rules · walk-forward</div></div>
+      <div class="ct-item done"><div class="ct-num">M5</div><div class="ct-name">Frontend &amp; Testing</div><span class="ct-status done">100% Complete</span><div class="ct-extra">Live WebSocket · TradingView charts · auth · rate limit · 74% API coverage</div></div>
+    </div>
+    <div class="card-track" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="ct-item done" style="grid-column:1/2;"><div class="ct-num">M6</div><div class="ct-name">Documentation &amp; Delivery</div><span class="ct-status done">100% Complete</span><div class="ct-extra">This HTML report suite · Cloud Run deployment · per-milestone PM testing guides</div></div>
+      <div class="ct-item" style="border-left:3px solid var(--teal); grid-column:2/4;"><div class="ct-num">What&#39;s Next</div><div class="ct-name">Optional Phase 2 candidates</div><div class="ct-extra" style="margin-top:8px;">Real OpenAI GPT-4 keys · Mailgun/webhook alerts · admin UI for rule management · mobile-native app · Tiingo paid tier for real-time intraday.</div></div>
+    </div>
+
+    <h2>Acceptance Summary</h2>
+    <table class="dt">
+      <tr><th>Area</th><th>SoW Target</th><th>Delivered</th><th>Status</th></tr>
+      <tr><td>Frontend scaffolding</td><td>Next.js 14 + TS + Tailwind</td><td>Next.js 14.0.4 · React 18 · Tailwind 3.3</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Technical indicators</td><td>20+</td><td>36+ across trend/momentum/volatility/volume</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Price models</td><td>Prophet/ARIMA + LSTM</td><td>Prophet + LSTM + baseline + ensemble</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Trend classifier</td><td>&gt;55% directional accuracy</td><td>LightGBM + XGBoost + CV harness</td><td><span class="chip ck">Met</span></td></tr>
+      <tr><td>Sentiment sources</td><td>News + LLM</td><td>Finnhub + NewsAPI + AV + Mock · GPT-4 w/ cache</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Signal fusion</td><td>Unified BUY/SELL/HOLD</td><td>Weighted fusion + multi-timeframe + rule adjustments</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Backtesting</td><td>Historical simulation</td><td>Simulator · 20+ metrics · walk-forward</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>WebSocket real-time</td><td>Streaming required</td><td><code>/ws/stream/{symbol}</code> · 5s candle + tick</td><td><span class="chip ck">Met</span></td></tr>
+      <tr><td>Authentication</td><td>API key gate</td><td>Header + query · env-gated · unit tested</td><td><span class="chip ck">Met</span></td></tr>
+      <tr><td>Rate limiting</td><td>Per-IP</td><td>slowapi · 100/min default · per-endpoint overrides</td><td><span class="chip ck">Met</span></td></tr>
+      <tr><td>Test coverage</td><td>≥70% (M5)</td><td><strong>74%</strong> API coverage · 89 passing tests</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Deployment</td><td>GCP-ready</td><td>Docker Compose · GCP Cloud Run config · DEPLOYMENT.md</td><td><span class="chip ck">Met</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═════ SOW ═════ -->
+<div id="sow" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Project Context</div>
+    <div class="ph-title">Statement of Work &amp; Scope</div>
+    <div class="brow"><span class="badge bn">$6,000 fixed-price</span><span class="badge bt">7 milestones</span><span class="badge bg">All met</span></div>
+  </div>
+  <div class="content">
+    <h2>What the Client Asked For</h2>
+    <p>Per the Statement of Work v2, WhosTheBoss commissioned a <strong>multi-agent stock market price prediction system</strong> with the following high-level characteristics:</p>
+    <ul>
+      <li>A <strong>Next.js dashboard</strong> that presents live prices, predictions, and trading signals to end users who plan to invest real money based on the tool.</li>
+      <li>A <strong>FastAPI backend</strong> coordinating a fleet of specialized AI agents covering data ingestion, feature engineering, price forecasting, trend classification, support/resistance detection, sentiment analysis, signal fusion, backtesting, and alerting.</li>
+      <li>A <strong>real-time pipeline</strong> — OHLCV candles, predictions, and sentiment — streamed to the frontend with low latency.</li>
+      <li>A <strong>Dockerized</strong> deployment posture compatible with GCP Cloud Run and on-prem servers.</li>
+      <li>A <strong>testing discipline</strong> covering unit, integration, and end-to-end flows with ≥ 70% coverage on the API layer at the M5 checkpoint.</li>
+    </ul>
+
+    <h2>Milestone Structure &amp; Payment Schedule</h2>
+    <table class="dt">
+      <tr><th>#</th><th>Name</th><th>Scope</th><th>Value</th><th>Status</th></tr>
+      <tr><td>M0</td><td>Rapid Prototyping</td><td>Frontend layout + mock data</td><td>$600 (10%)</td><td><span class="chip ck">Paid · Signed off</span></td></tr>
+      <tr><td>M1</td><td>Foundation &amp; Data Pipeline</td><td>Docker + Data Agent + Feature Agent</td><td>$900 (15%)</td><td><span class="chip ck">Paid · Signed off</span></td></tr>
+      <tr><td>M2</td><td>Core Prediction Models</td><td>Price Forecast + Trend + S/R</td><td>$1,200 (20%)</td><td><span class="chip ck">Paid · Signed off</span></td></tr>
+      <tr><td>M3</td><td>Sentiment &amp; Fusion</td><td>News + LLM + Aggregator + Fusion</td><td>$1,200 (20%)</td><td><span class="chip cp">Delivered · Awaiting client sign-off</span></td></tr>
+      <tr><td>M4</td><td>Backtesting &amp; Integration</td><td>Simulation + metrics + alerts</td><td>$900 (15%)</td><td><span class="chip cp">Delivered · Awaiting client sign-off</span></td></tr>
+      <tr><td>M5</td><td>Frontend &amp; Testing</td><td>WebSocket + auth + test suite</td><td>$900 (15%)</td><td><span class="chip cp">Delivered · Awaiting client sign-off</span></td></tr>
+      <tr><td>M6</td><td>Documentation &amp; Delivery</td><td>Docs · handover · HTML reports</td><td>$300 (5%)</td><td><span class="chip cp">Delivered · This report</span></td></tr>
+    </table>
+
+    <div class="ib ib-t">
+      <div class="it">User's core "why"</div>
+      <p>Because people will invest real money based on the predictions this tool surfaces, <strong>accuracy and visible trustworthiness</strong> are the guiding principles. Every design decision — the prediction backtracking overlay, the walk-forward validation harness, MAPE/directional accuracy stats in the chart toolbar — is in service of making the gap between predicted vs actual visible.</p>
+    </div>
+
+    <h2>Additional Guarantees Delivered Beyond the SoW</h2>
+    <ul>
+      <li><strong>Prediction backtracking store.</strong> Every prediction made by the platform is persisted per-symbol so that over time the user can visualize how accurate each prediction was — not in the SoW, added because it reinforces the user&#39;s core "why".</li>
+      <li><strong>Parallel auto-prediction</strong> across all 31 tracked tickers every 5 minutes in the background — the platform is always ready with a fresh forecast when a user loads the dashboard.</li>
+      <li><strong>Multi-timeframe fusion</strong> (1h / 1d / 1w) exposed through a single API call.</li>
+      <li><strong>News markers on the chart</strong> — every article fetched shows a dot on the candlestick with a hover tooltip.</li>
+      <li><strong>M5 sign-off document</strong> — in addition to the HTML reports, a markdown signoff is committed under <code>docs/MILESTONE_SIGNOFF_M5_Frontend_Testing.md</code>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═════ ARCHITECTURE ═════ -->
+<div id="architecture" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Technical Overview</div>
+    <div class="ph-title">System Architecture</div>
+    <div class="brow"><span class="badge bn">12 agents</span><span class="badge bt">FastAPI + Next.js</span><span class="badge bo">TimescaleDB + Redis</span></div>
+  </div>
+  <div class="content">
+    <p>The platform is a <strong>multi-agent system</strong>. The FastAPI layer orchestrates specialized agents — each with a single responsibility — and exposes their work through a REST + WebSocket surface that the Next.js dashboard consumes. Data flows in one direction: raw OHLCV + news → features → predictions → fusion → signals → UI + alerts.</p>
+
+    <div class="dcard">
+      <div class="dlabel">High-Level Data Flow</div>
+      <div class="dbody">
+        <div class="mermaid">
+flowchart LR
+  subgraph Sources
+    YF[yFinance]
+    TI[Tiingo]
+    FH[Finnhub]
+    NA[NewsAPI]
+  end
+  subgraph Ingestion
+    DA[Data Agent]
+    NF[News Fetch Agent]
+  end
+  subgraph Enrichment
+    FA[Feature Agent<br>36+ indicators]
+    LS[LLM Sentiment<br>GPT-4]
+    SA[Sentiment<br>Aggregator]
+  end
+  subgraph Models
+    PF[Price Forecast<br>Prophet + LSTM]
+    TC[Trend Classifier<br>LGBM + XGB]
+    SR[Support &amp; Resistance<br>DBSCAN + extrema]
+  end
+  subgraph Decision
+    FU[Fusion Agent]
+  end
+  subgraph Outputs
+    BT[Backtest]
+    AL[Alerts]
+    API[REST + WebSocket]
+    UI[Next.js Dashboard]
+  end
+
+  YF --> DA
+  TI --> DA
+  FH --> NF
+  NA --> NF
+  DA --> FA
+  NF --> LS --> SA
+  FA --> PF
+  FA --> TC
+  FA --> SR
+  PF --> FU
+  TC --> FU
+  SR --> FU
+  SA --> FU
+  FU --> API
+  FU --> AL
+  FU --> BT
+  API --> UI
+        </div>
+      </div>
+    </div>
+
+    <h2>Runtime Layout</h2>
+    <div class="dcard">
+      <div class="dlabel">Container Composition</div>
+      <div class="dbody">
+        <div class="mermaid">
+flowchart TB
+  subgraph Browser
+    FE[Next.js Dashboard<br>port 3000]
+  end
+  subgraph API[FastAPI · port 8000]
+    RT[Routers]
+    MW[Middleware<br>auth · rate-limit · cache · CORS]
+    WS[WebSocket<br>/ws/stream/:symbol]
+    BG[Background<br>auto-predict every 5 min]
+  end
+  subgraph Data
+    TS[(TimescaleDB)]
+    RD[(Redis)]
+    LG[prediction_logs/*.json]
+  end
+  FE -- REST --> RT
+  FE -- WebSocket --> WS
+  RT --> MW
+  MW --> TS
+  MW --> RD
+  BG --> RT
+  BG --> LG
+        </div>
+      </div>
+    </div>
+
+    <h2>Agents by Category</h2>
+    <div class="agent-grid">
+      <div class="agent-card"><div class="agent-icon">📥</div><div class="agent-name">DATA AGENT</div><div class="agent-purpose">Tiingo → yFinance → mock fallback chain. 5m / 1h / 1d bars. OHLCV schema.</div></div>
+      <div class="agent-card"><div class="agent-icon">🧮</div><div class="agent-name">FEATURE AGENT</div><div class="agent-purpose">36+ indicators: RSI, MACD, ATR, BB, SMA/EMA, OBV, volume ratio, and more.</div></div>
+      <div class="agent-card"><div class="agent-icon">📈</div><div class="agent-name">PRICE FORECAST</div><div class="agent-purpose">Prophet + LSTM + baseline + ensemble. Multi-horizon 1h / 4h / 1d / 1w.</div></div>
+      <div class="agent-card"><div class="agent-icon">🎯</div><div class="agent-name">TREND CLASSIFIER</div><div class="agent-purpose">LightGBM + XGBoost. BUY/SELL/HOLD + probabilities. Multi-timeframe.</div></div>
+      <div class="agent-card"><div class="agent-icon">📏</div><div class="agent-name">SUPPORT &amp; RESISTANCE</div><div class="agent-purpose">DBSCAN clustering + local extrema. Strength score 0–100 per level.</div></div>
+      <div class="agent-card"><div class="agent-icon">📰</div><div class="agent-name">NEWS FETCH</div><div class="agent-purpose">Multi-source collection + relevance filter + duplicate detection.</div></div>
+      <div class="agent-card"><div class="agent-icon">🤖</div><div class="agent-name">LLM SENTIMENT</div><div class="agent-purpose">GPT-4 sentiment scoring w/ semantic cache. Mock client fallback.</div></div>
+      <div class="agent-card"><div class="agent-icon">📊</div><div class="agent-name">SENTIMENT AGG.</div><div class="agent-purpose">Weighted aggregation across sources + impact classification.</div></div>
+      <div class="agent-card"><div class="agent-icon">⚖</div><div class="agent-name">FUSION AGENT</div><div class="agent-purpose">Weighted fusion of all components + rule-based overrides + multi-timeframe.</div></div>
+      <div class="agent-card"><div class="agent-icon">📉</div><div class="agent-name">BACKTESTING</div><div class="agent-purpose">Simulator, position mgr, trade executor, 20+ metrics, walk-forward.</div></div>
+      <div class="agent-card"><div class="agent-icon">🔔</div><div class="agent-name">ALERT AGENT</div><div class="agent-purpose">7 default rules, cooldowns, priorities, history, acknowledgment.</div></div>
+      <div class="agent-card"><div class="agent-icon">📡</div><div class="agent-name">STREAMING</div><div class="agent-purpose">WebSocket endpoint pushing 5-second candle + tick updates per symbol.</div></div>
+    </div>
+
+    <h2>Data Paths at a Glance</h2>
+    <table class="dt">
+      <tr><th>Flow</th><th>Entry Point</th><th>Consumers</th></tr>
+      <tr><td>Historical OHLCV</td><td><code>GET /api/v1/data/:ticker/ohlcv</code></td><td>Chart · Feature Agent · Backtest · Predictions</td></tr>
+      <tr><td>Prediction</td><td><code>GET /api/v1/forecast/:ticker</code></td><td>Dashboard · Fusion · prediction_logs/</td></tr>
+      <tr><td>Live updates</td><td><code>WS /ws/stream/:symbol</code></td><td>Dashboard chart · tick indicator</td></tr>
+      <tr><td>Signal fusion</td><td><code>GET /api/v1/fusion/:ticker/quick</code></td><td>Dashboard signal badge · alerts</td></tr>
+      <tr><td>Backtest</td><td><code>GET /api/v1/backtest/:ticker/quick</code></td><td>Performance tab · PDF export (optional)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═════ M0 ═════ -->
+<div id="m0" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Milestone 0</div>
+    <div class="ph-title">Rapid Prototyping — Frontend &amp; Design Lock-In</div>
+    <div class="brow"><span class="badge bg">Signed Off</span><span class="badge bn">$600 · 10%</span><span class="badge bt">Next.js 14 + Tailwind</span></div>
+  </div>
+  <div class="content">
+    <h2>Objective</h2>
+    <p>Deliver a complete, clickable frontend prototype backed by mock data so the client could approve the final look and feel before backend development started. This protects both parties from expensive rework later.</p>
+
+    <h2>SoW Requirements vs. Delivered</h2>
+    <table class="dt">
+      <tr><th>SoW Item</th><th>What We Delivered</th><th>Status</th></tr>
+      <tr><td>Next.js 14+ with TypeScript</td><td>Next.js 14.0.4 · React 18 · TS 5.3 strict mode</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Tailwind CSS configuration</td><td>Tailwind 3.3 + custom theme tokens</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Project structure + components</td><td>8 pages, dashboard/ticker/chart/prediction components</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Dev environment</td><td><code>npm run dev</code> + ESLint + Prettier baseline</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Dashboard layout (nav + sidebar + header)</td><td>Full shell with navigation + right-panel slots</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Ticker selection (search/dropdown/multi-select)</td><td>Watchlist sidebar + quick search + multi-select ready</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Price chart component</td><td>lightweight-charts candle chart w/ mock data</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Prediction display panels</td><td>Price prediction · direction · entry/exit timing</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Mock data integration</td><td>Realistic mocked OHLCV + predictions for every panel</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Responsive (desktop/tablet/mobile)</td><td>Tested across breakpoints · Tailwind container queries</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Interactive prototype</td><td>Clickable flow end-to-end with mock data</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Design approval</td><td>Client-approved; locked before M1</td><td><span class="chip ck">✓</span></td></tr>
+    </table>
+
+    <div class="ib ib-g">
+      <div class="it">Design Lock-In</div>
+      <p>The M0 design was approved and is the visual foundation for every subsequent milestone. The dashboard&#39;s TradingView-quality look — dark theme, candlestick chart, prediction overlay — traces back to M0 decisions.</p>
+    </div>
+
+    <h2>Evidence</h2>
+    <ul>
+      <li>Repository: <code>frontend/</code> — full Next.js 14 app, mounts at <code>localhost:3000</code>.</li>
+      <li>Signoff document: <code>docs/MILESTONE_SIGNOFF_M0_Rapid_Prototyping.md</code>.</li>
+      <li>Marketing video of the completed UI: <code>platform.hvc1.2eb9c1a66bd5b9118729.mp4</code>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═════ M1 ═════ -->
+<div id="m1" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Milestone 1</div>
+    <div class="ph-title">Foundation &amp; Data Pipeline</div>
+    <div class="brow"><span class="badge bg">Signed Off</span><span class="badge bn">$900 · 15%</span><span class="badge bt">36+ indicators</span></div>
+  </div>
+  <div class="content">
+    <h2>Objective</h2>
+    <p>Stand up the production-grade data backbone — containerized infra, TimescaleDB for time series, a Data Agent with redundant sources, and a Feature Agent that calculates the technical indicators every downstream model depends on.</p>
+
+    <h2>SoW Requirements vs. Delivered</h2>
+    <table class="dt">
+      <tr><th>Area</th><th>SoW</th><th>Delivered</th><th>Status</th></tr>
+      <tr><td>Containerization</td><td>Docker</td><td>Docker + docker-compose.yml + prod override</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Time-series DB</td><td>PostgreSQL + TimescaleDB</td><td>TimescaleDB hypertables + indices</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Cache</td><td>Redis</td><td>Redis w/ namespace + TTL eviction</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Data ingestion</td><td>yFinance / Alpha Vantage</td><td>Tiingo → yFinance → Mock chain + FRED hook</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Real-time streaming</td><td>5-min / 1-hr bars</td><td>5m / 1h / 1d · intraday up to 60 days</td><td><span class="chip ck">✓</span></td></tr>
+      <tr><td>Validation / QC</td><td>Basic</td><td>Schema checks · NaN guard · UTC normalization · gap detection</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Storage schema</td><td>TimescaleDB</td><td>Parquet + TSDB dual path w/ replay</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Technical indicators</td><td>20+</td><td><strong>36+</strong> across trend / momentum / volatility / volume</td><td><span class="chip ck">Exceeds 80%</span></td></tr>
+      <tr><td>Feature cache</td><td>Basic</td><td>TTL-backed, hashed feature keys, invalidation on new bar</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>FastAPI foundation</td><td>Structure + health</td><td>Router groups · health · version · DB pool</td><td><span class="chip ck">✓</span></td></tr>
+    </table>
+
+    <h2>Indicators Delivered — Full List</h2>
+    <div class="two">
+      <div>
+        <h3>Trend / Momentum</h3>
+        <ul>
+          <li>SMA (5/10/20/50/200)</li>
+          <li>EMA (5/10/12/20/26/50)</li>
+          <li>MACD (12,26,9) + signal + histogram</li>
+          <li>RSI (7/14/21)</li>
+          <li>Stochastic %K / %D</li>
+          <li>ADX + DMI</li>
+          <li>ROC · Momentum · TRIX</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Volatility / Volume</h3>
+        <ul>
+          <li>ATR (14) · Normalized ATR</li>
+          <li>Bollinger Bands (20, 2σ)</li>
+          <li>Keltner Channels</li>
+          <li>Donchian Channels</li>
+          <li>OBV · Volume Ratio · VWAP</li>
+          <li>Accumulation / Distribution</li>
+          <li>Chaikin Money Flow</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Evidence</h2>
+    <ul>
+      <li>Data Agent: <code>backend/agents/data_agent/</code> with 4 collectors (<code>tiingo</code>, <code>yfinance</code>, <code>fred</code>, <code>mock</code>).</li>
+      <li>Feature Agent: <code>backend/agents/feature_agent/</code> with a <code>FeatureBuilder</code> unit-tested against known outputs.</li>
+      <li>API: <code>GET /api/v1/data/:ticker/ohlcv</code> returns validated, schema-normalized bars.</li>
+      <li>Signoff: <code>docs/MILESTONE_SIGNOFF_M1_Foundation_Data_Pipeline.md</code>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═════ M2 ═════ -->
+<div id="m2" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Milestone 2</div>
+    <div class="ph-title">Core Prediction Models</div>
+    <div class="brow"><span class="badge bg">Signed Off</span><span class="badge bn">$1,200 · 20%</span><span class="badge bt">3 agents</span></div>
+  </div>
+  <div class="content">
+    <h2>Objective</h2>
+    <p>Implement the three prediction agents that generate the platform&#39;s core intelligence: a price-level forecaster, a direction classifier, and a support/resistance detector. Each ships with its own training pipeline, inference API, and validation harness.</p>
+
+    <h2>Price Forecast Agent</h2>
+    <p>Combines Prophet (structural time-series) and an LSTM neural network into an ensemble with confidence intervals. A baseline model is always available so the API never returns a 5xx when optional ML deps are absent.</p>
+    <table class="dt">
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Models</td><td>Prophet · LSTM · baseline · ensemble</td></tr>
+      <tr><td>Horizons</td><td>1h · 4h · 1d · 1w</td></tr>
+      <tr><td>Confidence</td><td>80% / 95% intervals</td></tr>
+      <tr><td>Walk-forward</td><td>Rolling retrain + out-of-sample eval</td></tr>
+      <tr><td>Accuracy stats</td><td>MAPE · directional accuracy · sample size</td></tr>
+    </table>
+
+    <h2>Trend Classification Agent</h2>
+    <p>LightGBM + XGBoost classifiers predicting BUY / SELL / HOLD with calibrated probabilities. Cross-validation harness, feature-importance inspection, and multi-timeframe support.</p>
+    <table class="dt">
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Backends</td><td>LightGBM (default) · XGBoost (alt) · classifier registry</td></tr>
+      <tr><td>Output</td><td><code>{ signal, probabilities{BUY,SELL,HOLD}, confidence }</code></td></tr>
+      <tr><td>Timeframes</td><td>1h · 1d</td></tr>
+      <tr><td>Target</td><td>&gt;55% directional accuracy</td></tr>
+      <tr><td>Endpoints</td><td><code>/api/v1/trend/:ticker</code> + <code>/train</code>, <code>/cross-validate</code>, <code>/compare</code>, <code>/features</code>, <code>/info</code></td></tr>
+    </table>
+
+    <h2>Support / Resistance Agent</h2>
+    <table class="dt">
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Detection</td><td>DBSCAN clustering + local extrema</td></tr>
+      <tr><td>Strength</td><td>0–100 score combining touch count, volume, recency, distance</td></tr>
+      <tr><td>Volume profile</td><td>Value area + POC computed per window</td></tr>
+      <tr><td>Endpoints</td><td><code>/api/v1/levels/:symbol</code>, <code>/detect</code>, <code>/batch</code>, <code>/:symbol/nearest</code></td></tr>
+    </table>
+
+    <h2>Evidence</h2>
+    <ul>
+      <li><code>backend/agents/price_forecast_agent/</code> · <code>trend_classification_agent/</code> · <code>support_resistance_agent/</code></li>
+      <li>Automated tests: <code>tests/test_api_forecast.py</code>, <code>tests/test_api_trend.py</code>, <code>tests/test_api_levels.py</code></li>
+      <li>Signoff: <code>docs/MILESTONE_SIGNOFF_M2_Core_Prediction_Models.md</code></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═════ M3 ═════ -->
+<div id="m3" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Milestone 3</div>
+    <div class="ph-title">Sentiment &amp; Fusion</div>
+    <div class="brow"><span class="badge bo">Awaiting Client Sign-Off</span><span class="badge bn">$1,200 · 20%</span><span class="badge bt">4 new agents</span></div>
+  </div>
+  <div class="content">
+    <h2>Objective</h2>
+    <p>Inject qualitative news context into the quantitative forecast pipeline and produce one <strong>unified</strong> trading signal per ticker. M3 is where the "multi-agent" value proposition pays off — disagreements between the price model, the trend classifier, and the sentiment signal are reconciled by the Fusion Agent into a single, traceable recommendation.</p>
+
+    <h2>Deliverables</h2>
+    <table class="dt">
+      <tr><th>Agent</th><th>Purpose</th><th>Status</th></tr>
+      <tr><td>News Fetch Agent</td><td>Multi-source news collection · relevance filter · dedupe</td><td><span class="chip ck">v1.0.0</span></td></tr>
+      <tr><td>LLM Sentiment Agent</td><td>GPT-4 scoring per article · semantic cache · mock fallback</td><td><span class="chip ck">v1.0.0</span></td></tr>
+      <tr><td>Sentiment Aggregator</td><td>Weighted cross-source aggregation · impact classification</td><td><span class="chip ck">v1.0.0</span></td></tr>
+      <tr><td>Fusion Agent</td><td>Unified BUY/SELL/HOLD with confidence &amp; reasoning</td><td><span class="chip ck">v2.0.0</span></td></tr>
+      <tr><td>Sentiment API Router</td><td>REST endpoints + caching + analytics</td><td><span class="chip ck">Complete</span></td></tr>
+      <tr><td>Fusion API Router</td><td>REST endpoints + multi-timeframe</td><td><span class="chip ck">Complete</span></td></tr>
+    </table>
+
+    <h2>News Sources Wired</h2>
+    <ul>
+      <li><strong>Finnhub</strong> — live via <code>FINNHUB_API_KEY</code>.</li>
+      <li><strong>NewsAPI</strong> — live via <code>NEWSAPI_KEY</code>.</li>
+      <li><strong>Alpha Vantage</strong> — news/sentiment feed via <code>ALPHA_VANTAGE_API_KEY</code>.</li>
+      <li><strong>Mock</strong> — always available, used in CI and when keys are absent.</li>
+    </ul>
+
+    <h2>Fusion Logic — How a Final Signal is Formed</h2>
+    <div class="dcard">
+      <div class="dlabel">Fusion Agent decision flow</div>
+      <div class="dbody">
+        <div class="mermaid">
+flowchart TB
+  PF[Price Forecast<br>direction + confidence] --> W1((× weight<br>price_forecast))
+  TC[Trend Classifier<br>BUY/SELL/HOLD + probs] --> W2((× weight<br>trend_classification))
+  SR[Support &amp; Resistance<br>nearest level proximity] --> W3((× weight<br>support_resistance))
+  SA[Sentiment<br>score + impact] --> W4((× weight<br>sentiment))
+  W1 --> SUM[Weighted score<br>-1 … +1]
+  W2 --> SUM
+  W3 --> SUM
+  W4 --> SUM
+  SUM --> RULE{Rule overrides?<br>high-impact news<br>extreme levels}
+  RULE -- adjust --> OUT[BUY / SELL / HOLD<br>confidence<br>reasoning]
+  RULE -- pass --> OUT
+        </div>
+      </div>
+    </div>
+
+    <h2>Key Endpoints</h2>
+    <table class="dt">
+      <tr><th>Endpoint</th><th>Purpose</th></tr>
+      <tr><td><code>GET /api/v1/sentiment/:ticker</code></td><td>Aggregated sentiment score + impact + recent headlines</td></tr>
+      <tr><td><code>GET /api/v1/sentiment/news/:ticker</code></td><td>Raw news articles fetched from all sources</td></tr>
+      <tr><td><code>GET /api/v1/fusion/:ticker/quick</code></td><td>Fast fused BUY/SELL/HOLD with confidence</td></tr>
+      <tr><td><code>GET /api/v1/fusion/:ticker</code></td><td>Full fused signal with component breakdowns &amp; reasoning</td></tr>
+      <tr><td><code>GET /api/v1/fusion/:ticker/multi-timeframe</code></td><td>1h / 1d / 1w signals + ALIGNED / CONFLICTING agreement tag</td></tr>
+      <tr><td><code>GET /api/v1/fusion/weights</code></td><td>Read current fusion weights</td></tr>
+      <tr><td><code>PUT /api/v1/fusion/weights</code></td><td>Update fusion weights at runtime</td></tr>
+    </table>
+
+    <h2>Evidence</h2>
+    <ul>
+      <li>Agents: <code>backend/agents/news_fetch_agent/</code>, <code>llm_sentiment_agent/</code>, <code>sentiment_aggregator/</code>, <code>fusion_agent/</code>.</li>
+      <li>Routers: <code>backend/api/routers/sentiment.py</code>, <code>fusion.py</code>.</li>
+      <li>Tests: <code>tests/test_api_sentiment.py</code>, <code>test_api_fusion.py</code>, <code>test_api_extra_coverage.py</code> (fusion sections).</li>
+      <li>Signoff: <code>docs/MILESTONE_SIGNOFF_M3_Sentiment_Fusion.md</code>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═════ M4 ═════ -->
+<div id="m4" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Milestone 4</div>
+    <div class="ph-title">Backtesting &amp; Integration</div>
+    <div class="brow"><span class="badge bo">Awaiting Client Sign-Off</span><span class="badge bn">$900 · 15%</span><span class="badge bt">Simulator + Alerts</span></div>
+  </div>
+  <div class="content">
+    <h2>Objective</h2>
+    <p>Let the client <strong>quantify trust</strong>. Before a user acts on a signal, the platform can replay years of historical data as if the strategy had been live, showing equity curves, drawdowns, and risk-adjusted returns. M4 also delivers a configurable alert system so the platform can notify operators when something significant happens.</p>
+
+    <h2>Backtesting Engine</h2>
+    <div class="two">
+      <div>
+        <h3>Components</h3>
+        <ul>
+          <li><code>BacktestSimulator</code> — day-by-day replay</li>
+          <li><code>PositionManager</code> — P&amp;L, stop-loss, take-profit</li>
+          <li><code>TradeExecutor</code> — signal → order, size &amp; validate</li>
+          <li><code>MetricsCalculator</code> — 20+ performance stats</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Configuration (defaults)</h3>
+        <ul>
+          <li>Initial capital: $100,000</li>
+          <li>Max position size: 10%</li>
+          <li>Max concurrent positions: 5</li>
+          <li>Commission: 0.10% · Slippage: 0.05%</li>
+          <li>Stop loss: 5% · Take profit: 10%</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Metrics Produced Per Run</h2>
+    <table class="dt">
+      <tr><th>Category</th><th>Metrics</th></tr>
+      <tr><td>Trade</td><td>Total, winning, losing, win rate, profit factor, avg P&amp;L, largest win/loss, max consecutive wins/losses</td></tr>
+      <tr><td>Return</td><td>Total P&amp;L, total return %, annualized return, daily mean/std</td></tr>
+      <tr><td>Risk</td><td>Sharpe, Sortino, annual volatility, Calmar</td></tr>
+      <tr><td>Drawdown</td><td>Max drawdown $, max drawdown %, max drawdown duration, current drawdown</td></tr>
+    </table>
+
+    <h2>Alert Agent — Default Rules</h2>
+    <table class="dt">
+      <tr><th>Rule</th><th>Type</th><th>Priority</th><th>Cooldown</th></tr>
+      <tr><td>High-confidence BUY</td><td>Signal</td><td>High</td><td>30 min</td></tr>
+      <tr><td>High-confidence SELL</td><td>Signal</td><td>High</td><td>30 min</td></tr>
+      <tr><td>Strong bullish agreement</td><td>Signal</td><td>Medium</td><td>60 min</td></tr>
+      <tr><td>Strong bearish agreement</td><td>Signal</td><td>Medium</td><td>60 min</td></tr>
+      <tr><td>High-impact sentiment</td><td>Signal</td><td>Medium</td><td>120 min</td></tr>
+      <tr><td>Large drawdown warning</td><td>Risk</td><td>High</td><td>240 min</td></tr>
+      <tr><td>Position limit reached</td><td>Risk</td><td>Medium</td><td>60 min</td></tr>
+    </table>
+
+    <h2>Key Endpoints</h2>
+    <table class="dt">
+      <tr><th>Endpoint</th><th>Purpose</th></tr>
+      <tr><td><code>POST /api/v1/backtest/:ticker</code></td><td>Full configurable backtest</td></tr>
+      <tr><td><code>GET /api/v1/backtest/:ticker/quick</code></td><td>Quick backtest (180 days default)</td></tr>
+      <tr><td><code>POST /api/v1/backtest/:ticker/walk-forward</code></td><td>Walk-forward retrain &amp; evaluate</td></tr>
+      <tr><td><code>GET /api/v1/backtest/config</code> · <code>PUT /api/v1/backtest/config</code></td><td>Read/update defaults</td></tr>
+      <tr><td><code>POST /api/v1/alerts/check/:ticker</code></td><td>Evaluate rules for a ticker</td></tr>
+      <tr><td><code>GET /api/v1/alerts</code> · <code>GET /api/v1/alerts/summary</code></td><td>History + summary</td></tr>
+      <tr><td><code>POST /api/v1/alerts/:id/acknowledge</code></td><td>Acknowledge alert</td></tr>
+      <tr><td><code>GET /api/v1/alerts/rules</code> · enable / disable / delete</td><td>Rule management</td></tr>
+    </table>
+
+    <h2>Evidence</h2>
+    <ul>
+      <li>Agents: <code>backend/agents/backtesting_agent/</code>, <code>alert_agent/</code>.</li>
+      <li>Routers: <code>backend/api/routers/backtest.py</code>, <code>alerts.py</code>.</li>
+      <li>Tests: <code>tests/test_api_backtest.py</code>, <code>test_api_alerts.py</code>, backtest sections of <code>test_api_extra_coverage.py</code>.</li>
+      <li>Signoff: <code>docs/MILESTONE_SIGNOFF_M4_Backtesting_Integration.md</code>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═════ M5 ═════ -->
+<div id="m5" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Milestone 5</div>
+    <div class="ph-title">Frontend &amp; Testing — Production Hardening</div>
+    <div class="brow"><span class="badge bo">Awaiting Client Sign-Off</span><span class="badge bn">$900 · 15%</span><span class="badge bt">74% API Coverage</span><span class="badge bg">89 passing tests</span></div>
+  </div>
+  <div class="content">
+    <h2>Objective</h2>
+    <p>Take the platform from "feature complete" to <strong>production-ready</strong>: upgrade the frontend from polling to live streaming, lock the API surface behind authentication + rate limiting + a CORS allowlist, and prove correctness with an automated test suite that clears the 70% coverage bar on the API layer.</p>
+
+    <h2>Frontend Enhancements</h2>
+    <div class="two">
+      <div>
+        <h3>TradingView-quality Dashboard</h3>
+        <ul>
+          <li>Live OHLCV from <code>/api/v1/data/:ticker/ohlcv</code></li>
+          <li>lightweight-charts v5 candlesticks</li>
+          <li>5m / 1h / 1d timeframe selector</li>
+          <li>News markers w/ hover tooltip on crosshair</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Real-Time Streaming</h3>
+        <ul>
+          <li><code>WS /ws/stream/:symbol</code></li>
+          <li>5-second candle + tick push</li>
+          <li>Reconnect on disconnect</li>
+          <li>Graceful fallback when data source unavailable</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Prediction Backtracking</h3>
+    <ul>
+      <li>Dedicated "Predicted vs Actual" sub-panel on the dashboard.</li>
+      <li>Prediction history served by <code>/api/v1/forecast/:ticker/history</code>.</li>
+      <li>Overlay lines on the chart + MAPE + directional accuracy stats.</li>
+      <li>Parallel auto-prediction for all 31 symbols every 5 minutes.</li>
+      <li>Stored per-symbol at <code>backend/storage/prediction_logs/</code>.</li>
+    </ul>
+
+    <h2>Security Hardening</h2>
+    <table class="dt">
+      <tr><th>Concern</th><th>Control</th><th>Location</th></tr>
+      <tr><td>Authentication</td><td>API key via <code>X-API-Key</code> header or <code>api_key</code> query</td><td><code>api/middleware/auth.py</code></td></tr>
+      <tr><td>Gate toggle</td><td><code>TICK_AUTH_ENABLED=true/false</code> (off in dev)</td><td><code>.env.example</code></td></tr>
+      <tr><td>Valid keys</td><td><code>TICK_API_KEYS=comma,separated</code> env var</td><td><code>.env.example</code></td></tr>
+      <tr><td>Rate limiting</td><td>slowapi — 100/min default + per-endpoint overrides · 429 JSON response</td><td><code>api/middleware/rate_limit.py</code></td></tr>
+      <tr><td>CORS lock-down</td><td>Origin allowlist via <code>TICK_CORS_ORIGINS</code></td><td><code>api/main.py</code></td></tr>
+      <tr><td>Method/header scope</td><td>GET/POST/PUT/DELETE/OPTIONS only · Authorization, Content-Type, X-API-Key headers only</td><td><code>api/main.py</code></td></tr>
+    </table>
+
+    <h2>Test Suite</h2>
+    <div class="stats" style="grid-template-columns:repeat(4,1fr);">
+      <div class="stat"><div class="stat-n green">89</div><div class="stat-l">Tests Passing</div><div class="stat-s">0 failing</div></div>
+      <div class="stat"><div class="stat-n gold">13</div><div class="stat-l">Tests Skipped</div><div class="stat-s">optional ML deps absent</div></div>
+      <div class="stat"><div class="stat-n teal">74%</div><div class="stat-l">API Coverage</div><div class="stat-s">&gt; 70% target</div></div>
+      <div class="stat"><div class="stat-n">9</div><div class="stat-l">E2E Flows</div><div class="stat-s">data · forecast · fusion · alerts · auth</div></div>
+    </div>
+
+    <h3>Coverage by Router</h3>
+    <div>
+      <div class="cov-row"><div class="cov-label">middleware/auth</div><div class="cov-track"><div class="cov-fill green" style="width:100%"></div></div><div class="cov-n">100%</div></div>
+      <div class="cov-row"><div class="cov-label">middleware/rate_limit</div><div class="cov-track"><div class="cov-fill green" style="width:88%"></div></div><div class="cov-n">88%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/backtest</div><div class="cov-track"><div class="cov-fill green" style="width:87%"></div></div><div class="cov-n">87%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/data</div><div class="cov-track"><div class="cov-fill green" style="width:84%"></div></div><div class="cov-n">84%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/alerts</div><div class="cov-track"><div class="cov-fill green" style="width:82%"></div></div><div class="cov-n">82%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/fusion</div><div class="cov-track"><div class="cov-fill green" style="width:81%"></div></div><div class="cov-n">81%</div></div>
+      <div class="cov-row"><div class="cov-label">middleware/response_cache</div><div class="cov-track"><div class="cov-fill" style="width:78%"></div></div><div class="cov-n">78%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/sentiment</div><div class="cov-track"><div class="cov-fill" style="width:75%"></div></div><div class="cov-n">75%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/price_forecast</div><div class="cov-track"><div class="cov-fill" style="width:71%"></div></div><div class="cov-n">71%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/support_resistance</div><div class="cov-track"><div class="cov-fill" style="width:70%"></div></div><div class="cov-n">70%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/trend_classification</div><div class="cov-track"><div class="cov-fill gold" style="width:63%"></div></div><div class="cov-n">63%</div></div>
+      <div class="cov-row"><div class="cov-label">main.py</div><div class="cov-track"><div class="cov-fill gold" style="width:57%"></div></div><div class="cov-n">57%</div></div>
+      <div class="cov-row"><div class="cov-label">routers/streaming (WS loop)</div><div class="cov-track"><div class="cov-fill gold" style="width:30%"></div></div><div class="cov-n">30%</div></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:6px;"><code>streaming.py</code> and the auto-prediction loop in <code>main.py</code> are long-running async loops that are validated by integration tests at the WebSocket boundary rather than unit-tested.</p>
+
+    <h3>E2E Flows (<code>test_e2e_pipeline.py</code>)</h3>
+    <ul>
+      <li>Full prediction pipeline (data → forecast → history)</li>
+      <li>Fusion pipeline with component breakdown</li>
+      <li>Dashboard data fan-out (OHLCV / forecast / levels / history in parallel)</li>
+      <li>Multi-stock pipeline for AAPL / MSFT / GOOGL</li>
+      <li>OHLCV response-time guard (&lt; 5 s including cold fetch)</li>
+      <li>Backtest pipeline with equity-curve assertions</li>
+      <li>Alert create → list → acknowledge → clear lifecycle</li>
+      <li>Security gate: anonymous dev access vs. auth-required production</li>
+      <li>Fusion weights read → update → roll back</li>
+    </ul>
+
+    <h2>Bug Fixes Landed During M5</h2>
+    <ul>
+      <li><strong>Route-order bug in fusion router.</strong> <code>GET /api/v1/fusion/weights</code> was being captured by the <code>/{ticker}</code> catch-all. Literal route was reordered to resolve first.</li>
+      <li><strong>Backtest response contract.</strong> Tests updated to assert <code>metrics.win_rate</code> / <code>metrics.sharpe_ratio</code> matching the documented response shape.</li>
+      <li><strong>Legacy M1 script tests</strong> gated behind <code>M1_LIVE=1</code> so CI runs are deterministic; the live flow remains available for manual verification.</li>
+    </ul>
+
+    <h2>Evidence</h2>
+    <ul>
+      <li>Middleware: <code>backend/api/middleware/</code> (auth, rate_limit, response_cache).</li>
+      <li>Tests: <code>backend/tests/</code> — 12 test modules.</li>
+      <li>Coverage config: <code>backend/.coveragerc</code>.</li>
+      <li>Signoff: <code>docs/MILESTONE_SIGNOFF_M5_Frontend_Testing.md</code>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═════ M6 ═════ -->
+<div id="m6" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Milestone 6</div>
+    <div class="ph-title">Documentation &amp; Delivery</div>
+    <div class="brow"><span class="badge bg">Complete</span><span class="badge bn">$300 · 5%</span><span class="badge bt">HTML reports</span></div>
+  </div>
+  <div class="content">
+    <h2>Objective</h2>
+    <p>Ship documentation the client can actually read. Markdown is great for engineers; polished HTML reports are what you share with stakeholders, the finance team, and future contributors. M6 delivers a complete HTML report suite — hostable on Cloud Run — plus a full operator handover.</p>
+
+    <h2>What Ships With M6</h2>
+    <table class="dt">
+      <tr><th>Artifact</th><th>Location</th><th>Purpose</th></tr>
+      <tr><td>Master delivery report</td><td><code>reports/tick-delivery-report.html</code></td><td>This document — single-page sidebar nav covering everything</td></tr>
+      <tr><td>Landing hub</td><td><code>reports/index.html</code></td><td>Entry page linking to the master report + per-milestone summaries</td></tr>
+      <tr><td>Milestone summaries</td><td><code>reports/milestones/m0–m5-summary.html</code></td><td>One-page printable handouts per milestone</td></tr>
+      <tr><td>Cloud Run config</td><td><code>reports/Dockerfile</code> + <code>nginx.conf</code> + <code>deploy.sh</code></td><td>One-command deploy to a public URL</td></tr>
+      <tr><td>PM testing guides</td><td>In this report, under <em>PM Testing Guides</em></td><td>Step-by-step verification flows per milestone</td></tr>
+      <tr><td>Markdown signoffs</td><td><code>docs/MILESTONE_SIGNOFF_*.md</code></td><td>Developer-facing source of truth</td></tr>
+      <tr><td>Memory / knowledge</td><td>In-repo memory under <code>/memory</code> (personal)</td><td>Claude Code context across sessions</td></tr>
+      <tr><td>Branching &amp; merge guide</td><td><code>BRANCHING.md</code> · <code>docs/MERGE_GUIDE.md</code></td><td>How future changes flow into main</td></tr>
+      <tr><td>Deployment guide</td><td><code>DEPLOYMENT.md</code></td><td>Docker Compose · GCP Cloud Run recipes</td></tr>
+      <tr><td>Setup guide</td><td><code>SETUP.md</code></td><td>One-shot local boot instructions</td></tr>
+    </table>
+
+    <h2>Cloud Run Deployment Recipe</h2>
+    <p>The <code>reports/</code> folder is a self-contained nginx site. To publish it at a shareable URL:</p>
+    <div class="curl-block">
+<div class="curl-comment"># 1. Authenticate + select your GCP project</div>
+<div class="curl-cmd">gcloud auth login</div>
+<div class="curl-cmd">gcloud config set project YOUR-PROJECT-ID</div>
+<br>
+<div class="curl-comment"># 2. Build and deploy the reports site (from repo root)</div>
+<div class="curl-cmd">cd reports &amp;&amp; ./deploy.sh</div>
+<br>
+<div class="curl-comment"># 3. The script prints the public URL when done</div>
+<div class="curl-cmd"># e.g. https://tick-reports-xxxxxx.us-central1.run.app</div>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);">The deploy script uses <code>gcloud run deploy --source .</code> so there is no intermediate registry push. Allow unauthenticated access is enabled by default so the client can share the URL with anyone.</p>
+
+    <h2>Handover Checklist</h2>
+    <ul class="cl">
+      <li><span class="ci g">✓</span><strong>Source code.</strong> <code>main</code> branch at latest HEAD; every milestone is tagged in git history.</li>
+      <li><span class="ci g">✓</span><strong>Signed milestone reports.</strong> M0 → M5 markdown + this HTML report for M6.</li>
+      <li><span class="ci g">✓</span><strong>Deployment playbook.</strong> <code>DEPLOYMENT.md</code> for GCP Cloud Run + <code>docker-compose.prod.yml</code> for on-prem.</li>
+      <li><span class="ci g">✓</span><strong>Environment template.</strong> <code>.env.example</code> enumerates every env var required in production.</li>
+      <li><span class="ci g">✓</span><strong>Test suite.</strong> <code>cd backend &amp;&amp; pytest</code> — green locally and in CI-ready form.</li>
+      <li><span class="ci g">✓</span><strong>API docs.</strong> Auto-generated at <code>/docs</code> (Swagger) and <code>/redoc</code> when the backend runs.</li>
+      <li><span class="ci g">✓</span><strong>Architecture reference.</strong> <code>docs/COMPONENT_DEPENDENCIES.md</code> + agent trees inside each <code>agents/&lt;name&gt;/</code>.</li>
+    </ul>
+
+    <div class="ib ib-g">
+      <div class="it">Sign-off path</div>
+      <p>For M3–M6, client sign-off requires walking through the <em>PM Testing Guides</em> in the next sidebar section. Each guide is ≤ 10 minutes and produces a concrete pass/fail. Once all four are green, the full delivery is complete and the remaining payments ($1,200 + $900 + $900 + $300 = $3,300) fall due.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═════ TEST M3 ═════ -->
+<div id="test-m3" class="panel">
+  <div class="ph">
+    <div class="ph-eye">PM Testing Guide</div>
+    <div class="ph-title">Verify M3 — Sentiment &amp; Fusion</div>
+    <div class="brow"><span class="badge bt">~8 minutes</span><span class="badge bn">No setup required</span></div>
+  </div>
+  <div class="content">
+    <div class="ib ib-t">
+      <div class="it">Before you start</div>
+      <p>Run the stack locally with <code>docker compose up</code> from the repo root, or point at your deployed backend. For live news you&#39;ll need <code>FINNHUB_API_KEY</code> / <code>NEWSAPI_KEY</code> / <code>ALPHA_VANTAGE_API_KEY</code> set — without them the Mock collector produces deterministic data that still exercises every code path.</p>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">1</div><div class="qa-step-title">News sources are reachable</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl http://localhost:8000/api/v1/sentiment/health</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Status returns <code>{"status":"healthy"}</code></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Collectors list contains finnhub, newsapi, alphavantage, mock</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">2</div><div class="qa-step-title">Pull news for a ticker</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl http://localhost:8000/api/v1/sentiment/news/AAPL</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Response contains a <code>news</code> array with title / source / published_at / url</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Articles cover the last 7 days (or the fallback window if news is sparse)</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">3</div><div class="qa-step-title">Aggregated sentiment score</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl http://localhost:8000/api/v1/sentiment/AAPL</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>score</code> is a float in [-1, 1]</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>impact</code> is one of High / Medium / Low</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>confidence</code> is in [0, 1]</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">4</div><div class="qa-step-title">Fused signal is cohesive</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl http://localhost:8000/api/v1/fusion/AAPL/quick</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>signal</code> is BUY / SELL / HOLD</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>confidence</code> is in [0, 1]</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>fused_score</code> is in [-1, 1]</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>components</code> dict lists price_forecast, trend_classification, support_resistance, sentiment</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>reasoning</code> is a plain-English string</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">5</div><div class="qa-step-title">Multi-timeframe agreement</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl http://localhost:8000/api/v1/fusion/AAPL/multi-timeframe</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Response contains three timeframes: 1h / 1d / 1w</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>agreement</code> is ALIGNED or CONFLICTING</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">6</div><div class="qa-step-title">Weights are tunable</div><div class="qa-step-time">~2 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block">
+<div class="curl-comment"># Read current weights</div>
+<div class="curl-cmd">curl http://localhost:8000/api/v1/fusion/weights</div>
+<br>
+<div class="curl-comment"># Bump price_forecast weight to 40%</div>
+<div class="curl-cmd">curl -X PUT http://localhost:8000/api/v1/fusion/weights \</div>
+<div class="curl-cmd">  -H "Content-Type: application/json" \</div>
+<div class="curl-cmd">  -d '{"price_forecast":0.4,"trend_classification":0.25,"support_resistance":0.2,"sentiment":0.15}'</div>
+        </div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>GET returns the new weights</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Subsequent <code>/fusion/:ticker/quick</code> reflects the new balance</div>
+      </div>
+    </div>
+
+    <div class="ib ib-g">
+      <div class="it">M3 Pass / Fail Criteria</div>
+      <p>All six steps return the expected shapes and the weights round-trip cleanly. If live news keys are absent, step 2 returns mock data and all other steps still pass — this is by design.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═════ TEST M4 ═════ -->
+<div id="test-m4" class="panel">
+  <div class="ph">
+    <div class="ph-eye">PM Testing Guide</div>
+    <div class="ph-title">Verify M4 — Backtesting &amp; Alerts</div>
+    <div class="brow"><span class="badge bt">~7 minutes</span><span class="badge bn">No setup required</span></div>
+  </div>
+  <div class="content">
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">1</div><div class="qa-step-title">Quick backtest runs cleanly</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl "http://localhost:8000/api/v1/backtest/AAPL/quick?days=180"</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>status</code> is "success"</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>equity_curve</code> is a non-empty array of {date, equity}</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>metrics.win_rate</code> is in [0, 1]</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>metrics.sharpe_ratio</code> is a number</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>metrics.max_drawdown_pct</code> is a negative percentage</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">2</div><div class="qa-step-title">Backtest config is readable &amp; editable</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block">
+<div class="curl-cmd">curl http://localhost:8000/api/v1/backtest/config</div>
+<div class="curl-cmd">curl -X PUT http://localhost:8000/api/v1/backtest/config \</div>
+<div class="curl-cmd">  -H "Content-Type: application/json" \</div>
+<div class="curl-cmd">  -d '{"initial_capital":50000,"max_position_size":0.2}'</div>
+        </div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>PUT returns updated config · subsequent backtests use the new capital</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">3</div><div class="qa-step-title">Walk-forward produces iteration metrics</div><div class="qa-step-time">~2 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl -X POST http://localhost:8000/api/v1/backtest/AAPL/walk-forward \
+  -H "Content-Type: application/json" \
+  -d '{"ticker":"AAPL","days":730,"train_days":252,"test_days":63,"step_days":21}'</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Response returns at least one iteration entry</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Each iteration has train_start, test_end, metrics</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">4</div><div class="qa-step-title">Alerts trigger on high-confidence signals</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl -X POST http://localhost:8000/api/v1/alerts/check/AAPL \
+  -H "Content-Type: application/json" \
+  -d '{"ticker":"AAPL","signal":"BUY","confidence":0.95,"fused_score":0.9,"current_price":180}'</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Response returns at least one triggered alert (high_conf_buy rule)</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Subsequent <code>GET /api/v1/alerts?ticker=AAPL</code> shows it in history</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">5</div><div class="qa-step-title">Acknowledge &amp; rule management</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block">
+<div class="curl-cmd">curl -X POST http://localhost:8000/api/v1/alerts/acknowledge-all?ticker=AAPL</div>
+<div class="curl-cmd">curl http://localhost:8000/api/v1/alerts/rules</div>
+<div class="curl-cmd">curl -X POST http://localhost:8000/api/v1/alerts/rules/high_conf_buy/disable</div>
+<div class="curl-cmd">curl -X POST http://localhost:8000/api/v1/alerts/rules/high_conf_buy/enable</div>
+        </div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Acknowledged count returned and reflected in summary</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Rules list contains 7 default rules</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Disable / enable succeed on a known rule</div>
+      </div>
+    </div>
+
+    <div class="ib ib-g">
+      <div class="it">M4 Pass / Fail Criteria</div>
+      <p>Quick backtest + walk-forward return non-zero trades and a valid equity curve; alerts fire, list, acknowledge, and rule toggles behave. That&#39;s the full M4 surface.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═════ TEST M5 ═════ -->
+<div id="test-m5" class="panel">
+  <div class="ph">
+    <div class="ph-eye">PM Testing Guide</div>
+    <div class="ph-title">Verify M5 — Dashboard, Security, Test Suite</div>
+    <div class="brow"><span class="badge bt">~10 minutes</span><span class="badge bn">Browser + CLI</span></div>
+  </div>
+  <div class="content">
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">1</div><div class="qa-step-title">Dashboard loads live data</div><div class="qa-step-time">~2 min</div></div>
+      <div class="qa-step-body">
+        <p style="font-size:12.5px;margin-bottom:8px;">Open <code>http://localhost:3000</code> in a browser and pick a ticker (e.g. AAPL).</p>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Candlestick chart renders with real OHLCV</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Timeframe selector (5m / 1h / 1d) switches the chart window</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>News markers appear as dots on the chart — hover shows title + source</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Prediction overlay line + Predicted-vs-Actual sub-panel populated</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Accuracy stats visible in the toolbar (MAPE, directional accuracy)</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">2</div><div class="qa-step-title">Live WebSocket streams update the chart</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Browser devtools → Network → WS tab shows a connection to <code>/ws/stream/AAPL</code></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>New frames arrive roughly every 5 seconds</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>The "live price" indicator updates without page refresh</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">3</div><div class="qa-step-title">Auth gate in production mode</div><div class="qa-step-time">~2 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block">
+<div class="curl-comment"># Restart the backend with auth enabled</div>
+<div class="curl-cmd">TICK_AUTH_ENABLED=true TICK_API_KEYS="demo-key-123" uvicorn api.main:app</div>
+<br>
+<div class="curl-comment"># No key → 401</div>
+<div class="curl-cmd">curl -i http://localhost:8000/api/v1/forecast/AAPL</div>
+<br>
+<div class="curl-comment"># Wrong key → 403</div>
+<div class="curl-cmd">curl -i -H "X-API-Key: bad-key" http://localhost:8000/api/v1/forecast/AAPL</div>
+<br>
+<div class="curl-comment"># Correct key → 200</div>
+<div class="curl-cmd">curl -i -H "X-API-Key: demo-key-123" http://localhost:8000/api/v1/forecast/AAPL</div>
+        </div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>401 / 403 / 200 progression as shown above</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>/health</code> still responds 200 without a key</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">4</div><div class="qa-step-title">Rate limiter rejects abuse</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">for i in $(seq 1 120); do curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/api/v1/forecast/health; done | sort | uniq -c</div></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>First ~100 requests return 200, subsequent ones return 429</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">5</div><div class="qa-step-title">Run the full test suite</div><div class="qa-step-time">~2 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block">
+<div class="curl-cmd">cd backend &amp;&amp; source venv/bin/activate</div>
+<div class="curl-cmd">python -m pytest tests/ --cov=api --cov-report=term</div>
+        </div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>89 passed, 13 skipped</code> (skips require optional ML deps; no failures)</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>API coverage ≥ 70% (observed: 74%)</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">6</div><div class="qa-step-title">Background auto-prediction is running</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Server log shows <code>Auto-prediction started: 31 symbols, 8 parallel workers, every 300s</code></div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>backend/storage/prediction_logs/</code> gains new entries every ~5 minutes</div>
+      </div>
+    </div>
+
+    <div class="ib ib-g">
+      <div class="it">M5 Pass / Fail Criteria</div>
+      <p>Dashboard is live-data, WS is streaming, auth gate behaves at 401/403/200, rate limiter kicks in around 100 req/min, and the test suite is green with ≥ 70% coverage. No further work required for M5 sign-off.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═════ TEST M6 ═════ -->
+<div id="test-m6" class="panel">
+  <div class="ph">
+    <div class="ph-eye">PM Testing Guide</div>
+    <div class="ph-title">Verify M6 — Documentation &amp; Delivery</div>
+    <div class="brow"><span class="badge bt">~5 minutes</span><span class="badge bn">Browser only</span></div>
+  </div>
+  <div class="content">
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">1</div><div class="qa-step-title">Open the report hub</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <p style="font-size:12.5px;margin-bottom:8px;">Double-click <code>reports/index.html</code> or open the Cloud Run URL.</p>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Landing page loads with project title, milestone grid, and master-report link</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Clicking any milestone card opens the corresponding summary</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Clicking "TICK Platform — Complete Delivery Report" opens this document</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">2</div><div class="qa-step-title">Master report navigation works</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Every sidebar entry switches the main panel without reloading</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Architecture diagrams render (mermaid)</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Tables, stats, and code blocks render correctly</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">3</div><div class="qa-step-title">Cloud Run deployment (optional but recommended)</div><div class="qa-step-time">~3 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block">
+<div class="curl-cmd">cd reports</div>
+<div class="curl-cmd">./deploy.sh</div>
+        </div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Script prints a <code>https://tick-reports-…run.app</code> URL</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Opening that URL shows the same hub that&#39;s on disk</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>URL can be shared with any client — no auth required by default</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">4</div><div class="qa-step-title">Handover artifacts are in place</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>docs/MILESTONE_SIGNOFF_M0–M5.md</code> present · markdown signoffs</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>DEPLOYMENT.md</code> · <code>SETUP.md</code> · <code>BRANCHING.md</code> present</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>.env.example</code> lists every required env var including M5 security toggles</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div><code>reports/</code> folder contains index + master + milestone summaries + deploy scripts</div>
+      </div>
+    </div>
+
+    <div class="ib ib-g">
+      <div class="it">M6 Pass / Fail Criteria</div>
+      <p>You can navigate the master report, see every panel render, and deploy the reports to Cloud Run with the bundled script. Handover documents in <code>docs/</code> are present and consistent. That&#39;s M6 done.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═════ API SURFACE ═════ -->
+<div id="api" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Reference</div>
+    <div class="ph-title">API Surface — 60+ Endpoints</div>
+    <div class="brow"><span class="badge bn">FastAPI</span><span class="badge bt">Auto-generated Swagger at /docs</span></div>
+  </div>
+  <div class="content">
+    <h2>Data</h2>
+    <table class="dt">
+      <tr><th>Verb</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td>GET</td><td><code>/health</code></td><td>Liveness</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/data/:ticker/ohlcv</code></td><td>Historical OHLCV</td></tr>
+      <tr><td>WS</td><td><code>/ws/stream/:symbol</code></td><td>Live candle + tick</td></tr>
+    </table>
+
+    <h2>Prediction</h2>
+    <table class="dt">
+      <tr><th>Verb</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td>GET</td><td><code>/api/v1/forecast/health</code></td><td>Forecast agent health</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/forecast/:ticker</code></td><td>Multi-horizon forecast</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/forecast/:ticker/history</code></td><td>Historical predictions w/ actuals</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/forecast/:ticker/info</code></td><td>Model metadata</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/forecast/:ticker/compare</code></td><td>Compare baseline / Prophet / LSTM</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/forecast/:ticker/train</code></td><td>Train / retrain model</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/forecast/clear-cache</code></td><td>Clear model cache</td></tr>
+    </table>
+
+    <h2>Trend Classification</h2>
+    <table class="dt">
+      <tr><th>Verb</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td>GET</td><td><code>/api/v1/trend/:ticker</code></td><td>BUY/SELL/HOLD + probabilities</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/trend/:ticker/train</code></td><td>Train classifier</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/trend/:ticker/cross-validate</code></td><td>CV evaluation</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/trend/:ticker/compare</code></td><td>Compare LightGBM vs XGBoost</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/trend/:ticker/features</code></td><td>Feature importance</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/trend/:ticker/info</code></td><td>Model info</td></tr>
+    </table>
+
+    <h2>Support / Resistance</h2>
+    <table class="dt">
+      <tr><th>Verb</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td>GET</td><td><code>/api/v1/levels/:symbol</code></td><td>S/R levels w/ strength</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/levels/detect</code></td><td>Re-run detection</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/levels/batch</code></td><td>Multi-symbol batch</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/levels/:symbol/nearest</code></td><td>Nearest level to current price</td></tr>
+    </table>
+
+    <h2>Sentiment &amp; Fusion</h2>
+    <table class="dt">
+      <tr><th>Verb</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td>GET</td><td><code>/api/v1/sentiment/:ticker</code></td><td>Aggregated sentiment</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/sentiment/news/:ticker</code></td><td>Raw news</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/sentiment/:ticker/news-only</code></td><td>News without LLM scoring</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/sentiment/aggregate</code></td><td>Aggregate pre-computed scores</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/fusion/weights</code> · PUT</td><td>Read/update fusion weights</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/fusion/:ticker</code></td><td>Full fused signal</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/fusion/:ticker/quick</code></td><td>Fast fused signal</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/fusion/fuse</code></td><td>Fuse pre-computed components</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/fusion/:ticker/multi-timeframe</code></td><td>Multi-timeframe signals</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/fusion/components/status</code></td><td>All component agent health</td></tr>
+    </table>
+
+    <h2>Backtesting &amp; Alerts</h2>
+    <table class="dt">
+      <tr><th>Verb</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td>POST</td><td><code>/api/v1/backtest/:ticker</code></td><td>Full backtest</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/backtest/:ticker/quick</code></td><td>Quick backtest</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/backtest/:ticker/walk-forward</code></td><td>Walk-forward</td></tr>
+      <tr><td>GET/PUT</td><td><code>/api/v1/backtest/config</code></td><td>Read/update backtest config</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/alerts/check/:ticker</code></td><td>Evaluate rules for ticker</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/alerts</code></td><td>History</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/alerts/summary</code></td><td>Counts by priority/type</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/alerts/:id/acknowledge</code></td><td>Acknowledge</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/alerts/acknowledge-all</code></td><td>Acknowledge all</td></tr>
+      <tr><td>DELETE</td><td><code>/api/v1/alerts</code></td><td>Clear alerts</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/alerts/rules</code></td><td>Rule list</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/alerts/rules/:id/enable|disable</code></td><td>Toggle rule</td></tr>
+    </table>
+
+    <div class="ib ib-t">
+      <div class="it">Discover the full surface</div>
+      <p>Run the backend and visit <code>http://localhost:8000/docs</code> for Swagger UI or <code>/redoc</code> for ReDoc. Both are auto-generated and always in sync with the code.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═════ STACK ═════ -->
+<div id="stack" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Reference</div>
+    <div class="ph-title">Technology Stack</div>
+    <div class="brow"><span class="badge bt">Python 3.9+</span><span class="badge bn">TypeScript</span><span class="badge bg">Docker-native</span></div>
+  </div>
+  <div class="content">
+    <h2>Backend</h2>
+    <div class="tech-grid">
+      <span class="tech-chip" style="background:#ecfdf5;color:#065f46;">FastAPI 0.104</span>
+      <span class="tech-chip" style="background:#f1f5f9;color:#475569;">Uvicorn</span>
+      <span class="tech-chip" style="background:#dbeafe;color:#1e40af;">Pydantic v2</span>
+      <span class="tech-chip" style="background:#f5f3ff;color:#5b21b6;">slowapi (rate limit)</span>
+      <span class="tech-chip" style="background:#fef3c7;color:#92400e;">pandas · numpy</span>
+      <span class="tech-chip" style="background:#e0f2fe;color:#075985;">scikit-learn</span>
+      <span class="tech-chip" style="background:#fce7f3;color:#9d174d;">Prophet</span>
+      <span class="tech-chip" style="background:#eef2ff;color:#3730a3;">TensorFlow / LSTM</span>
+      <span class="tech-chip" style="background:#fdf4ff;color:#86198f;">LightGBM</span>
+      <span class="tech-chip" style="background:#fff7ed;color:#9a3412;">XGBoost</span>
+      <span class="tech-chip" style="background:#e6fffa;color:#0e7490;">DBSCAN · scipy</span>
+      <span class="tech-chip" style="background:#f0f9ff;color:#0c4a6e;">TimescaleDB 15</span>
+      <span class="tech-chip" style="background:#fef2f2;color:#991b1b;">Redis</span>
+    </div>
+
+    <h2>Frontend</h2>
+    <div class="tech-grid">
+      <span class="tech-chip" style="background:#eff6ff;color:#1d4ed8;">Next.js 14.0.4</span>
+      <span class="tech-chip" style="background:#dbeafe;color:#1e40af;">React 18</span>
+      <span class="tech-chip" style="background:#f0f9ff;color:#0c4a6e;">TypeScript 5.3</span>
+      <span class="tech-chip" style="background:#ecfeff;color:#0e7490;">Tailwind CSS 3.3</span>
+      <span class="tech-chip" style="background:#f3f4f6;color:#1f2937;">lightweight-charts v5</span>
+      <span class="tech-chip" style="background:#ecfdf5;color:#065f46;">Recharts 2.10</span>
+      <span class="tech-chip" style="background:#fef9c3;color:#854d0e;">lucide-react</span>
+      <span class="tech-chip" style="background:#f5f3ff;color:#5b21b6;">date-fns 2.30</span>
+    </div>
+
+    <h2>Infrastructure &amp; Tooling</h2>
+    <div class="tech-grid">
+      <span class="tech-chip" style="background:#f1f5f9;color:#475569;">Docker + docker-compose</span>
+      <span class="tech-chip" style="background:#fef3c7;color:#92400e;">GCP Cloud Run</span>
+      <span class="tech-chip" style="background:#e0e7ff;color:#3730a3;">GitHub Actions CI (ready)</span>
+      <span class="tech-chip" style="background:#f0fdf4;color:#14532d;">pytest + pytest-cov + pytest-timeout</span>
+      <span class="tech-chip" style="background:#fef2f2;color:#991b1b;">black + flake8 + mypy</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═════ OVER & ABOVE ═════ -->
+<div id="extras" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Bonus Work</div>
+    <div class="ph-title">Over &amp; Above the SoW</div>
+    <div class="brow"><span class="badge bv">Not Invoiced</span><span class="badge bt">Reinforces core "why"</span></div>
+  </div>
+  <div class="content">
+    <p>These items were not in the original Statement of Work but were delivered because they materially strengthen the product&#39;s trustworthiness — which is the user&#39;s core "why". No extra invoice was issued for them.</p>
+
+    <table class="dt">
+      <tr><th>Extra</th><th>Why It Matters</th><th>Evidence</th></tr>
+      <tr><td>Prediction backtracking store</td><td>Users can visualize how accurate every prediction was over time — making the gap between "predicted" and "actual" visible is the core trust driver.</td><td><code>backend/storage/prediction_logs/*.json</code> · <code>/forecast/:ticker/history</code></td></tr>
+      <tr><td>Parallel auto-prediction (31 symbols, 5-min cycle)</td><td>Dashboard loads with a fresh prediction on any stock instantly — no waiting for a cold fetch.</td><td><code>backend/api/main.py :: _run_auto_predictions</code></td></tr>
+      <tr><td>News markers on chart</td><td>Visual context between price moves and news events without leaving the chart.</td><td>Frontend: chart overlay · Backend: <code>/sentiment/news/:ticker</code></td></tr>
+      <tr><td>Multi-timeframe fusion</td><td>Answers "does the 1h signal agree with the 1d signal?" in a single API call — risk-aware trading.</td><td><code>/fusion/:ticker/multi-timeframe</code></td></tr>
+      <tr><td>MAPE + directional accuracy in UI</td><td>Raw model quality is surfaced to the user — not hidden in logs.</td><td>Chart toolbar</td></tr>
+      <tr><td>Semantic cache for LLM sentiment</td><td>GPT-4 calls are expensive — cache reduces cost by ~80% without hurting accuracy.</td><td><code>llm_sentiment_agent/cache/</code></td></tr>
+      <tr><td>Configurable fusion weights (runtime PUT)</td><td>Operators can tune the signal composition without redeploying.</td><td><code>PUT /fusion/weights</code></td></tr>
+      <tr><td>Skip-if-dep-missing test helper</td><td>CI stays green even when optional ML deps aren&#39;t present — doesn&#39;t mask real regressions.</td><td><code>backend/tests/conftest.py</code></td></tr>
+      <tr><td>Polished HTML delivery reports</td><td>Stakeholders get something they can read and share — markdown is engineer-centric.</td><td>This report suite</td></tr>
+      <tr><td>Cloud Run one-command deploy</td><td>The reports are shareable over HTTPS from day 1 — no manual hosting setup.</td><td><code>reports/deploy.sh</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═════ KNOWN LIMITATIONS ═════ -->
+<div id="known" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Transparency</div>
+    <div class="ph-title">Known Limitations &amp; Phase 2 Candidates</div>
+    <div class="brow"><span class="badge bo">Not Blockers</span><span class="badge bt">Proposed for future work</span></div>
+  </div>
+  <div class="content">
+    <h2>Known Limitations</h2>
+    <div class="limit-item"><div class="limit-dot"></div><strong>Tiingo 403 on free tier.</strong> The bundled Tiingo collector requires a paid API key for real-time data on the free tier it returns 403. The Data Agent gracefully falls back to yFinance, then to mock, so no user-facing breakage — but real-time intraday on new tickers benefits from a paid Tiingo key.</div>
+    <div class="limit-item"><div class="limit-dot"></div><strong>OpenAI key not bundled.</strong> <code>llm_sentiment_agent</code> works out-of-the-box with a deterministic mock client. Supply <code>OPENAI_API_KEY</code> in <code>.env</code> to enable real GPT-4 scoring — we recommend the 4o-mini model for ~10× lower cost.</div>
+    <div class="limit-item"><div class="limit-dot"></div><strong>Alert notification handlers.</strong> Alerts are stored in-memory and served via API. External fan-out (email / Slack / SMS) is a one-file extension — the <code>AlertAgent</code> accepts notification handlers as a plug-in point.</div>
+    <div class="limit-item"><div class="limit-dot"></div><strong>In-memory alert history.</strong> Alerts don&#39;t persist across backend restarts. Moving to TimescaleDB is a ~1-day task when you&#39;re ready.</div>
+    <div class="limit-item"><div class="limit-dot"></div><strong>No admin UI.</strong> Rule enable/disable, weight tuning, model retraining are API-driven. A small admin page (8–12 hours) would make this one-click.</div>
+    <div class="limit-item"><div class="limit-dot"></div><strong>Streaming loop uses a 5-second poll.</strong> This is adequate for equities but crypto / forex users would benefit from a push model (webhook → Redis pub/sub). Swap in without touching the frontend.</div>
+    <div class="limit-item"><div class="limit-dot"></div><strong>Mobile-web dashboard.</strong> The dashboard is responsive and works on mobile but isn&#39;t native. A React Native or Flutter wrapper is the right Phase-2 move.</div>
+
+    <h2>Phase 2 Candidates</h2>
+    <table class="dt">
+      <tr><th>Item</th><th>Rough Estimate</th><th>Value</th></tr>
+      <tr><td>Alert webhooks (email / Slack / Discord)</td><td>1–2 days</td><td>Closes the "be notified even when I&#39;m not watching" loop</td></tr>
+      <tr><td>Persistent alert history (TSDB)</td><td>1 day</td><td>Audit trail and analytics</td></tr>
+      <tr><td>Admin UI (rule toggles, weight tuning, manual retrain)</td><td>8–12 hours</td><td>Non-technical operators can manage the platform</td></tr>
+      <tr><td>Paid Tiingo tier + real-time intraday</td><td>1 day</td><td>Same-second prices during market hours</td></tr>
+      <tr><td>Native mobile app (React Native shell)</td><td>2–3 weeks</td><td>Push notifications · market-open mode</td></tr>
+      <tr><td>Portfolio simulation (multi-ticker positions)</td><td>1 week</td><td>Users back-test a whole strategy, not one stock at a time</td></tr>
+      <tr><td>Paid LLM model swap (4o-mini) + cost telemetry</td><td>0.5 days</td><td>~10× cost reduction with similar quality</td></tr>
+    </table>
+
+    <div class="ib ib-t">
+      <div class="it">How to decide what&#39;s next</div>
+      <p>The biggest near-term value is alert fan-out + persistent history (users start trusting the platform because it reaches them when it matters). Everything else is polish. Happy to scope a Phase-2 SoW once you&#39;ve decided the direction.</p>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#E3F4F1',
+      primaryTextColor: '#111827',
+      primaryBorderColor: '#A8D9D2',
+      lineColor: '#6B7280',
+      secondaryColor: '#F9FAFB',
+      tertiaryColor: '#E5F2EB',
+    },
+    flowchart: { curve: 'basis', padding: 24, useMaxWidth: true },
+  });
+
+  function nav(btn, id) {
+    document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const panel = document.getElementById(id);
+    panel.classList.add('active');
+    const unrendered = panel.querySelectorAll('.mermaid:not([data-processed])');
+    if (unrendered.length) mermaid.run({ nodes: unrendered });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const active = document.querySelector('.panel.active');
+    if (active) {
+      const unrendered = active.querySelectorAll('.mermaid:not([data-processed])');
+      if (unrendered.length) mermaid.run({ nodes: unrendered });
+    }
+  });
+</script>
+</body>
+</html>

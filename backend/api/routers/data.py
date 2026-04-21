@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from agents.data_agent.agent import DataAgent
+from api.middleware.response_cache import cache_key, cache_get, cache_set
 
 router = APIRouter(prefix="/api/v1/data", tags=["Data"])
 
@@ -39,6 +40,12 @@ async def get_ohlcv(
     Returns array of {timestamp, open, high, low, close, volume}.
     """
     try:
+        # Check cache first (60s TTL for intraday, 300s for daily)
+        ck = cache_key("ohlcv", symbol=symbol, timeframe=timeframe, days=days)
+        cached = cache_get(ck)
+        if cached:
+            return cached
+
         data_agent = get_data_agent()
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days)
@@ -92,12 +99,15 @@ async def get_ohlcv(
         if len(records) > max_bars:
             records = records[-max_bars:]
 
-        return {
+        result = {
             "symbol": symbol,
             "timeframe": timeframe,
             "count": len(records),
             "data": records,
         }
+        ttl = 60 if timeframe == "5m" else 300
+        cache_set(ck, result, ttl)
+        return result
 
     except HTTPException:
         raise
