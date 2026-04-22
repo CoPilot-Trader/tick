@@ -26,6 +26,7 @@ const defaultFilters: GraphFilters = {
   showNewsEvents: true,
   showTimingSignals: false,
   showPredictionAccuracy: true,
+  showLevelRejection: false,
 };
 
 const navItems = [

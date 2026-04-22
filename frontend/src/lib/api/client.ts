@@ -406,6 +406,66 @@ export class ApiClient {
     return this.get(`/api/v1/forecast/${symbol}/history?limit=${limit}`);
   }
 
+  // ==========================================================================
+  // Signal Bridge (external signals from Tory's pipeline)
+  // ==========================================================================
+
+  async getLevelRejectionSignals(symbol: string): Promise<{
+    status: string;
+    ticker: string;
+    count: number;
+    win_rate: number | null;
+    signals: {
+      ticker: string;
+      signal_time: string;
+      level_type: string;
+      level_price: number;
+      entry_price: number;
+      target1_price: number;
+      target2_price: number | null;
+      stop_price: number;
+      side: string;
+      vix_level: number;
+      macro_regime: string;
+      target1_hit: number;
+      stop_hit: number;
+    }[];
+  }> {
+    return this.get(`/api/v1/signals/level-rejection/${symbol}`);
+  }
+
+  async getPCRShockBacktrack(symbol: string, limit: number = 500): Promise<{
+    status: string;
+    symbol: string;
+    count: number;
+    predictions: {
+      predicted_at: string;
+      horizon: string;
+      base_price: number;
+      predicted_price: number;
+      confidence: number;
+      direction: string;
+      target_date: string;
+      target_timestamp?: string;
+      actual_price: number | null;
+      error_pct: number | null;
+      direction_correct: boolean | null;
+      source?: string;
+    }[];
+    accuracy: {
+      mape: number;
+      directional_accuracy: number;
+      total_predictions: number;
+      resolved: number;
+    } | null;
+  }> {
+    return this.get(`/api/v1/signals/pcr-shock/${symbol}/backtrack?limit=${limit}`);
+  }
+
+  // ==========================================================================
+  // Price Forecast
+  // ==========================================================================
+
   async getPriceForecast(symbol: string, horizons: string[] = ['1d']): Promise<PriceForecastResponse> {
     const horizonParam = horizons.join(',');
     const raw = await this.get<any>(`/api/v1/forecast/${symbol}?horizons=${horizonParam}&use_baseline=true&use_ensemble=false`);
@@ -514,13 +574,15 @@ export class ApiClient {
       const { timeframe: tf, days: rangeDays } = rangeConfig[range] || rangeConfig['1D'];
       const clampedDays = Math.min(rangeDays, 60); // backend max is 60
 
-      // Fetch real OHLCV data, forecast, levels, news, and prediction history in parallel
-      const [ohlcvResult, forecastResult, levels, newsResult, predHistory] = await Promise.all([
+      // Fetch real OHLCV data, forecast, levels, news, prediction history, and signals in parallel
+      const [ohlcvResult, forecastResult, levels, newsResult, predHistory, levelRejResult, pcrBacktrack] = await Promise.all([
         this.getOHLCV(symbol, tf, clampedDays).catch(() => null),
         this.getPriceForecast(symbol, ['1h']).catch(() => null),
         this.getLevels(symbol, { max_levels: 3 }).catch(() => null),
         this.getNewsArticles(symbol, 7).catch(() => null),
         this.getPredictionHistory(symbol, 500).catch(() => null),
+        this.getLevelRejectionSignals(symbol).catch(() => null),
+        this.getPCRShockBacktrack(symbol, 500).catch(() => null),
       ]);
 
       // Use real OHLCV data if available, otherwise generate intraday fallback
@@ -595,6 +657,13 @@ export class ApiClient {
         }
       }
 
+      // Merge TICK predictions + PCR shock backtrack into a unified history
+      const tickPreds = (predHistory?.predictions || []).map(p => ({ ...p, source: 'tick' }));
+      const pcrPreds = pcrBacktrack?.predictions || [];
+      const mergedHistory = [...tickPreds, ...pcrPreds].sort(
+        (a, b) => new Date(a.predicted_at).getTime() - new Date(b.predicted_at).getTime()
+      );
+
       return {
         symbol,
         name: symbol,
@@ -606,8 +675,9 @@ export class ApiClient {
         support_levels: levels?.support_levels || [],
         resistance_levels: levels?.resistance_levels || [],
         news_events,
-        prediction_history: predHistory?.predictions || [],
+        prediction_history: mergedHistory,
         prediction_accuracy: predHistory?.accuracy || null,
+        level_rejection_signals: levelRejResult?.signals || [],
         last_updated: new Date().toISOString(),
       };
     } catch (error) {

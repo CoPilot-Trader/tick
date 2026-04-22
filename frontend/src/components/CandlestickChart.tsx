@@ -316,43 +316,54 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     const backtrackPredicted: LineData[] = [];
     const backtrackActual: LineData[] = [];
 
-    if ((data.prediction_history || []).length > 0 && candles.length > 0) {
+    if ((data.prediction_history || []).length > 0) {
       const candleTimes = candles.map(c => c.time as number);
+      const hasCandleTimes = candleTimes.length > 0;
 
-      // Map: candle unix time -> { predicted, actual } (last write wins)
-      const candleMap = new Map<number, { predicted: number; actual: number }>();
+      // Map: unix time -> { predicted, actual } (last write wins)
+      const timeMap = new Map<number, { predicted: number; actual: number }>();
 
       (data.prediction_history || []).forEach((entry: PredictionHistoryEntry) => {
-        if (entry.actual_price === null) return;
+        // Include entries with actual prices (resolved) or show predicted-only
+        const hasActual = entry.actual_price !== null && entry.actual_price !== undefined;
+        if (!hasActual && !entry.predicted_price) return;
 
         const targetStr = entry.target_timestamp || (entry.target_date + 'T16:00:00Z');
         const targetTs = Math.floor(new Date(targetStr).getTime() / 1000);
         if (isNaN(targetTs)) return;
 
-        // Find closest candle
-        let bestCandle = candleTimes[0];
-        let bestDiff = Math.abs(candleTimes[0] - targetTs);
-        for (let i = 1; i < candleTimes.length; i++) {
-          const diff = Math.abs(candleTimes[i] - targetTs);
-          if (diff < bestDiff) {
-            bestDiff = diff;
-            bestCandle = candleTimes[i];
+        if (hasCandleTimes) {
+          // Try to snap to nearest candle
+          let bestCandle = candleTimes[0];
+          let bestDiff = Math.abs(candleTimes[0] - targetTs);
+          for (let i = 1; i < candleTimes.length; i++) {
+            const diff = Math.abs(candleTimes[i] - targetTs);
+            if (diff < bestDiff) {
+              bestDiff = diff;
+              bestCandle = candleTimes[i];
+            }
+          }
+
+          if (bestDiff < 7200) {
+            timeMap.set(bestCandle, {
+              predicted: entry.predicted_price,
+              actual: hasActual ? entry.actual_price! : entry.predicted_price,
+            });
+            return;
           }
         }
 
-        // Only show if within 2 hours of a candle
-        if (bestDiff < 7200) {
-          candleMap.set(bestCandle, {
-            predicted: entry.predicted_price,
-            actual: entry.actual_price,
-          });
-        }
+        // No candle match — use the prediction's own timestamp (standalone mode)
+        timeMap.set(targetTs, {
+          predicted: entry.predicted_price,
+          actual: hasActual ? entry.actual_price! : entry.predicted_price,
+        });
       });
 
       // Convert map to sorted arrays
-      const sortedKeys = Array.from(candleMap.keys()).sort((a, b) => a - b);
+      const sortedKeys = Array.from(timeMap.keys()).sort((a, b) => a - b);
       for (const t of sortedKeys) {
-        const v = candleMap.get(t)!;
+        const v = timeMap.get(t)!;
         backtrackPredicted.push({ time: t as unknown as Time, value: v.predicted });
         backtrackActual.push({ time: t as unknown as Time, value: v.actual });
       }
@@ -392,7 +403,40 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     const availableHeight = wrapperHeight - toolbarHeight;
     const mainChartHeight = Math.max(200, availableHeight - subChartCount * (subChartHeight + subChartLabelHeight));
 
-    // ─── TradingView-style colors ────────────────────────────────────
+    // Strip the TradingView attribution logo that lightweight-charts injects
+    const stripAttribution = (container: HTMLElement) => {
+      // Remove the <a id="tv-attr-logo"> and its companion <style> element
+      const logo = container.querySelector('#tv-attr-logo');
+      if (logo) {
+        const prev = logo.previousElementSibling;
+        if (prev && prev.tagName === 'STYLE') prev.remove();
+        logo.remove();
+      }
+      // Also remove by href as a fallback
+      container.querySelectorAll('a[href*="tradingview"]').forEach(el => el.remove());
+      // Remove by the known SVG path signature
+      container.querySelectorAll('svg').forEach(svg => {
+        if (svg.innerHTML.includes('M14 2H2v6h6v9h6V2Z')) svg.closest('a')?.remove() || svg.remove();
+      });
+    };
+
+    // Re-run periodically for the first second (library may inject after render)
+    const stripAll = () => {
+      if (chartContainerRef.current) stripAttribution(chartContainerRef.current);
+      if (rsiContainerRef.current) stripAttribution(rsiContainerRef.current);
+      if (macdContainerRef.current) stripAttribution(macdContainerRef.current);
+      if (predAccContainerRef.current) stripAttribution(predAccContainerRef.current);
+      // Walk up to wrapper to catch any that escaped
+      if (wrapperRef.current) stripAttribution(wrapperRef.current);
+    };
+    const stripTimers = [
+      setTimeout(stripAll, 50),
+      setTimeout(stripAll, 200),
+      setTimeout(stripAll, 500),
+      setTimeout(stripAll, 1000),
+    ];
+
+    // ─── Professional chart colors ────────────────────────────────────
     const bgColor = '#131722';
     const gridColor = '#1e222d';
     const textColor = '#787b86';
@@ -428,10 +472,10 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         rightOffset: 5,
         barSpacing: 8,
       },
-    });
+    } as any);
     chartRef.current = chart;
 
-    // Candlestick series (TradingView colors)
+    // Candlestick series
     const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#26a69a',
       downColor: '#ef5350',
@@ -459,7 +503,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       } catch { /* noop */ }
     }
 
-    // Volume (always on - TradingView shows volume by default)
+    // Volume (always on)
     const volumeSeries = chart.addSeries(HistogramSeries, {
       priceFormat: { type: 'volume' },
       priceScaleId: 'volume',
@@ -516,6 +560,68 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           });
         } catch { /* noop */ }
       });
+    }
+
+    // Level Rejection signals (external — from Tory's pipeline)
+    if (filters.showLevelRejection && data.level_rejection_signals && data.level_rejection_signals.length > 0) {
+      // Determine visible price range from candle data to only show signals near current view
+      const signals = data.level_rejection_signals;
+      const markers: { time: any; position: string; color: string; shape: string; text: string }[] = [];
+
+      for (const sig of signals) {
+        try {
+          // Level price — solid cyan
+          candleSeries.createPriceLine({
+            price: sig.level_price, color: '#00bcd4', lineWidth: 1,
+            lineStyle: LineStyle.Solid, axisLabelVisible: true,
+            title: `Lvl ${sig.level_type}`,
+          });
+          // Entry — gold dotted
+          candleSeries.createPriceLine({
+            price: sig.entry_price, color: '#ffc107', lineWidth: 1,
+            lineStyle: LineStyle.Dotted, axisLabelVisible: false,
+            title: 'Entry',
+          });
+          // Stop — red dashed
+          candleSeries.createPriceLine({
+            price: sig.stop_price, color: '#f44336', lineWidth: 1,
+            lineStyle: LineStyle.Dashed, axisLabelVisible: false,
+            title: 'Stop',
+          });
+          // Target 1 — green dashed
+          candleSeries.createPriceLine({
+            price: sig.target1_price, color: '#4caf50', lineWidth: 1,
+            lineStyle: LineStyle.Dashed, axisLabelVisible: false,
+            title: 'T1',
+          });
+          // Target 2 (if present) — light green dashed
+          if (sig.target2_price != null) {
+            candleSeries.createPriceLine({
+              price: sig.target2_price, color: '#8bc34a', lineWidth: 1,
+              lineStyle: LineStyle.Dashed, axisLabelVisible: false,
+              title: 'T2',
+            });
+          }
+
+          // Series marker at signal time
+          const ts = new Date(sig.signal_time);
+          const epoch = Math.floor(ts.getTime() / 1000);
+          markers.push({
+            time: epoch as any,
+            position: 'belowBar',
+            color: sig.target1_hit ? '#4caf50' : '#f44336',
+            shape: 'arrowUp',
+            text: sig.target1_hit ? 'W' : 'L',
+          });
+        } catch { /* noop — signal price may be outside chart range */ }
+      }
+
+      if (markers.length > 0) {
+        try {
+          markers.sort((a, b) => (a.time as number) - (b.time as number));
+          (candleSeries as any).setMarkers(markers);
+        } catch { /* noop */ }
+      }
     }
 
     // Prediction forecast — prominent area band + bold line
@@ -759,6 +865,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     ro.observe(wrapperRef.current);
 
     return () => {
+      stripTimers.forEach(clearTimeout);
       window.removeEventListener('resize', handleResize);
       ro.disconnect();
       try { chart.remove(); } catch { /* noop */ }
@@ -856,6 +963,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     { key: 'showConfidenceBounds', label: 'Bounds', color: '#42a5f5' },
     { key: 'showNewsEvents', label: 'News', color: '#ffb74d' },
     { key: 'showPredictionAccuracy', label: 'Pred vs Actual', color: '#ff9800' },
+    { key: 'showLevelRejection', label: 'Signals', color: '#00bcd4' },
   ];
 
   // Price info
@@ -866,7 +974,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
   return (
     <div ref={wrapperRef} className="w-full h-full flex flex-col" style={{ background: '#131722' }}>
-      {/* ─── TradingView-style toolbar ─────────────────────────────── */}
+      {/* ─── Chart toolbar ────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-2 py-1 flex-shrink-0" style={{ borderBottom: '1px solid #2a2e39', height: 36 }}>
         {/* Left: Symbol + Price */}
         <div className="flex items-center gap-3">

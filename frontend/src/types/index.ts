@@ -94,6 +94,23 @@ export interface PredictionHistoryEntry {
   actual_price: number | null;
   error_pct: number | null;
   direction_correct: boolean | null;
+  source?: string; // "tick" (default) or "pcr_shock"
+}
+
+export interface LevelRejectionSignal {
+  ticker: string;
+  signal_time: string;
+  level_type: string;       // OR_LOW, PML, PDL, PREV_VWAP
+  level_price: number;
+  entry_price: number;
+  target1_price: number;
+  target2_price: number | null;
+  stop_price: number;
+  side: string;             // CALL
+  vix_level: number;
+  macro_regime: string;
+  target1_hit: number;      // 1=won, 0=lost
+  stop_hit: number;
 }
 
 export interface PredictionAccuracy {
@@ -116,6 +133,7 @@ export interface StockData {
   news_events?: NewsEvent[];
   prediction_history?: PredictionHistoryEntry[];
   prediction_accuracy?: PredictionAccuracy | null;
+  level_rejection_signals?: LevelRejectionSignal[];
   last_updated: string;
 }
 
@@ -137,4 +155,5 @@ export interface GraphFilters {
   showNewsEvents: boolean;
   showTimingSignals: boolean;
   showPredictionAccuracy: boolean;
+  showLevelRejection: boolean;
 }

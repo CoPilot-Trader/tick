@@ -139,20 +139,27 @@ class PriceForecastAgent(BaseAgent):
         try:
             # Determine which model(s) to use
             if use_baseline:
-                return self._predict_prophet(symbol, df, horizons)
+                result = self._predict_prophet(symbol, df, horizons)
             elif use_ensemble:
-                return self._predict_ensemble(symbol, df, horizons)
+                result = self._predict_ensemble(symbol, df, horizons)
             else:
-                return self._predict_lstm(symbol, df, horizons)
+                result = self._predict_lstm(symbol, df, horizons)
+
+            # If the ML model returned a soft failure, fall back to baseline
+            if result.get("success"):
+                return result
+            raise RuntimeError(result.get("error", "ML model returned success=False"))
 
         except Exception as e:
-            logger.error(f"Prediction failed for {symbol}: {e}")
-            import traceback
-            traceback.print_exc()
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            logger.warning(f"ML prediction failed for {symbol}: {e} — falling back to statistical baseline")
+            try:
+                return self._predict_statistical_baseline(symbol, df, horizons)
+            except Exception as e2:
+                logger.error(f"Statistical baseline also failed for {symbol}: {e2}")
+                return {
+                    "success": False,
+                    "error": str(e)
+                }
 
     def _predict_prophet(
         self,
@@ -286,6 +293,62 @@ class PriceForecastAgent(BaseAgent):
             "symbol": symbol,
             "current_price": current_price,
             "predictions": ensemble_predictions,
+            "generated_at": datetime.now().isoformat(),
+        }
+
+    def _predict_statistical_baseline(
+        self,
+        symbol: str,
+        df: pd.DataFrame,
+        horizons: List[str],
+    ) -> Dict[str, Any]:
+        """
+        Pure-statistics baseline that needs no ML libraries.
+        Uses EMA momentum + recent volatility to project price.
+        Always available — acts as fallback when Prophet/TF are absent.
+        """
+        import numpy as np
+
+        closes = df["close"].values if "close" in df.columns else df.iloc[:, 3].values
+        current_price = float(closes[-1])
+
+        # Simple momentum: EMA-10 slope projected forward
+        ema_span = min(10, len(closes))
+        weights = np.exp(np.linspace(-1, 0, ema_span))
+        weights /= weights.sum()
+        ema_recent = np.dot(closes[-ema_span:], weights)
+        momentum = (current_price - ema_recent) / ema_recent  # fractional move per ~10 bars
+
+        # Volatility from last 20 bars
+        vol_window = min(20, len(closes) - 1)
+        returns = np.diff(closes[-vol_window - 1:]) / closes[-vol_window - 1:-1]
+        daily_vol = float(np.std(returns)) if len(returns) > 0 else 0.01
+
+        horizon_bars = {"1h": 0.04, "4h": 0.17, "1d": 1.0, "1w": 5.0}
+
+        predictions = {}
+        for h in horizons:
+            bars = horizon_bars.get(h, 1.0)
+            projected_move = momentum * bars
+            predicted_price = round(current_price * (1 + projected_move), 2)
+            band = daily_vol * (bars ** 0.5) * current_price * 1.96  # ~95% CI
+            direction = "UP" if predicted_price >= current_price else "DOWN"
+
+            predictions[h] = {
+                "price": predicted_price,
+                "confidence": round(max(0.3, min(0.8, 1 - daily_vol * 10)), 3),
+                "direction": direction,
+                "price_lower": round(predicted_price - band, 2),
+                "price_upper": round(predicted_price + band, 2),
+                "change_pct": round(projected_move * 100, 2),
+            }
+
+        return {
+            "success": True,
+            "model_type": "statistical_baseline",
+            "symbol": symbol,
+            "current_price": current_price,
+            "predictions": predictions,
             "generated_at": datetime.now().isoformat(),
         }
 

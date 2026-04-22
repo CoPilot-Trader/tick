@@ -50,7 +50,7 @@ export default function StockOverview({ data }: StockOverviewProps) {
           <div className="flex items-center gap-1.5">
             <Activity className="w-3 h-3 text-gray-400" />
             <span className="text-xs text-gray-400">Predictions:</span>
-            <span className="text-sm font-semibold text-white">{data.predictions.length}</span>
+            <span className="text-sm font-semibold text-white">{data.predictions.length || (data.prediction_history || []).length}</span>
           </div>
 
           {latestPrediction && (

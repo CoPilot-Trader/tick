@@ -175,7 +175,7 @@ from api.routers import news_pipeline_visualizer, support_resistance_agent
 from api.routers import price_forecast, trend_classification
 from api.routers import sentiment, fusion
 from api.routers import backtest, alerts
-from api.routers import data, streaming
+from api.routers import data, streaming, signal_bridge
 
 _auth = [Depends(verify_api_key)]
 
@@ -196,6 +196,9 @@ app.include_router(alerts.router, dependencies=_auth)
 
 # Data endpoints
 app.include_router(data.router, dependencies=_auth)
+
+# Signal Bridge (external datasets from Tory's pipeline)
+app.include_router(signal_bridge.router, dependencies=_auth)
 
 # Real-time streaming
 app.include_router(streaming.router)
