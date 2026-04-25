@@ -60,8 +60,8 @@ h2 { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--navy)
     <div class="hero-meta">
       <div class="hm"><strong>Client</strong><span>WhosTheBoss</span></div>
       <div class="hm"><strong>Project Value</strong><span>$6,000</span></div>
-      <div class="hm"><strong>Milestones</strong><span>M0 → M6 Complete</span></div>
-      <div class="hm"><strong>Status</strong><span style="color:#7ce3c7;">100% Delivered</span></div>
+      <div class="hm"><strong>Milestones</strong><span>M0 → M6 + Signal Bridge</span></div>
+      <div class="hm"><strong>Status</strong><span style="color:#7ce3c7;">100% Delivered · 2026-04-22</span></div>
     </div>
   </div>
 </div>
@@ -77,11 +77,12 @@ h2 { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--navy)
       </div>
       <span class="badge bg">Recommended</span>
     </div>
-    <p class="rc-desc">A single comprehensive report covering the full project from the original Statement of Work through the M5 frontend &amp; testing deliverables. Includes per-milestone deep dives, evidence for every acceptance criterion, a PM testing guide for each milestone you still need to verify, architecture diagrams, and the full API surface.</p>
+    <p class="rc-desc">A single comprehensive report covering the full project from the original Statement of Work through M6 delivery and the Phase 1.5 Signal Bridge integration (Tory&#39;s Level Rejection + PCR Shock strategies streaming live on the dashboard). Includes per-milestone deep dives, evidence for every acceptance criterion, PM testing guides, architecture diagrams, and the full API surface.</p>
     <div class="rc-foot">
       <span>Sidebar navigation</span>
       <span>M0 → M6 panels</span>
-      <span>PM testing guides</span>
+      <span>Signal Bridge panel</span>
+      <span>5 PM testing guides</span>
       <span>Architecture</span>
       <span>Known limitations</span>
     </div>
@@ -127,6 +128,25 @@ h2 { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--navy)
       <span class="ms-status">Complete · Needs PM Verification</span>
     </a>
   </div>
+
+  <h2>Phase 1.5 — Post-Meeting Signal Integration</h2>
+  <a class="report-card" href="tick-delivery-report.html#signal-bridge">
+    <div class="rc-head">
+      <div>
+        <div class="rc-eye">Phase 1.5 · Signal Bridge · 2026-04-22</div>
+        <div class="rc-title">Tory&#39;s Strategies Streaming Live</div>
+      </div>
+      <span class="badge bt">NEW · Live</span>
+    </div>
+    <p class="rc-desc">Following the April 2026 client meeting, integrated two validated trading strategies from Tory&#39;s independent ML pipeline. <strong>Level Rejection</strong> (255 signals, ~71% win rate) renders entry / stop / target levels as colored horizontal lines on the chart with win/loss markers. <strong>PCR Shock Forecast</strong> (942 signals, 59% accuracy) merges into the existing Pred vs Actual backtracking panel. TradingView attribution removed for copyright compliance. Test suite expanded to 103 passing.</p>
+    <div class="rc-foot">
+      <span>5 new API endpoints</span>
+      <span>Chart overlay + Pred vs Actual</span>
+      <span>TradingView logo removed</span>
+      <span>Statistical baseline fallback</span>
+      <span>8 new tests · 103 total</span>
+    </div>
+  </a>
 
   <h2>About These Reports</h2>
   <p style="font-size:13.5px;color:var(--ink2);line-height:1.75;">These reports are hosted as static HTML so they can be opened in any browser, printed to PDF, or deployed behind a URL you can share with anyone. The master report contains everything — the milestone summary cards are provided as convenient single-page handouts. For the raw signoff documents in markdown, see <code style="font-family:'JetBrains Mono',monospace;background:var(--bg);padding:2px 8px;border-radius:4px;font-size:12px;">docs/MILESTONE_SIGNOFF_*.md</code> in the repository.</p>

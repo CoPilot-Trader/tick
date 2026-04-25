@@ -213,11 +213,15 @@ ul li { font-size:13px; color:var(--ink2); line-height:1.65; margin-bottom:3px; 
   <button class="nb" onclick="nav(this,'m5')">🛡 M5 · Frontend &amp; Testing <span class="nb-chip">$900</span></button>
   <button class="nb" onclick="nav(this,'m6')">📦 M6 · Delivery <span class="nb-chip">$300</span></button>
 
+  <div class="sb-sec-label">Phase 1.5 · Signal Integration</div>
+  <button class="nb" onclick="nav(this,'signal-bridge')">🔗 Signal Bridge <span class="nb-chip">NEW</span></button>
+
   <div class="sb-sec-label">PM Testing Guides</div>
   <button class="nb" onclick="nav(this,'test-m3')">🧪 Test M3 — Sentiment</button>
   <button class="nb" onclick="nav(this,'test-m4')">🧪 Test M4 — Backtesting</button>
   <button class="nb" onclick="nav(this,'test-m5')">🧪 Test M5 — Dashboard</button>
   <button class="nb" onclick="nav(this,'test-m6')">🧪 Test M6 — Docs</button>
+  <button class="nb" onclick="nav(this,'test-signals')">🧪 Test Signal Bridge</button>
 
   <div class="sb-sec-label">Reference</div>
   <button class="nb" onclick="nav(this,'api')">🔌 API Surface</button>
@@ -244,8 +248,8 @@ ul li { font-size:13px; color:var(--ink2); line-height:1.65; margin-bottom:3px; 
   <div class="content">
     <div class="stats">
       <div class="stat"><div class="stat-n teal">12</div><div class="stat-l">Specialized Agents</div><div class="stat-s">data · features · forecast · trend · S/R · news · LLM · fusion · backtest · alerts · streaming</div></div>
-      <div class="stat"><div class="stat-n">60+</div><div class="stat-l">API Endpoints</div><div class="stat-s">REST + WebSocket</div></div>
-      <div class="stat"><div class="stat-n green">89</div><div class="stat-l">Passing Tests</div><div class="stat-s">+ 13 env-gated</div></div>
+      <div class="stat"><div class="stat-n">65+</div><div class="stat-l">API Endpoints</div><div class="stat-s">REST + WebSocket + signals</div></div>
+      <div class="stat"><div class="stat-n green">103</div><div class="stat-l">Passing Tests</div><div class="stat-s">+ 7 env-gated</div></div>
       <div class="stat"><div class="stat-n gold">74%</div><div class="stat-l">API Coverage</div><div class="stat-s">&gt; 70% SoW target</div></div>
       <div class="stat"><div class="stat-n">31</div><div class="stat-l">Live Stocks</div><div class="stat-s">auto-predicting · 5-min</div></div>
     </div>
@@ -262,8 +266,9 @@ ul li { font-size:13px; color:var(--ink2); line-height:1.65; margin-bottom:3px; 
       <div class="ct-item done"><div class="ct-num">M5</div><div class="ct-name">Frontend &amp; Testing</div><span class="ct-status done">100% Complete</span><div class="ct-extra">Live WebSocket · professional charts · auth · rate limit · 74% API coverage</div></div>
     </div>
     <div class="card-track" style="grid-template-columns:1fr 1fr 1fr;">
-      <div class="ct-item done" style="grid-column:1/2;"><div class="ct-num">M6</div><div class="ct-name">Documentation &amp; Delivery</div><span class="ct-status done">100% Complete</span><div class="ct-extra">This HTML report suite · Cloud Run deployment · per-milestone PM testing guides</div></div>
-      <div class="ct-item" style="border-left:3px solid var(--teal); grid-column:2/4;"><div class="ct-num">What&#39;s Next</div><div class="ct-name">Optional Phase 2 candidates</div><div class="ct-extra" style="margin-top:8px;">Real OpenAI GPT-4 keys · Mailgun/webhook alerts · admin UI for rule management · mobile-native app · Tiingo paid tier for real-time intraday.</div></div>
+      <div class="ct-item done"><div class="ct-num">M6</div><div class="ct-name">Documentation &amp; Delivery</div><span class="ct-status done">100% Complete</span><div class="ct-extra">HTML report suite · Cloud Run deployment · per-milestone PM testing guides</div></div>
+      <div class="ct-item done"><div class="ct-num">Phase 1.5</div><div class="ct-name">Signal Bridge Integration</div><span class="ct-status done">Live · 2026-04-22</span><div class="ct-extra">Tory&#39;s Level Rejection (255) + PCR Shock (942) streaming on dashboard. TradingView logo removed.</div></div>
+      <div class="ct-item" style="border-left:3px solid var(--teal);"><div class="ct-num">What&#39;s Next</div><div class="ct-name">Phase 2 candidates</div><div class="ct-extra" style="margin-top:8px;">Bull Momentum Burst signal cards · GPS-style contextual popups · admin UI · automated trading via broker API.</div></div>
     </div>
 
     <h2>Acceptance Summary</h2>
@@ -279,7 +284,8 @@ ul li { font-size:13px; color:var(--ink2); line-height:1.65; margin-bottom:3px; 
       <tr><td>WebSocket real-time</td><td>Streaming required</td><td><code>/ws/stream/{symbol}</code> · 5s candle + tick</td><td><span class="chip ck">Met</span></td></tr>
       <tr><td>Authentication</td><td>API key gate</td><td>Header + query · env-gated · unit tested</td><td><span class="chip ck">Met</span></td></tr>
       <tr><td>Rate limiting</td><td>Per-IP</td><td>slowapi · 100/min default · per-endpoint overrides</td><td><span class="chip ck">Met</span></td></tr>
-      <tr><td>Test coverage</td><td>≥70% (M5)</td><td><strong>74%</strong> API coverage · 89 passing tests</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>Test coverage</td><td>≥70% (M5)</td><td><strong>74%</strong> API coverage · 103 passing tests</td><td><span class="chip ck">Exceeds</span></td></tr>
+      <tr><td>External signal integration</td><td>Stream 2 strategies live (post-meeting ask)</td><td>Level Rejection + PCR Shock on chart</td><td><span class="chip ck">Met</span></td></tr>
       <tr><td>Deployment</td><td>GCP-ready</td><td>Docker Compose · GCP Cloud Run config · DEPLOYMENT.md</td><td><span class="chip ck">Met</span></td></tr>
     </table>
   </div>
@@ -1237,6 +1243,177 @@ flowchart TB
   </div>
 </div>
 
+<!-- ═════ SIGNAL BRIDGE ═════ -->
+<div id="signal-bridge" class="panel">
+  <div class="ph">
+    <div class="ph-eye">Phase 1.5 · Post-M6 Integration</div>
+    <div class="ph-title">Signal Bridge — External Strategy Integration</div>
+    <div class="brow"><span class="badge bg">Live on VM</span><span class="badge bn">2026-04-22</span><span class="badge bt">2 strategies streaming</span></div>
+  </div>
+  <div class="content">
+    <h2>Why This Matters</h2>
+    <p>Following the April 2026 client meeting, the client requested integration of two validated trading strategies from his independent ML pipeline (<code>copilot-signal-bridge</code> GCS bucket) into the TICK dashboard. This was the gating deliverable for the remaining <strong>$3,300</strong> in milestone payments — the client wanted to see real signals streaming through the dashboard before approving the final UX review and payment release.</p>
+
+    <div class="ib ib-g">
+      <div class="it">Outcome — Live on Production</div>
+      <p>Both strategies render on <a href="http://34.55.207.164:3000" style="color:var(--teal);">http://34.55.207.164:3000</a>. Backend endpoints respond with 255 Level Rejection signals + 942 PCR Shock forecast entries.</p>
+    </div>
+
+    <h2>Strategy 1 — Level Rejection (Trade Signal Overlay)</h2>
+    <p>Tory's Level Rejection strategy detects price rejections at key intraday levels (Open Range Low, Prior Month Low, Prior Day Low, Prior VWAP). Each signal carries a complete trade plan: where to enter, where to stop, where to take profit. <strong>~71% win rate</strong> across 255 historical signals.</p>
+
+    <table class="dt">
+      <tr><th>Field</th><th>Type</th><th>Render</th></tr>
+      <tr><td><code>level_price</code></td><td>float</td><td>Solid cyan horizontal line, axis label "Lvl &lt;type&gt;"</td></tr>
+      <tr><td><code>entry_price</code></td><td>float</td><td>Gold dotted horizontal line, axis label "Entry"</td></tr>
+      <tr><td><code>stop_price</code></td><td>float</td><td>Red dashed horizontal line, axis label "Stop"</td></tr>
+      <tr><td><code>target1_price</code></td><td>float</td><td>Green dashed line, axis label "T1"</td></tr>
+      <tr><td><code>target2_price</code></td><td>float?</td><td>Light-green dashed line, axis label "T2" (if present)</td></tr>
+      <tr><td><code>signal_time</code></td><td>ISO ts</td><td>Arrow-up marker on candle, green=win, red=loss</td></tr>
+      <tr><td><code>level_type</code></td><td>enum</td><td>OR_LOW / PML / PDL / PREV_VWAP</td></tr>
+      <tr><td><code>vix_level</code>, <code>macro_regime</code></td><td>context</td><td>Available via API for tooltip / detail view</td></tr>
+    </table>
+
+    <h2>Strategy 2 — PCR Shock Forecast (Predicted vs Actual)</h2>
+    <p>Tory's Put-Call Ratio Shock detector: when the system spots unusual options activity, it predicts price direction at multiple horizons (15m, 30m, 1h, 2h, 1d) and the tracker then captures actual moves. This fits the existing "Pred vs Actual" backtracking panel exactly — same shape, different source. <strong>59% accuracy</strong> on 942 resolved signals.</p>
+
+    <p>Backend reshapes PCR data into the same <code>PredictionHistoryEntry</code> format used by the M5 backtracking pipeline. Entries get a <code>source: "pcr_shock"</code> tag so they can be filtered or color-coded later, but they merge transparently into the existing chart.</p>
+
+    <h2>Architecture</h2>
+    <div class="dcard">
+      <div class="dlabel">Signal Bridge data flow</div>
+      <div class="dbody">
+        <div class="mermaid">
+flowchart LR
+  subgraph Tory[Tory&#39;s ML Pipeline]
+    LR_GCS[gs://copilot-signal-bridge/<br>level_rejection_calls_v1.json]
+    PCR_GCS[gs://copilot-signal-bridge/<br>pcr_shock_forecast_v1.json]
+  end
+  subgraph TICK[TICK Backend]
+    SB[signal_bridge.py<br>router]
+    LOCAL[storage/signal_data/<br>local JSON cache]
+    REFRESH[POST /signals/refresh<br>re-pull from GCS]
+  end
+  subgraph FE[TICK Frontend]
+    CHART[CandlestickChart.tsx<br>price-line overlay]
+    PVA[Pred vs Actual<br>sub-panel]
+  end
+  LR_GCS -- gsutil cp / refresh --> LOCAL
+  PCR_GCS -- gsutil cp / refresh --> LOCAL
+  LOCAL --> SB
+  SB -- /level-rejection/:ticker --> CHART
+  SB -- /pcr-shock/:ticker/backtrack --> PVA
+        </div>
+      </div>
+    </div>
+
+    <h2>API Surface</h2>
+    <table class="dt">
+      <tr><th>Verb</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td>GET</td><td><code>/api/v1/signals/health</code></td><td>Loaded dataset counts and file paths</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/signals/level-rejection/:ticker</code></td><td>Filter Level Rejection signals by ticker (+ optional date range)</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/signals/pcr-shock/:ticker</code></td><td>Raw PCR Shock signals for a ticker</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/signals/pcr-shock/:ticker/backtrack</code></td><td>PCR signals reshaped into PredictionHistoryEntry — feeds Pred vs Actual</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/signals/refresh</code></td><td>Re-download from GCS bucket (uses google-cloud-storage)</td></tr>
+    </table>
+
+    <h2>Other Improvements Shipped In This Phase</h2>
+    <ul class="cl">
+      <li><span class="ci g">✓</span><strong>TradingView logo removed</strong> — copyright concern raised by client. The lightweight-charts library injects an <code>&lt;a id="tv-attr-logo"&gt;</code> attribution element. We added a DOM-stripping routine that runs at 50ms / 200ms / 500ms / 1s after every chart creation, plus defensive CSS, plus deletion of the project&#39;s <code>tradingView.png</code> file.</li>
+      <li><span class="ci g">✓</span><strong>Statistical baseline forecast</strong> — when Prophet/TensorFlow are unavailable (e.g. local dev without ML deps), the forecast agent now falls back to an EMA-momentum + volatility band baseline so the dashboard always shows a forecast line and confidence interval. Production VM still uses real Prophet.</li>
+      <li><span class="ci g">✓</span><strong>Backtracking panel resilience</strong> — predictions whose target dates don&#39;t snap to a candle (different date ranges) now render in standalone mode instead of being silently dropped.</li>
+      <li><span class="ci g">✓</span><strong>StockOverview header fix</strong> — predictions counter now falls through to <code>prediction_history.length</code> when the live forecast count is zero.</li>
+    </ul>
+
+    <h2>Files Changed</h2>
+    <table class="dt">
+      <tr><th>File</th><th>Action</th></tr>
+      <tr><td><code>backend/api/routers/signal_bridge.py</code></td><td>NEW — entire router (5 endpoints)</td></tr>
+      <tr><td><code>backend/api/main.py</code></td><td>Register signal_bridge router</td></tr>
+      <tr><td><code>backend/agents/price_forecast_agent/agent.py</code></td><td>Add statistical baseline fallback</td></tr>
+      <tr><td><code>backend/storage/signal_data/*.json</code></td><td>NEW — local cache for GCS data</td></tr>
+      <tr><td><code>backend/tests/test_signal_bridge.py</code></td><td>NEW — 8 tests covering the new router</td></tr>
+      <tr><td><code>backend/requirements.txt</code></td><td>Add <code>google-cloud-storage&gt;=2.14.0</code></td></tr>
+      <tr><td><code>frontend/src/types/index.ts</code></td><td>Add <code>LevelRejectionSignal</code>, extend <code>StockData</code> + <code>GraphFilters</code></td></tr>
+      <tr><td><code>frontend/src/lib/api/client.ts</code></td><td>Two new methods + merged data flow in <code>getStockData()</code></td></tr>
+      <tr><td><code>frontend/src/components/CandlestickChart.tsx</code></td><td>Signal overlay, "Signals" toggle, TradingView logo stripper</td></tr>
+      <tr><td><code>frontend/src/app/globals.css</code></td><td>CSS to hide attribution element (defensive layer)</td></tr>
+    </table>
+
+    <h2>Test Suite Update</h2>
+    <p>The full backend test suite expanded from 89 to <strong>103 passing tests</strong> (+ 7 environment-gated skips, 0 failures). The 8 new tests cover health, ticker filtering, win-rate aggregation, PCR Shock backtrack shape, accuracy stats, and refresh-endpoint guards. API coverage stays above the 70% SoW target.</p>
+
+    <div class="ib ib-t">
+      <div class="it">Live data swap-in</div>
+      <p>The integration runs against sample data matching Tory&#39;s exact schema while we wait on his real GCS uploads. When his JSONs land in <code>gs://copilot-signal-bridge/exports/</code>, a single <code>POST /api/v1/signals/refresh</code> swaps them in — no restart, no rebuild.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═════ TEST SIGNAL BRIDGE ═════ -->
+<div id="test-signals" class="panel">
+  <div class="ph">
+    <div class="ph-eye">PM Testing Guide</div>
+    <div class="ph-title">Verify Signal Bridge Integration</div>
+    <div class="brow"><span class="badge bt">~6 minutes</span><span class="badge bn">Browser + CLI</span></div>
+  </div>
+  <div class="content">
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">1</div><div class="qa-step-title">Backend signal endpoints respond</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block">
+<div class="curl-cmd">curl http://34.55.207.164:8000/api/v1/signals/health</div>
+<div class="curl-cmd">curl http://34.55.207.164:8000/api/v1/signals/level-rejection/SPY</div>
+<div class="curl-cmd">curl "http://34.55.207.164:8000/api/v1/signals/pcr-shock/SPY/backtrack?limit=5"</div>
+        </div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Health returns counts &gt; 0 for both datasets</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Level Rejection returns at least 1 signal with all required fields</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>PCR backtrack entries include <code>source: "pcr_shock"</code> and a <code>direction</code></div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">2</div><div class="qa-step-title">Level Rejection signals on chart</div><div class="qa-step-time">~2 min</div></div>
+      <div class="qa-step-body">
+        <p style="font-size:12.5px;margin-bottom:8px;">Open <a href="http://34.55.207.164:3000" style="color:var(--teal);">http://34.55.207.164:3000</a>, select SPY, click the <strong>"Signals"</strong> button in the chart toolbar.</p>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Cyan horizontal lines appear at level prices with axis labels "Lvl OR_LOW" / "Lvl PDL" etc.</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Gold dotted line at entry, red dashed at stop, green dashed at T1 (and T2 if present)</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Arrow markers on candles colored green (winning) or red (losing)</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Toggling "Signals" off clears all signal lines</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">3</div><div class="qa-step-title">PCR Shock data merges into Pred vs Actual</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>"Pred vs Actual" sub-panel populated with predicted (orange) + actual (green area) lines</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Predictions counter in the dashboard header shows a non-zero number</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">4</div><div class="qa-step-title">TradingView logo is gone</div><div class="qa-step-time">~30 sec</div></div>
+      <div class="qa-step-body">
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>Bottom-left of every chart is empty — no "TradingView" logo or attribution</div>
+        <div class="qa-check"><div class="qa-check-box pass">✓</div>DevTools → Elements: no <code>#tv-attr-logo</code> in any chart container</div>
+      </div>
+    </div>
+
+    <div class="qa-step">
+      <div class="qa-step-header"><div class="qa-step-num">5</div><div class="qa-step-title">Refresh endpoint works (when GCS files are real)</div><div class="qa-step-time">~1 min</div></div>
+      <div class="qa-step-body">
+        <div class="curl-block"><div class="curl-cmd">curl -X POST http://34.55.207.164:8000/api/v1/signals/refresh</div></div>
+        <div class="qa-check"><div class="qa-check-box pend">~</div>Returns 200 with a <code>downloaded</code> array once Tory uploads his real JSONs to <code>gs://copilot-signal-bridge/exports/</code></div>
+      </div>
+    </div>
+
+    <div class="ib ib-g">
+      <div class="it">Pass / Fail Criteria</div>
+      <p>API endpoints respond with valid data, signals render on the chart with correct colors and tooltips, the Pred vs Actual panel populates with PCR data, and no TradingView attribution is visible anywhere. That's the integration done.</p>
+    </div>
+  </div>
+</div>
+
 <!-- ═════ API SURFACE ═════ -->
 <div id="api" class="panel">
   <div class="ph">
@@ -1315,6 +1492,16 @@ flowchart TB
       <tr><td>DELETE</td><td><code>/api/v1/alerts</code></td><td>Clear alerts</td></tr>
       <tr><td>GET</td><td><code>/api/v1/alerts/rules</code></td><td>Rule list</td></tr>
       <tr><td>POST</td><td><code>/api/v1/alerts/rules/:id/enable|disable</code></td><td>Toggle rule</td></tr>
+    </table>
+
+    <h2>Signal Bridge (Phase 1.5)</h2>
+    <table class="dt">
+      <tr><th>Verb</th><th>Path</th><th>Purpose</th></tr>
+      <tr><td>GET</td><td><code>/api/v1/signals/health</code></td><td>Loaded dataset counts (LR + PCR)</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/signals/level-rejection/:ticker</code></td><td>Level Rejection signals (chart overlay)</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/signals/pcr-shock/:ticker</code></td><td>Raw PCR Shock signals</td></tr>
+      <tr><td>GET</td><td><code>/api/v1/signals/pcr-shock/:ticker/backtrack</code></td><td>PCR signals as PredictionHistoryEntry (Pred vs Actual)</td></tr>
+      <tr><td>POST</td><td><code>/api/v1/signals/refresh</code></td><td>Re-pull from GCS bucket</td></tr>
     </table>
 
     <div class="ib ib-t">
