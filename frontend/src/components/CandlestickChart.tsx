@@ -141,6 +141,14 @@ function computeBollingerBands(
   return { upper, lower };
 }
 
+function formatVolume(v: number | null | undefined): string {
+  if (v == null || isNaN(v)) return '—';
+  if (v >= 1_000_000_000) return (v / 1_000_000_000).toFixed(2) + 'B';
+  if (v >= 1_000_000) return (v / 1_000_000).toFixed(2) + 'M';
+  if (v >= 1_000) return (v / 1_000).toFixed(2) + 'K';
+  return v.toFixed(0);
+}
+
 function toTime(ts: string): Time {
   return Math.floor(new Date(ts).getTime() / 1000) as Time;
 }
@@ -185,6 +193,13 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   const volumeSeriesRef = useRef<any>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const livePriceRef = useRef<HTMLSpanElement>(null);
+  // OHLC HUD refs — updated live by the WebSocket candle handler
+  const hudOpenRef = useRef<HTMLSpanElement>(null);
+  const hudHighRef = useRef<HTMLSpanElement>(null);
+  const hudLowRef = useRef<HTMLSpanElement>(null);
+  const hudCloseRef = useRef<HTMLSpanElement>(null);
+  const hudVolRef = useRef<HTMLSpanElement>(null);
+  const hudCloseColorRef = useRef<HTMLSpanElement>(null);
 
   // Expose screenshot & reset to parent
   useImperativeHandle(ref, () => ({
@@ -914,10 +929,28 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
                   color: msg.close >= msg.open ? 'rgba(38, 166, 154, 0.35)' : 'rgba(239, 83, 80, 0.35)',
                 });
               }
+
+              // Update OHLC HUD strip (live tick of current candle)
+              const isUp = msg.close >= msg.open;
+              const candleColor = isUp ? '#26a69a' : '#ef5350';
+              if (hudOpenRef.current) hudOpenRef.current.textContent = msg.open.toFixed(2);
+              if (hudHighRef.current) hudHighRef.current.textContent = msg.high.toFixed(2);
+              if (hudLowRef.current) hudLowRef.current.textContent = msg.low.toFixed(2);
+              if (hudCloseRef.current) {
+                hudCloseRef.current.textContent = msg.close.toFixed(2);
+                hudCloseRef.current.style.color = candleColor;
+              }
+              if (hudVolRef.current) {
+                hudVolRef.current.textContent = formatVolume(msg.volume);
+              }
             }
 
             if (msg.type === 'tick' && livePriceRef.current) {
               livePriceRef.current.textContent = msg.price.toFixed(2);
+              // Also tick the close in the OHLC strip
+              if (hudCloseRef.current) {
+                hudCloseRef.current.textContent = msg.price.toFixed(2);
+              }
             }
           } catch { /* ignore parse errors */ }
         };
@@ -972,6 +1005,15 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   const priceChangePct = data.price_change_percent;
   const isPositive = priceChange >= 0;
 
+  // Initial OHLC values from the most recent candle (live-updated by the WS handler)
+  const lastCandle = chartData.candles.length > 0 ? chartData.candles[chartData.candles.length - 1] : null;
+  const initOpen = lastCandle ? (lastCandle as any).open : data.current_price;
+  const initHigh = lastCandle ? (lastCandle as any).high : data.current_price;
+  const initLow = lastCandle ? (lastCandle as any).low : data.current_price;
+  const initClose = lastCandle ? (lastCandle as any).close : data.current_price;
+  const initVol = chartData.volume.length > 0 ? (chartData.volume[chartData.volume.length - 1] as any).value : null;
+  const initIsUp = (initClose ?? 0) >= (initOpen ?? 0);
+
   return (
     <div ref={wrapperRef} className="w-full h-full flex flex-col" style={{ background: '#131722' }}>
       {/* ─── Chart toolbar ────────────────────────────────────────── */}
@@ -989,6 +1031,26 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           <span className="text-xs" style={{ color: isPositive ? '#26a69a' : '#ef5350' }}>
             {isPositive ? '+' : ''}{priceChange.toFixed(2)} ({isPositive ? '+' : ''}{priceChangePct.toFixed(2)}%)
           </span>
+
+          {/* OHLC HUD strip — last candle, live-updated by WebSocket */}
+          <span
+            className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono"
+            style={{ background: '#1e222d', border: '1px solid #2a2e39' }}
+            title="Open / High / Low / Close / Volume of the current candle"
+          >
+            <span style={{ color: '#787b86' }}>O</span>
+            <span ref={hudOpenRef} style={{ color: '#d1d4dc' }}>{initOpen?.toFixed(2)}</span>
+            <span style={{ color: '#787b86' }}>H</span>
+            <span ref={hudHighRef} style={{ color: '#26a69a' }}>{initHigh?.toFixed(2)}</span>
+            <span style={{ color: '#787b86' }}>L</span>
+            <span ref={hudLowRef} style={{ color: '#ef5350' }}>{initLow?.toFixed(2)}</span>
+            <span style={{ color: '#787b86' }}>C</span>
+            <span ref={hudCloseRef} style={{ color: initIsUp ? '#26a69a' : '#ef5350' }}>{initClose?.toFixed(2)}</span>
+            <span style={{ color: '#2a2e39' }}>|</span>
+            <span style={{ color: '#787b86' }}>V</span>
+            <span ref={hudVolRef} style={{ color: '#d1d4dc' }}>{formatVolume(initVol)}</span>
+          </span>
+
           {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (
             <span className="flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[10px]" style={{ background: '#1e222d', border: '1px solid #2a2e39' }}>
               <span style={{ color: '#787b86' }}>MAPE</span>

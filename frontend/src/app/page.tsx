@@ -71,6 +71,36 @@ export default function Home() {
     }
   }, [selectedStocks, activeTimeframe]);
 
+  // ── Live watchlist tick — every 5s, refresh just the price/change of each
+  // selected stock so the comparison tabs feel "alive" (TradingView-style).
+  useEffect(() => {
+    if (selectedStocks.length === 0) return;
+
+    const refreshTickers = async () => {
+      const updates = await Promise.all(
+        selectedStocks.map(async (sym) => {
+          try {
+            const r = await apiClient.getOHLCV(sym, '5m', 1);
+            const bars = r?.data || [];
+            if (bars.length === 0) return null;
+            const last = bars[bars.length - 1];
+            const first = bars[0];
+            const change = last.close - first.open;
+            const changePct = (change / first.open) * 100;
+            return { symbol: sym, current_price: last.close, price_change: change, price_change_percent: changePct };
+          } catch { return null; }
+        })
+      );
+      setStocksData(prev => prev.map(s => {
+        const u = updates.find(x => x?.symbol === s.symbol);
+        return u ? { ...s, current_price: u.current_price, price_change: u.price_change, price_change_percent: u.price_change_percent } : s;
+      }));
+    };
+
+    const interval = setInterval(refreshTickers, 5000);
+    return () => clearInterval(interval);
+  }, [selectedStocks]);
+
   const handleTimeframeChange = useCallback((tf: string) => {
     setActiveTimeframe(tf);
   }, []);
