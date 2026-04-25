@@ -54,6 +54,7 @@ services:
       - TIINGO_API_KEY=${TIINGO_API_KEY:-9e7e7ef41ad8cefe4bfa3f57e7bb60b5d81e3d14}
       - FMP_API_KEY=${FMP_API_KEY:-W8Qj3LfEWEh5EGBo8gBlCQ4QNT36rZ8j}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - TICK_CORS_ORIGINS=${TICK_CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://34.55.207.164:3000}
     depends_on:
       timescaledb:
         condition: service_healthy
