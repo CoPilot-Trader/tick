@@ -193,6 +193,16 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   const volumeSeriesRef = useRef<any>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const livePriceRef = useRef<HTMLSpanElement>(null);
+  // Preserve the user's zoom / pan across chart rebuilds (timeframe change, signals toggle, etc.)
+  const preservedRangeRef = useRef<{ from: number; to: number } | null>(null);
+  const lastSymbolRef = useRef<string>(data.symbol);
+  useEffect(() => {
+    if (lastSymbolRef.current !== data.symbol) {
+      // Different ticker — discard the preserved range so we fitContent fresh
+      preservedRangeRef.current = null;
+      lastSymbolRef.current = data.symbol;
+    }
+  }, [data.symbol]);
   // OHLC HUD refs — updated live by the WebSocket candle handler
   const hudOpenRef = useRef<HTMLSpanElement>(null);
   const hudHighRef = useRef<HTMLSpanElement>(null);
@@ -391,7 +401,20 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       backtrackPredicted, backtrackActual,
       currentPrice: closes[closes.length - 1] || 0,
     };
-  }, [data]);
+  }, [
+    // Only depend on the arrays that actually drive what the chart renders.
+    // Scalar fields (current_price, price_change, price_change_percent) are
+    // intentionally excluded — they tick from the watchlist polling every 5s
+    // and we don't want to rebuild the chart (and reset zoom) on every tick.
+    data.symbol,
+    data.historical_data,
+    data.support_levels,
+    data.resistance_levels,
+    data.predictions,
+    data.prediction_history,
+    data.news_events,
+    data.level_rejection_signals,
+  ]);
 
   // ─── Build charts ────────────────────────────────────────────────────
   useEffect(() => {
@@ -700,7 +723,21 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       createSeriesMarkers(candleSeries, allMarkers);
     }
 
-    chart.timeScale().fitContent();
+    // Restore the user's preserved zoom range if we have one, otherwise fit content
+    if (preservedRangeRef.current) {
+      try {
+        chart.timeScale().setVisibleRange(preservedRangeRef.current as any);
+      } catch { chart.timeScale().fitContent(); }
+    } else {
+      chart.timeScale().fitContent();
+    }
+
+    // Persist the visible range whenever the user pans or zooms
+    chart.timeScale().subscribeVisibleTimeRangeChange((range) => {
+      if (range && typeof range.from === 'number' && typeof range.to === 'number') {
+        preservedRangeRef.current = { from: range.from as number, to: range.to as number };
+      }
+    });
 
     // ─── News tooltip on crosshair hover ─────────────────────────────
     if (filters.showNewsEvents && (data.news_events || []).length > 0) {
@@ -1107,14 +1144,35 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           {/* Predicted vs Actual — right side panel */}
           {filters.showPredictionAccuracy && (
             <div style={{ flex: '3 1 0%', minHeight: 0, borderLeft: '1px solid #2a2e39', display: 'flex', flexDirection: 'column' }}>
-              <div className="px-2 py-0.5 text-[10px] font-medium flex items-center gap-2 flex-shrink-0" style={{ background: '#1e222d', borderBottom: '1px solid #2a2e39' }}>
-                <span style={{ color: '#ff9800' }}>● Predicted</span>
-                <span style={{ color: '#4caf50' }}>● Actual</span>
-                {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (
-                  <span style={{ color: '#787b86' }}>
-                    MAPE {data.prediction_accuracy.mape}%
-                  </span>
-                )}
+              {/* Title bar */}
+              <div className="px-3 py-1.5 flex-shrink-0" style={{ background: '#1e222d', borderBottom: '1px solid #2a2e39' }}>
+                <div className="text-[11px] font-semibold flex items-center justify-between" style={{ color: '#d1d4dc' }}>
+                  <span>Predicted vs Actual</span>
+                  {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (
+                    <span className="text-[10px]" style={{ color: '#787b86' }}>
+                      <span style={{ color: data.prediction_accuracy.mape < 3 ? '#26a69a' : data.prediction_accuracy.mape < 5 ? '#ffb74d' : '#ef5350' }}>
+                        {data.prediction_accuracy.mape}%
+                      </span>
+                      {' MAPE · '}
+                      <span style={{ color: data.prediction_accuracy.directional_accuracy > 60 ? '#26a69a' : '#ffb74d' }}>
+                        {data.prediction_accuracy.directional_accuracy}%
+                      </span>
+                      {' dir'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex items-center gap-1.5">
+                    <span style={{ display: 'inline-block', width: 14, height: 2, background: '#ff9800', borderRadius: 1 }} />
+                    <span className="text-[10px]" style={{ color: '#ff9800' }}>Predicted</span>
+                    <span className="text-[9px]" style={{ color: '#787b86' }}>(model output)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span style={{ display: 'inline-block', width: 14, height: 8, background: '#4caf5040', border: '1px solid #4caf50', borderRadius: 2 }} />
+                    <span className="text-[10px]" style={{ color: '#4caf50' }}>Actual</span>
+                    <span className="text-[9px]" style={{ color: '#787b86' }}>(what happened)</span>
+                  </div>
+                </div>
               </div>
               <div ref={predAccContainerRef} className="flex-1 min-h-0" />
             </div>

@@ -8,9 +8,11 @@ import MultiStockSelector from '@/components/MultiStockSelector';
 import StockOverview from '@/components/StockOverview';
 import CandlestickChart from '@/components/CandlestickChart';
 import PredictionDetail from '@/components/PredictionDetail';
+import SignalsLog from '@/components/SignalsLog';
 import {
   ChevronDown, LayoutDashboard, Newspaper, Layers, Database, Zap, LineChart, Bell,
   Crosshair, MousePointer2, ZoomIn, ZoomOut, Maximize2, RotateCcw, Camera, Ruler,
+  ScrollText,
 } from 'lucide-react';
 
 const defaultFilters: GraphFilters = {
@@ -49,6 +51,7 @@ export default function Home() {
   const [activeChartIndex, setActiveChartIndex] = useState(0);
   const [activeTool, setActiveTool] = useState<string>('crosshair');
   const [activeTimeframe, setActiveTimeframe] = useState<string>('1D');
+  const [signalsLogOpen, setSignalsLogOpen] = useState(false);
   const chartRef = useRef<{ takeScreenshot: () => void; resetView: () => void } | null>(null);
 
   const loadStocksData = useCallback(async (range: string = activeTimeframe) => {
@@ -315,6 +318,15 @@ export default function Home() {
           ))}
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSignalsLogOpen(true)}
+            className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded transition-all hover:bg-[#2a2e39]"
+            style={{ color: '#00bcd4', border: '1px solid #00bcd440' }}
+            title="Audit log of signals received from the VM pipeline"
+          >
+            <ScrollText className="w-3 h-3" />
+            Signals Log
+          </button>
           <span className="text-[10px]" style={{ color: '#787b86' }}>
             {new Date().toLocaleTimeString()} UTC
           </span>
@@ -328,6 +340,13 @@ export default function Home() {
           onClose={() => setSelectedPrediction(null)}
         />
       )}
+
+      {/* Signals Log slide-in */}
+      <SignalsLog
+        symbol={activeStock.symbol}
+        open={signalsLogOpen}
+        onClose={() => setSignalsLogOpen(false)}
+      />
     </div>
   );
 }
