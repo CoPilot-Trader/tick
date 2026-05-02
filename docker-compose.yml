@@ -88,6 +88,28 @@ services:
     networks:
       - tick_network
 
+  # Marketing - public-facing Next.js site (deployed standalone to Cloud Run)
+  marketing:
+    build:
+      context: ./marketing
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_DASHBOARD_URL: ${NEXT_PUBLIC_DASHBOARD_URL:-http://localhost:3000}
+    container_name: tick-marketing
+    ports:
+      - "3002:3002"
+    environment:
+      # Server-side: hit the backend over the compose network.
+      - TICK_INTERNAL_API_URL=http://backend:8000
+      # Client-side: same as frontend dashboard.
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      - NEXT_PUBLIC_DASHBOARD_URL=${NEXT_PUBLIC_DASHBOARD_URL:-http://localhost:3000}
+    depends_on:
+      - backend
+    networks:
+      - tick_network
+
 volumes:
   tick_timescale_data:
   tick_redis_data:
