@@ -29,9 +29,10 @@ interface SignalsLogProps {
   symbol: string;
   open: boolean;
   onClose: () => void;
+  onSignalClick?: (signalTimeISO: string) => void;
 }
 
-export default function SignalsLog({ symbol, open, onClose }: SignalsLogProps) {
+export default function SignalsLog({ symbol, open, onClose, onSignalClick }: SignalsLogProps) {
   const [levelRej, setLevelRej] = useState<LevelRejectionSignal[]>([]);
   const [pcrShock, setPcrShock] = useState<PCRShockSignal[]>([]);
   const [loading, setLoading] = useState(false);
@@ -143,7 +144,14 @@ export default function SignalsLog({ symbol, open, onClose }: SignalsLogProps) {
           {!loading && merged.length > 0 && (
             <div className="divide-y" style={{ borderColor: '#2a2e39' }}>
               {merged.map((item, idx) => (
-                <SignalRow key={`${item.source}-${idx}`} item={item} />
+                <SignalRow
+                  key={`${item.source}-${idx}`}
+                  item={item}
+                  onClick={() => {
+                    if (onSignalClick) onSignalClick(item.timestamp);
+                    onClose();
+                  }}
+                />
               ))}
             </div>
           )}
@@ -158,14 +166,14 @@ export default function SignalsLog({ symbol, open, onClose }: SignalsLogProps) {
   );
 }
 
-function SignalRow({ item }: { item: UnifiedSignal }) {
+function SignalRow({ item, onClick }: { item: UnifiedSignal; onClick?: () => void }) {
   if (item.source === 'level_rejection') {
     const s = item.raw as LevelRejectionSignal;
     const won = s.target1_hit === 1;
     const stopped = s.stop_hit === 1;
     const pending = !won && !stopped;
     return (
-      <div className="px-4 py-3 hover:bg-[#1e222d] transition-colors">
+      <div onClick={onClick} className="px-4 py-3 hover:bg-[#1e222d] transition-colors cursor-pointer" title="Click to zoom the chart to this signal">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
@@ -212,7 +220,7 @@ function SignalRow({ item }: { item: UnifiedSignal }) {
     s.outcome_class === 'FLAT' ? '#787b86' : '#ffb74d';
 
   return (
-    <div className="px-4 py-3 hover:bg-[#1e222d] transition-colors">
+    <div onClick={onClick} className="px-4 py-3 hover:bg-[#1e222d] transition-colors cursor-pointer" title="Click to zoom the chart to this signal">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">

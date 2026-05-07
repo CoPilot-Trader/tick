@@ -158,6 +158,8 @@ function toTime(ts: string): Time {
 export interface CandlestickChartHandle {
   takeScreenshot: () => void;
   resetView: () => void;
+  fitToSignals: () => void;
+  panToSignal: (signalTimeISO: string) => void;
 }
 
 interface CandlestickChartProps {
@@ -225,7 +227,38 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     resetView() {
       chartRef.current?.timeScale().fitContent();
     },
-  }), [data.symbol]);
+    fitToSignals() {
+      const sigs = data.level_rejection_signals || [];
+      if (sigs.length === 0 || !chartRef.current) return;
+      const times = sigs.map(s => Math.floor(new Date(s.signal_time).getTime() / 1000));
+      const fromT = Math.min(...times) - 86400 * 2; // 2 days padding before first signal
+      const toT = Math.max(...times) + 86400 * 2;   // 2 days padding after last signal
+      try {
+        chartRef.current.timeScale().setVisibleRange({ from: fromT as any, to: toT as any });
+      } catch { /* noop */ }
+    },
+    panToSignal(signalTimeISO: string) {
+      if (!chartRef.current) return;
+      const t = Math.floor(new Date(signalTimeISO).getTime() / 1000);
+      if (isNaN(t)) return;
+      const padding = 3600 * 6; // 6 hours either side
+      try {
+        chartRef.current.timeScale().setVisibleRange({ from: (t - padding) as any, to: (t + padding) as any });
+      } catch { /* noop */ }
+    },
+  }), [data.symbol, data.level_rejection_signals]);
+
+  // Helper used by the in-chart "X signals ↔ fit" badge
+  const fitChartToSignals = useCallback(() => {
+    const sigs = data.level_rejection_signals || [];
+    if (sigs.length === 0 || !chartRef.current) return;
+    const times = sigs.map(s => Math.floor(new Date(s.signal_time).getTime() / 1000));
+    const fromT = Math.min(...times) - 86400 * 2;
+    const toT = Math.max(...times) + 86400 * 2;
+    try {
+      chartRef.current.timeScale().setVisibleRange({ from: fromT as any, to: toT as any });
+    } catch { /* noop */ }
+  }, [data.level_rejection_signals]);
 
   // Pre-compute all data
   const chartData = useMemo(() => {
@@ -251,6 +284,29 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     const rsiVals = computeRSI(closes, Math.min(14, closes.length - 1));
     const macdVals = computeMACD(closes);
     const bb = computeBollingerBands(closes, Math.min(20, Math.floor(closes.length / 2)));
+
+    // VWAP — Volume-Weighted Average Price. Resets per session for intraday.
+    const vwapData: LineData[] = [];
+    {
+      let cumPV = 0;
+      let cumV = 0;
+      let lastSessionDate = '';
+      for (let i = 0; i < historical.length; i++) {
+        const p = historical[i];
+        const sessionDate = (p.timestamp || '').slice(0, 10);
+        // Reset accumulator when the session date changes (intraday only)
+        if (sessionDate !== lastSessionDate && /^\d{4}-\d{2}-\d{2}T/.test(p.timestamp || '')) {
+          cumPV = 0;
+          cumV = 0;
+          lastSessionDate = sessionDate;
+        }
+        const typical = (p.high + p.low + p.close) / 3;
+        const vol = p.volume || 0;
+        cumPV += typical * vol;
+        cumV += vol;
+        vwapData.push({ time: toTime(p.timestamp), value: cumV > 0 ? cumPV / cumV : typical });
+      }
+    }
 
     const sma50Data: LineData[] = [];
     const sma200Data: LineData[] = [];
@@ -399,6 +455,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       rsiData, macdData, macdSignalData, macdHistData,
       predictionData, upperBoundData, lowerBoundData, markers, newsMarkers,
       backtrackPredicted, backtrackActual,
+      vwapData,
       currentPrice: closes[closes.length - 1] || 0,
     };
   }, [
@@ -553,6 +610,17 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     });
 
     // ─── Overlays ────────────────────────────────────────────────────
+
+    // VWAP — Volume-Weighted Average Price (live, computed from OHLCV)
+    if (filters.showVWAP && chartData.vwapData.length > 0) {
+      const v = chart.addSeries(LineSeries, {
+        color: '#ab47bc',
+        lineWidth: 2,
+        title: 'VWAP',
+        priceLineVisible: false,
+      });
+      v.setData(chartData.vwapData);
+    }
 
     // SMA lines
     if (filters.showMovingAverages) {
@@ -1025,6 +1093,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
   const indicatorButtons: { key: keyof GraphFilters; label: string; color: string }[] = [
     { key: 'showMovingAverages', label: 'MA', color: '#f7a21b' },
+    { key: 'showVWAP', label: 'VWAP', color: '#ab47bc' },
     { key: 'showBollingerBands', label: 'BB', color: '#7b1fa2' },
     { key: 'showSupportResistance', label: 'S/R', color: '#26a69a' },
     { key: 'showRSI', label: 'RSI', color: '#7e57c2' },
@@ -1087,6 +1156,21 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
             <span style={{ color: '#787b86' }}>V</span>
             <span ref={hudVolRef} style={{ color: '#d1d4dc' }}>{formatVolume(initVol)}</span>
           </span>
+
+          {/* Signal count badge — visible whenever there are signals for this ticker */}
+          {data.level_rejection_signals && data.level_rejection_signals.length > 0 && (
+            <button
+              onClick={() => fitChartToSignals()}
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] hover:bg-[#00bcd420] transition-colors"
+              style={{ background: '#00bcd415', color: '#00bcd4', border: '1px solid #00bcd440' }}
+              title="Click to zoom the chart to the signals' time range"
+            >
+              <span style={{ width: 6, height: 6, borderRadius: 3, background: '#00bcd4', display: 'inline-block' }} />
+              <span className="font-semibold">{data.level_rejection_signals.length}</span>
+              <span style={{ color: '#00bcd4cc' }}>signal{data.level_rejection_signals.length === 1 ? '' : 's'}</span>
+              <span className="ml-1" style={{ color: '#00bcd488', fontSize: 9 }}>↔ fit</span>
+            </button>
+          )}
 
           {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (
             <span className="flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[10px]" style={{ background: '#1e222d', border: '1px solid #2a2e39' }}>

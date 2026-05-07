@@ -31,8 +31,8 @@ def get_data_agent() -> DataAgent:
 @router.get("/{symbol}/ohlcv")
 async def get_ohlcv(
     symbol: str,
-    timeframe: str = Query("5m", description="Candle timeframe: 5m, 1h, 1d"),
-    days: int = Query(1, ge=1, le=60, description="Number of days of data"),
+    timeframe: str = Query("5m", description="Candle timeframe: 1m, 5m, 15m, 30m, 1h, 4h, 1d, 1wk, 1mo"),
+    days: int = Query(1, ge=1, le=3650, description="Number of days of data (capped per timeframe)"),
 ):
     """
     Get OHLCV data for a symbol.
@@ -40,6 +40,19 @@ async def get_ohlcv(
     Returns array of {timestamp, open, high, low, close, volume}.
     """
     try:
+        # Per-timeframe day clamps reflecting yfinance's history limits.
+        # Anything beyond these returns empty data, so we clamp early
+        # rather than letting the request silently fail.
+        TF_MAX_DAYS = {
+            "1m": 7,
+            "5m": 60, "15m": 60, "30m": 60,
+            "1h": 730, "60m": 730, "4h": 730,
+            "1d": 3650, "daily": 3650,
+            "1wk": 3650, "1mo": 3650,
+        }
+        max_days = TF_MAX_DAYS.get(timeframe, 60)
+        days = min(days, max_days)
+
         # Check cache first (60s TTL for intraday, 300s for daily)
         ck = cache_key("ohlcv", symbol=symbol, timeframe=timeframe, days=days)
         cached = cache_get(ck)

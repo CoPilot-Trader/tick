@@ -28,7 +28,8 @@ const defaultFilters: GraphFilters = {
   showNewsEvents: true,
   showTimingSignals: false,
   showPredictionAccuracy: true,
-  showLevelRejection: false,
+  showLevelRejection: true,
+  showVWAP: false,
 };
 
 const navItems = [
@@ -51,14 +52,20 @@ export default function Home() {
   const [activeChartIndex, setActiveChartIndex] = useState(0);
   const [activeTool, setActiveTool] = useState<string>('crosshair');
   const [activeTimeframe, setActiveTimeframe] = useState<string>('1D');
+  const [activeBarSize, setActiveBarSize] = useState<string | null>(null); // null = use range selector mapping
   const [signalsLogOpen, setSignalsLogOpen] = useState(false);
-  const chartRef = useRef<{ takeScreenshot: () => void; resetView: () => void } | null>(null);
+  const chartRef = useRef<{
+    takeScreenshot: () => void;
+    resetView: () => void;
+    fitToSignals: () => void;
+    panToSignal: (signalTimeISO: string) => void;
+  } | null>(null);
 
-  const loadStocksData = useCallback(async (range: string = activeTimeframe) => {
+  const loadStocksData = useCallback(async (range: string = activeTimeframe, barSize?: string | null) => {
     setLoading(true);
     try {
       const data = await Promise.all(
-        selectedStocks.map(symbol => apiClient.getStockData(symbol, range))
+        selectedStocks.map(symbol => apiClient.getStockData(symbol, range, barSize ?? undefined))
       );
       setStocksData(data);
     } catch (error) {
@@ -70,9 +77,9 @@ export default function Home() {
 
   useEffect(() => {
     if (selectedStocks.length > 0) {
-      loadStocksData(activeTimeframe);
+      loadStocksData(activeTimeframe, activeBarSize);
     }
-  }, [selectedStocks, activeTimeframe]);
+  }, [selectedStocks, activeTimeframe, activeBarSize]);
 
   // ── Live watchlist tick — every 5s, refresh just the price/change of each
   // selected stock so the comparison tabs feel "alive" (TradingView-style).
@@ -123,7 +130,10 @@ export default function Home() {
     }
   }, []);
 
-  if (loading || stocksData.length === 0) {
+  // Only show the full-screen loader on the initial load (no data yet).
+  // Subsequent reloads (timeframe / bar size changes) keep the chart visible
+  // with a small inline indicator so the UI never blanks out.
+  if (stocksData.length === 0) {
     return (
       <div className="h-screen w-screen flex items-center justify-center" style={{ background: '#131722' }}>
         <div className="text-center">
@@ -305,17 +315,50 @@ export default function Home() {
 
       {/* ─── Bottom Toolbar ──────────────────────────────────────────── */}
       <div className="flex-shrink-0 flex items-center justify-between px-3" style={{ background: '#1e222d', borderTop: '1px solid #2a2e39', height: 28 }}>
-        <div className="flex items-center gap-1">
-          {['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'All'].map((tf) => (
-            <button
-              key={tf}
-              onClick={() => handleTimeframeChange(tf)}
-              className="px-2 py-0.5 text-[10px] font-medium rounded transition-all hover:bg-[#2a2e39]"
-              style={{ color: tf === activeTimeframe ? '#2962ff' : '#787b86' }}
-            >
-              {tf}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          {/* Range selector (auto-picks bar size) */}
+          <div className="flex items-center gap-0.5">
+            <span className="text-[9px] mr-1" style={{ color: '#5c6272' }}>RANGE</span>
+            {['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'All'].map((tf) => (
+              <button
+                key={tf}
+                onClick={() => { handleTimeframeChange(tf); setActiveBarSize(null); }}
+                className="px-2 py-0.5 text-[10px] font-medium rounded transition-all hover:bg-[#2a2e39]"
+                style={{ color: !activeBarSize && tf === activeTimeframe ? '#2962ff' : '#787b86' }}
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ width: 1, height: 16, background: '#2a2e39' }} />
+
+          {/* Bar size selector (explicit, like TradingView) */}
+          <div className="flex items-center gap-0.5">
+            <span className="text-[9px] mr-1" style={{ color: '#5c6272' }}>BAR</span>
+            {loading && (
+              <div className="animate-spin rounded-full h-2.5 w-2.5 border-b mr-1" style={{ borderColor: '#2962ff' }} title="Refreshing data..." />
+            )}
+            {[
+              { key: '1m', label: '1m' },
+              { key: '5m', label: '5m' },
+              { key: '15m', label: '15m' },
+              { key: '30m', label: '30m' },
+              { key: '1h', label: '1h' },
+              { key: '1d', label: 'D' },
+              { key: '1wk', label: 'W' },
+            ].map((b) => (
+              <button
+                key={b.key}
+                onClick={() => setActiveBarSize(b.key)}
+                className="px-2 py-0.5 text-[10px] font-medium rounded transition-all hover:bg-[#2a2e39]"
+                style={{ color: activeBarSize === b.key ? '#26a69a' : '#787b86' }}
+                title={`Switch to ${b.label} bars`}
+              >
+                {b.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -346,6 +389,7 @@ export default function Home() {
         symbol={activeStock.symbol}
         open={signalsLogOpen}
         onClose={() => setSignalsLogOpen(false)}
+        onSignalClick={(ts) => chartRef.current?.panToSignal(ts)}
       />
     </div>
   );

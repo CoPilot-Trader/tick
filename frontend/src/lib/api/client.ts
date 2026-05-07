@@ -557,9 +557,10 @@ export class ApiClient {
    * Get comprehensive stock data by calling multiple endpoints
    * This aggregates data from fusion, forecast, trend, levels, and sentiment
    */
-  async getStockData(symbol: string, range: string = '1D'): Promise<StockData> {
+  async getStockData(symbol: string, range: string = '1D', explicitBarSize?: string): Promise<StockData> {
     try {
-      // Map range to OHLCV params
+      // Map range to OHLCV params. When explicitBarSize is set, use it as the
+      // timeframe and pick a sensible lookback window based on the bar size.
       const rangeConfig: Record<string, { timeframe: string; days: number }> = {
         '1D': { timeframe: '5m', days: 1 },
         '5D': { timeframe: '5m', days: 5 },
@@ -571,12 +572,30 @@ export class ApiClient {
         '5Y': { timeframe: '1d', days: 1825 },
         'All': { timeframe: '1d', days: 1825 },
       };
-      const { timeframe: tf, days: rangeDays } = rangeConfig[range] || rangeConfig['1D'];
-      const clampedDays = Math.min(rangeDays, 60); // backend max is 60
+
+      let tf: string;
+      let rangeDays: number;
+      if (explicitBarSize) {
+        tf = explicitBarSize;
+        // Default lookback per bar size — covers backend max minus a safety margin
+        const defaultLookback: Record<string, number> = {
+          '1m': 7, '5m': 60, '15m': 60, '30m': 60,
+          '1h': 365, '60m': 365, '4h': 365,
+          '1d': 1825, 'daily': 1825,
+          '1wk': 1825, 'weekly': 1825,
+        };
+        rangeDays = defaultLookback[explicitBarSize] || 60;
+      } else {
+        const cfg = rangeConfig[range] || rangeConfig['1D'];
+        tf = cfg.timeframe;
+        rangeDays = cfg.days;
+      }
+      // Backend now clamps per-timeframe to yfinance limits, so just pass the
+      // requested days and let the backend trim if needed.
 
       // Fetch real OHLCV data, forecast, levels, news, prediction history, and signals in parallel
       const [ohlcvResult, forecastResult, levels, newsResult, predHistory, levelRejResult, pcrBacktrack] = await Promise.all([
-        this.getOHLCV(symbol, tf, clampedDays).catch(() => null),
+        this.getOHLCV(symbol, tf, rangeDays).catch(() => null),
         this.getPriceForecast(symbol, ['1h']).catch(() => null),
         this.getLevels(symbol, { max_levels: 3 }).catch(() => null),
         this.getNewsArticles(symbol, 7).catch(() => null),

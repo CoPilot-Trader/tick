@@ -156,4 +156,5 @@ export interface GraphFilters {
   showTimingSignals: boolean;
   showPredictionAccuracy: boolean;
   showLevelRejection: boolean;
+  showVWAP: boolean;
 }
