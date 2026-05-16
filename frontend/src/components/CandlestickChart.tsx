@@ -141,6 +141,70 @@ function computeBollingerBands(
   return { upper, lower };
 }
 
+/**
+ * Fit (or pan to) the time + price range that covers the signal lines, so the
+ * user actually sees the level / entry / stop / target horizontal lines on the
+ * candle chart. Without this, the time-only fit can land on a window where the
+ * signal prices fall outside the visible price scale.
+ *
+ * If `singleSignalTimeISO` is given, we pan to that single signal (narrow time
+ * window) but still include the matching signal's prices in the price scale.
+ */
+function fitOrPanSignals(
+  chart: any,
+  candleSeries: any,
+  signals: any[] | undefined,
+  singleSignalTimeISO?: string,
+): void {
+  if (!chart || !signals || signals.length === 0) return;
+
+  // Pick the relevant subset of signals — either all of them (fit), or the
+  // one whose timestamp matches the requested pan target.
+  let subset = signals;
+  if (singleSignalTimeISO) {
+    const target = new Date(singleSignalTimeISO).getTime();
+    subset = signals.filter(s => Math.abs(new Date(s.signal_time).getTime() - target) < 60_000);
+    if (subset.length === 0) subset = signals; // safety fallback
+  }
+
+  // Time range: ±2 days padding for "fit all", ±6h for "pan to one"
+  const times = subset.map(s => Math.floor(new Date(s.signal_time).getTime() / 1000));
+  const timePadding = singleSignalTimeISO ? 3600 * 6 : 86400 * 2;
+  const fromT = Math.min(...times) - timePadding;
+  const toT = Math.max(...times) + timePadding;
+
+  try {
+    chart.timeScale().setVisibleRange({ from: fromT as any, to: toT as any });
+  } catch { /* noop */ }
+
+  // Price range: include every level / entry / stop / T1 / T2 price across the
+  // subset, then pad by 2% so the lines don't sit on the chart edge.
+  if (!candleSeries) return;
+  const prices: number[] = [];
+  for (const s of subset) {
+    if (typeof s.level_price === 'number') prices.push(s.level_price);
+    if (typeof s.entry_price === 'number') prices.push(s.entry_price);
+    if (typeof s.stop_price === 'number') prices.push(s.stop_price);
+    if (typeof s.target1_price === 'number') prices.push(s.target1_price);
+    if (typeof s.target2_price === 'number') prices.push(s.target2_price);
+  }
+  if (prices.length === 0) return;
+
+  const minP = Math.min(...prices);
+  const maxP = Math.max(...prices);
+  const pad = Math.max((maxP - minP) * 0.05, maxP * 0.02);
+
+  try {
+    // Switch the candle price scale out of autoScale so our manual range sticks.
+    candleSeries.priceScale().applyOptions({ autoScale: false });
+    candleSeries.applyOptions({
+      autoscaleInfoProvider: () => ({
+        priceRange: { minValue: minP - pad, maxValue: maxP + pad },
+      }),
+    });
+  } catch { /* noop */ }
+}
+
 function formatVolume(v: number | null | undefined): string {
   if (v == null || isNaN(v)) return '—';
   if (v >= 1_000_000_000) return (v / 1_000_000_000).toFixed(2) + 'B';
@@ -228,36 +292,16 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       chartRef.current?.timeScale().fitContent();
     },
     fitToSignals() {
-      const sigs = data.level_rejection_signals || [];
-      if (sigs.length === 0 || !chartRef.current) return;
-      const times = sigs.map(s => Math.floor(new Date(s.signal_time).getTime() / 1000));
-      const fromT = Math.min(...times) - 86400 * 2; // 2 days padding before first signal
-      const toT = Math.max(...times) + 86400 * 2;   // 2 days padding after last signal
-      try {
-        chartRef.current.timeScale().setVisibleRange({ from: fromT as any, to: toT as any });
-      } catch { /* noop */ }
+      fitOrPanSignals(chartRef.current, candleSeriesRef.current, data.level_rejection_signals);
     },
     panToSignal(signalTimeISO: string) {
-      if (!chartRef.current) return;
-      const t = Math.floor(new Date(signalTimeISO).getTime() / 1000);
-      if (isNaN(t)) return;
-      const padding = 3600 * 6; // 6 hours either side
-      try {
-        chartRef.current.timeScale().setVisibleRange({ from: (t - padding) as any, to: (t + padding) as any });
-      } catch { /* noop */ }
+      fitOrPanSignals(chartRef.current, candleSeriesRef.current, data.level_rejection_signals, signalTimeISO);
     },
   }), [data.symbol, data.level_rejection_signals]);
 
   // Helper used by the in-chart "X signals ↔ fit" badge
   const fitChartToSignals = useCallback(() => {
-    const sigs = data.level_rejection_signals || [];
-    if (sigs.length === 0 || !chartRef.current) return;
-    const times = sigs.map(s => Math.floor(new Date(s.signal_time).getTime() / 1000));
-    const fromT = Math.min(...times) - 86400 * 2;
-    const toT = Math.max(...times) + 86400 * 2;
-    try {
-      chartRef.current.timeScale().setVisibleRange({ from: fromT as any, to: toT as any });
-    } catch { /* noop */ }
+    fitOrPanSignals(chartRef.current, candleSeriesRef.current, data.level_rejection_signals);
   }, [data.level_rejection_signals]);
 
   // Pre-compute all data
