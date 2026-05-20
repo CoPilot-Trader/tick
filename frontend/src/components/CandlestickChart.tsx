@@ -1002,15 +1002,13 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         as2.setData(chartData.backtrackActual);
       }
 
+      // The Pred-vs-Actual panel has its OWN time domain (prediction dates,
+      // which often differ from the candle dates — especially with PCR-shock
+      // signals spanning other ranges). It must stand alone with fitContent().
+      // A previous bidirectional time-axis sync with the main chart created a
+      // feedback loop that made the panel flicker/jump ("refresh" issue Tory
+      // flagged) — removed.
       predAccChart.timeScale().fitContent();
-
-      // Sync time axes both ways
-      chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
-        if (range) predAccChart.timeScale().setVisibleLogicalRange(range);
-      });
-      predAccChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
-        if (range) chart.timeScale().setVisibleLogicalRange(range);
-      });
     }
 
     // ─── Resize ──────────────────────────────────────────────────────
