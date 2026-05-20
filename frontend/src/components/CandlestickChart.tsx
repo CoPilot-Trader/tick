@@ -703,7 +703,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           candleSeries.createPriceLine({
             price: level.price, color: '#26a69a', lineWidth: 1,
             lineStyle: LineStyle.Dashed, axisLabelVisible: true,
-            title: `S ${level.price.toFixed(0)}`,
+            title: `Support ${level.price.toFixed(2)}`,
           });
         } catch { /* noop */ }
       });
@@ -712,7 +712,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           candleSeries.createPriceLine({
             price: level.price, color: '#ef5350', lineWidth: 1,
             lineStyle: LineStyle.Dashed, axisLabelVisible: true,
-            title: `R ${level.price.toFixed(0)}`,
+            title: `Resistance ${level.price.toFixed(2)}`,
           });
         } catch { /* noop */ }
       });
@@ -726,36 +726,37 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
       for (const sig of signals) {
         try {
-          // Level price — solid cyan
+          // Level price — solid cyan. Prefix "SIG" so it reads clearly as a
+          // trade signal level, not a generic indicator line.
           candleSeries.createPriceLine({
             price: sig.level_price, color: '#00bcd4', lineWidth: 1,
             lineStyle: LineStyle.Solid, axisLabelVisible: true,
-            title: `Lvl ${sig.level_type}`,
+            title: `SIG Level · ${sig.level_type}`,
           });
           // Entry — gold dotted
           candleSeries.createPriceLine({
             price: sig.entry_price, color: '#ffc107', lineWidth: 1,
             lineStyle: LineStyle.Dotted, axisLabelVisible: false,
-            title: 'Entry',
+            title: 'SIG Entry',
           });
           // Stop — red dashed
           candleSeries.createPriceLine({
             price: sig.stop_price, color: '#f44336', lineWidth: 1,
             lineStyle: LineStyle.Dashed, axisLabelVisible: false,
-            title: 'Stop',
+            title: 'SIG Stop',
           });
           // Target 1 — green dashed
           candleSeries.createPriceLine({
             price: sig.target1_price, color: '#4caf50', lineWidth: 1,
             lineStyle: LineStyle.Dashed, axisLabelVisible: false,
-            title: 'T1',
+            title: 'SIG Target 1',
           });
           // Target 2 (if present) — light green dashed
           if (sig.target2_price != null) {
             candleSeries.createPriceLine({
               price: sig.target2_price, color: '#8bc34a', lineWidth: 1,
               lineStyle: LineStyle.Dashed, axisLabelVisible: false,
-              title: 'T2',
+              title: 'SIG Target 2',
             });
           }
 
@@ -1142,18 +1143,18 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     [filters, onFilterChange]
   );
 
-  const indicatorButtons: { key: keyof GraphFilters; label: string; color: string }[] = [
-    { key: 'showMovingAverages', label: 'MA', color: '#f7a21b' },
-    { key: 'showVWAP', label: 'VWAP', color: '#ab47bc' },
-    { key: 'showBollingerBands', label: 'BB', color: '#7b1fa2' },
-    { key: 'showSupportResistance', label: 'S/R', color: '#26a69a' },
-    { key: 'showRSI', label: 'RSI', color: '#7e57c2' },
-    { key: 'showMACD', label: 'MACD', color: '#2962ff' },
-    { key: 'showPredictedPrice', label: 'Forecast', color: '#42a5f5' },
-    { key: 'showConfidenceBounds', label: 'Bounds', color: '#42a5f5' },
-    { key: 'showNewsEvents', label: 'News', color: '#ffb74d' },
-    { key: 'showPredictionAccuracy', label: 'Pred vs Actual', color: '#ff9800' },
-    { key: 'showLevelRejection', label: 'Signals', color: '#00bcd4' },
+  const indicatorButtons: { key: keyof GraphFilters; label: string; color: string; tip: string }[] = [
+    { key: 'showMovingAverages', label: 'SMA 50/200', color: '#f7a21b', tip: 'Simple Moving Averages — 50-period (gold) and 200-period (pink)' },
+    { key: 'showVWAP', label: 'VWAP', color: '#ab47bc', tip: 'Volume-Weighted Average Price — resets each session for intraday timeframes' },
+    { key: 'showBollingerBands', label: 'BB', color: '#7b1fa2', tip: 'Bollinger Bands — 20-period SMA ± 2 standard deviations' },
+    { key: 'showSupportResistance', label: 'S/R', color: '#26a69a', tip: 'Support & Resistance levels — detected by DBSCAN clustering + volume profile on live data' },
+    { key: 'showRSI', label: 'RSI', color: '#7e57c2', tip: 'Relative Strength Index (14) — momentum oscillator, sub-panel below' },
+    { key: 'showMACD', label: 'MACD', color: '#2962ff', tip: 'Moving Average Convergence Divergence (12/26/9) — sub-panel below' },
+    { key: 'showPredictedPrice', label: 'Forecast', color: '#42a5f5', tip: 'Model price forecast for the next horizon (Prophet/LSTM ensemble)' },
+    { key: 'showConfidenceBounds', label: 'Forecast Bounds', color: '#42a5f5', tip: 'Upper/lower confidence interval around the forecast line' },
+    { key: 'showNewsEvents', label: 'News', color: '#ffb74d', tip: 'News event markers on the chart from the sentiment pipeline' },
+    { key: 'showPredictionAccuracy', label: 'Pred vs Actual', color: '#ff9800', tip: 'Side panel: model-predicted price vs what actually happened (backtracking)' },
+    { key: 'showLevelRejection', label: 'Signals', color: '#00bcd4', tip: 'Trade signals from the VM pipeline — level/entry/stop/target lines + win/loss markers' },
   ];
 
   // Price info
@@ -1265,6 +1266,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
             <button
               key={ind.key}
               onClick={() => toggleFilter(ind.key)}
+              title={ind.tip}
               className="px-2 py-0.5 text-[10px] font-medium rounded transition-all"
               style={{
                 background: filters[ind.key] ? `${ind.color}20` : 'transparent',
