@@ -557,41 +557,28 @@ export class ApiClient {
    * Get comprehensive stock data by calling multiple endpoints
    * This aggregates data from fusion, forecast, trend, levels, and sentiment
    */
-  async getStockData(symbol: string, range: string = '1D', explicitBarSize?: string): Promise<StockData> {
+  async getStockData(symbol: string, range: string = '1D', barSize: string = '5m'): Promise<StockData> {
     try {
-      // Map range to OHLCV params. When explicitBarSize is set, use it as the
-      // timeframe and pick a sensible lookback window based on the bar size.
-      const rangeConfig: Record<string, { timeframe: string; days: number }> = {
-        '1D': { timeframe: '5m', days: 1 },
-        '5D': { timeframe: '5m', days: 5 },
-        '1M': { timeframe: '1h', days: 30 },
-        '3M': { timeframe: '1d', days: 90 },
-        '6M': { timeframe: '1d', days: 180 },
-        'YTD': { timeframe: '1d', days: Math.ceil((Date.now() - new Date(new Date().getFullYear(), 0, 1).getTime()) / 86400000) },
-        '1Y': { timeframe: '1d', days: 365 },
-        '5Y': { timeframe: '1d', days: 1825 },
-        'All': { timeframe: '1d', days: 1825 },
+      // Range = lookback window (days). Bar size = candle granularity (timeframe).
+      // These are INDEPENDENT and combine: e.g. "3M range + 15m bars".
+      const rangeDaysMap: Record<string, number> = {
+        '1D': 1, '5D': 5, '1M': 30, '3M': 90, '6M': 180,
+        'YTD': Math.ceil((Date.now() - new Date(new Date().getFullYear(), 0, 1).getTime()) / 86400000),
+        '1Y': 365, '5Y': 1825, 'All': 3650,
+      };
+      // yfinance hard limits per bar size — clamp the requested window to what
+      // the data source can actually return for that granularity.
+      const barMaxDays: Record<string, number> = {
+        '1m': 7, '5m': 60, '15m': 60, '30m': 60,
+        '1h': 730, '60m': 730, '4h': 730,
+        '1d': 3650, 'daily': 3650, '1wk': 3650, 'weekly': 3650,
       };
 
-      let tf: string;
-      let rangeDays: number;
-      if (explicitBarSize) {
-        tf = explicitBarSize;
-        // Default lookback per bar size — covers backend max minus a safety margin
-        const defaultLookback: Record<string, number> = {
-          '1m': 7, '5m': 60, '15m': 60, '30m': 60,
-          '1h': 365, '60m': 365, '4h': 365,
-          '1d': 1825, 'daily': 1825,
-          '1wk': 1825, 'weekly': 1825,
-        };
-        rangeDays = defaultLookback[explicitBarSize] || 60;
-      } else {
-        const cfg = rangeConfig[range] || rangeConfig['1D'];
-        tf = cfg.timeframe;
-        rangeDays = cfg.days;
-      }
-      // Backend now clamps per-timeframe to yfinance limits, so just pass the
-      // requested days and let the backend trim if needed.
+      const tf = barSize || '5m';
+      const requestedDays = rangeDaysMap[range] ?? 1;
+      const maxDays = barMaxDays[tf] ?? 60;
+      const rangeDays = Math.min(requestedDays, maxDays);
+      // Backend also clamps, but clamping here keeps the request honest.
 
       // Fetch real OHLCV data, forecast, levels, news, prediction history, and signals in parallel
       const [ohlcvResult, forecastResult, levels, newsResult, predHistory, levelRejResult, pcrBacktrack] = await Promise.all([

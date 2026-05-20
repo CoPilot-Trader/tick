@@ -52,8 +52,8 @@ export default function Home() {
   const [navOpen, setNavOpen] = useState(false);
   const [activeChartIndex, setActiveChartIndex] = useState(0);
   const [activeTool, setActiveTool] = useState<string>('crosshair');
-  const [activeTimeframe, setActiveTimeframe] = useState<string>('1D');
-  const [activeBarSize, setActiveBarSize] = useState<string | null>(null); // null = use range selector mapping
+  const [activeTimeframe, setActiveTimeframe] = useState<string>('1D'); // RANGE (lookback window)
+  const [activeBarSize, setActiveBarSize] = useState<string>('5m');     // BAR SIZE (granularity)
   const [signalsLogOpen, setSignalsLogOpen] = useState(false);
   const [clock, setClock] = useState('');
   const chartRef = useRef<{
@@ -63,11 +63,11 @@ export default function Home() {
     panToSignal: (signalTimeISO: string) => void;
   } | null>(null);
 
-  const loadStocksData = useCallback(async (range: string = activeTimeframe, barSize?: string | null) => {
+  const loadStocksData = useCallback(async (range: string = activeTimeframe, barSize: string = activeBarSize) => {
     setLoading(true);
     try {
       const data = await Promise.all(
-        selectedStocks.map(symbol => apiClient.getStockData(symbol, range, barSize ?? undefined))
+        selectedStocks.map(symbol => apiClient.getStockData(symbol, range, barSize))
       );
       setStocksData(data);
     } catch (error) {
@@ -75,7 +75,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [selectedStocks, activeTimeframe]);
+  }, [selectedStocks, activeTimeframe, activeBarSize]);
 
   useEffect(() => {
     if (selectedStocks.length > 0) {
@@ -312,7 +312,7 @@ export default function Home() {
         <div className="flex-1 min-h-0 min-w-0">
           <CandlestickChart
             ref={chartRef}
-            key={`${activeStock.symbol}-${activeTimeframe}`}
+            key={`${activeStock.symbol}-${activeTimeframe}-${activeBarSize}`}
             data={activeStock}
             selectedPrediction={selectedPrediction}
             onPredictionClick={setSelectedPrediction}
@@ -326,15 +326,16 @@ export default function Home() {
       {/* ─── Bottom Toolbar ──────────────────────────────────────────── */}
       <div className="flex-shrink-0 flex items-center justify-between px-3" style={{ background: '#1e222d', borderTop: '1px solid #2a2e39', height: 28 }}>
         <div className="flex items-center gap-3">
-          {/* Range selector (auto-picks bar size) */}
+          {/* Range selector — lookback window. Combines with bar size below. */}
           <div className="flex items-center gap-0.5">
             <span className="text-[9px] mr-1" style={{ color: '#5c6272' }}>RANGE</span>
             {['1D', '5D', '1M', '3M', '6M', 'YTD', '1Y', '5Y', 'All'].map((tf) => (
               <button
                 key={tf}
-                onClick={() => { handleTimeframeChange(tf); setActiveBarSize(null); }}
+                onClick={() => handleTimeframeChange(tf)}
                 className="px-2 py-0.5 text-[10px] font-medium rounded transition-all hover:bg-[#2a2e39]"
-                style={{ color: !activeBarSize && tf === activeTimeframe ? '#2962ff' : '#787b86' }}
+                style={{ color: tf === activeTimeframe ? '#2962ff' : '#787b86' }}
+                title={`Lookback window: ${tf} (combines with the selected bar size)`}
               >
                 {tf}
               </button>
@@ -343,7 +344,7 @@ export default function Home() {
 
           <div style={{ width: 1, height: 16, background: '#2a2e39' }} />
 
-          {/* Bar size selector (explicit, like TradingView) */}
+          {/* Bar size selector — candle granularity. Combines with range above. */}
           <div className="flex items-center gap-0.5">
             <span className="text-[9px] mr-1" style={{ color: '#5c6272' }}>BAR</span>
             {loading && (
@@ -363,7 +364,7 @@ export default function Home() {
                 onClick={() => setActiveBarSize(b.key)}
                 className="px-2 py-0.5 text-[10px] font-medium rounded transition-all hover:bg-[#2a2e39]"
                 style={{ color: activeBarSize === b.key ? '#26a69a' : '#787b86' }}
-                title={`Switch to ${b.label} bars`}
+                title={`${b.label} candles (combines with the selected range; capped at the data source's history limit)`}
               >
                 {b.label}
               </button>
