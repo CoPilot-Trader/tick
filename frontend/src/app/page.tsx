@@ -223,24 +223,32 @@ export default function Home() {
 
         <div className="hidden md:block" style={{ width: 1, height: 20, background: '#2a2e39' }} />
 
-        {/* Stock tabs (multi-stock) */}
+        {/* Stock tabs (multi-stock) — clickable tabs that switch the active chart */}
         {isComparisonMode && (
           <>
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-1">
+              <span className="text-[8px] uppercase tracking-wider mr-0.5" style={{ color: '#5c6272' }}>Viewing</span>
               {stocksData.map((stock, index) => {
                 const isActive = index === safeActiveIndex;
                 const isPos = stock.price_change >= 0;
+                const dot = ['#2962ff', '#7b1fa2', '#26a69a', '#f7a21b', '#ef5350'][index % 5];
                 return (
                   <button
                     key={stock.symbol}
                     onClick={() => setActiveChartIndex(index)}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-all"
+                    title={isActive ? `${stock.symbol} — currently viewing` : `Click to view ${stock.symbol}`}
+                    className="flex items-center gap-1 px-2 py-1 rounded-t text-xs font-semibold transition-all"
                     style={{
-                      background: isActive ? '#2a2e39' : 'transparent',
+                      background: isActive ? '#131722' : '#1a1d28',
                       color: isActive ? '#d1d4dc' : '#787b86',
+                      borderBottom: isActive ? '2px solid ' + dot : '2px solid transparent',
+                      borderTop: isActive ? '1px solid #2a2e39' : '1px solid transparent',
+                      borderLeft: isActive ? '1px solid #2a2e39' : '1px solid transparent',
+                      borderRight: isActive ? '1px solid #2a2e39' : '1px solid transparent',
+                      opacity: isActive ? 1 : 0.7,
                     }}
                   >
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ['#2962ff', '#7b1fa2', '#26a69a', '#f7a21b', '#ef5350'][index % 5] }} />
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dot }} />
                     {stock.symbol}
                     <span style={{ color: isPos ? '#26a69a' : '#ef5350', fontSize: 10 }}>
                       {isPos ? '+' : ''}{stock.price_change_percent.toFixed(1)}%
