@@ -214,6 +214,17 @@ function formatVolume(v: number | null | undefined): string {
   return v.toFixed(0);
 }
 
+/** Format a duration in seconds as a compact "2d 3h", "5h 10m", "45m" string. */
+function formatTimeSpan(seconds: number): string {
+  if (!seconds || seconds < 0) return '0m';
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
 function toTime(ts: string): Time {
   return Math.floor(new Date(ts).getTime() / 1000) as Time;
 }
@@ -260,6 +271,9 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   const volumeSeriesRef = useRef<any>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const livePriceRef = useRef<HTMLSpanElement>(null);
+  // Measure / ruler tool overlays (TradingView-style click-drag measurement)
+  const measureBoxRef = useRef<HTMLDivElement>(null);
+  const measurePopupRef = useRef<HTMLDivElement>(null);
   // Preserve the user's zoom / pan across chart rebuilds (timeframe change, signals toggle, etc.)
   const preservedRangeRef = useRef<{ from: number; to: number } | null>(null);
   const lastSymbolRef = useRef<string>(data.symbol);
@@ -1133,6 +1147,114 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     };
   }, [data.symbol]);
 
+  // ─── Measure / ruler tool (TradingView-style click-drag measurement) ──
+  useEffect(() => {
+    if (activeTool !== 'ruler') return;
+    const container = chartContainerRef.current;
+    const chart = chartRef.current;
+    const series = candleSeriesRef.current;
+    const box = measureBoxRef.current;
+    const popup = measurePopupRef.current;
+    if (!container || !chart || !series || !box || !popup) return;
+
+    let startX = 0, startY = 0;
+    let dragging = false;
+
+    const candles = chartData.candles;
+    const volumes = chartData.volume;
+
+    const clear = () => {
+      box.style.display = 'none';
+      popup.style.display = 'none';
+      dragging = false;
+    };
+
+    const onDown = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      startX = e.clientX - rect.left;
+      startY = e.clientY - rect.top;
+      dragging = true;
+      box.style.display = 'block';
+      popup.style.display = 'block';
+    };
+
+    const onMove = (e: MouseEvent) => {
+      if (!dragging) return;
+      const rect = container.getBoundingClientRect();
+      const curX = e.clientX - rect.left;
+      const curY = e.clientY - rect.top;
+
+      // Draw the box
+      const left = Math.min(startX, curX);
+      const top = Math.min(startY, curY);
+      box.style.left = `${left}px`;
+      box.style.top = `${top}px`;
+      box.style.width = `${Math.abs(curX - startX)}px`;
+      box.style.height = `${Math.abs(curY - startY)}px`;
+
+      // Convert pixels → price/time
+      const startPrice = series.coordinateToPrice(startY);
+      const endPrice = series.coordinateToPrice(curY);
+      const startTime = chart.timeScale().coordinateToTime(startX) as number | null;
+      const endTime = chart.timeScale().coordinateToTime(curX) as number | null;
+
+      if (startPrice == null || endPrice == null) return;
+
+      const priceDelta = endPrice - startPrice;
+      const pricePct = startPrice !== 0 ? (priceDelta / startPrice) * 100 : 0;
+      const up = priceDelta >= 0;
+
+      // Bars + volume + time span within the dragged time window
+      let bars = 0;
+      let volSum = 0;
+      let timeSpanSec = 0;
+      if (startTime != null && endTime != null) {
+        const lo = Math.min(startTime, endTime);
+        const hi = Math.max(startTime, endTime);
+        timeSpanSec = hi - lo;
+        for (let i = 0; i < candles.length; i++) {
+          const t = candles[i].time as number;
+          if (t >= lo && t <= hi) {
+            bars++;
+            if (volumes[i]) volSum += (volumes[i] as any).value || 0;
+          }
+        }
+      }
+
+      const sign = up ? '+' : '';
+      const color = up ? '#26a69a' : '#ef5350';
+      popup.innerHTML =
+        `<div style="color:${color};font-weight:600;margin-bottom:3px">${sign}${priceDelta.toFixed(2)} (${sign}${pricePct.toFixed(2)}%)</div>` +
+        `<div style="color:#787b86">${bars} bar${bars === 1 ? '' : 's'} · ${formatTimeSpan(timeSpanSec)}</div>` +
+        `<div style="color:#787b86">Vol ${formatVolume(volSum)}</div>`;
+
+      // Position popup near the end point, clamped inside the container
+      const popupW = 150, popupH = 56;
+      let px = curX + 12;
+      let py = curY + 12;
+      if (px + popupW > rect.width) px = curX - popupW - 12;
+      if (py + popupH > rect.height) py = curY - popupH - 12;
+      popup.style.left = `${Math.max(0, px)}px`;
+      popup.style.top = `${Math.max(0, py)}px`;
+    };
+
+    const onUp = () => { dragging = false; };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') clear(); };
+
+    container.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('keydown', onKey);
+
+    return () => {
+      container.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('keydown', onKey);
+      clear();
+    };
+  }, [activeTool, chartData]);
+
   // Toggle helper
   const toggleFilter = useCallback(
     (key: keyof GraphFilters) => {
@@ -1284,6 +1406,21 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         <div className="flex-1 min-h-0 flex relative">
           {/* Main chart */}
           <div ref={chartContainerRef} className={filters.showPredictionAccuracy ? 'min-h-0' : 'flex-1 min-h-0'} style={filters.showPredictionAccuracy ? { flex: '7 1 0%', minHeight: 0 } : undefined} />
+
+          {/* Measure tool overlay box (shown while ruler tool is dragging) */}
+          <div
+            ref={measureBoxRef}
+            style={{ display: 'none', position: 'absolute', pointerEvents: 'none', zIndex: 30,
+              border: '1px solid #2962ff', background: 'rgba(41, 98, 255, 0.12)' }}
+          />
+          {/* Measure tool stats popup */}
+          <div
+            ref={measurePopupRef}
+            style={{ display: 'none', position: 'absolute', pointerEvents: 'none', zIndex: 31,
+              background: '#1e222d', border: '1px solid #2962ff', borderRadius: 6,
+              padding: '6px 10px', fontSize: 11, fontFamily: 'JetBrains Mono, monospace',
+              color: '#d1d4dc', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+          />
 
           {/* Predicted vs Actual — right side panel */}
           {filters.showPredictionAccuracy && (
