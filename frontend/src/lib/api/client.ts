@@ -609,31 +609,40 @@ export class ApiClient {
       const price_change = currentPrice - firstPrice;
       const price_change_percent = ((currentPrice - firstPrice) / firstPrice) * 100;
 
-      // Build predictions from the 1h forecast
+      // Build predictions from the 1h forecast.
+      // IMPORTANT: anchor the forecast to the LAST CANDLE's time and step by
+      // the chart's actual bar interval — NOT wall-clock "now + 10 min".
+      // Otherwise the forecast line jumps across a huge time gap from the last
+      // candle to the current time, which looks scattered/jagged (esp. with
+      // after-hours data or on coarse bars like 30m/1d).
       const predictions: PredictionPoint[] = [];
       const forecast1h = forecastResult?.forecasts?.find(f => f.horizon === '1h');
-      if (forecast1h) {
-        // Interpolate 6 prediction points at 10-min intervals over the next hour
+      if (forecast1h && historical_data.length > 0) {
         const targetPrice = forecast1h.predicted_price;
         const upperTarget = forecast1h.upper_bound;
         const lowerTarget = forecast1h.lower_bound;
         const confidence = forecast1h.confidence;
 
+        // Seconds-per-bar for the current timeframe
+        const barSeconds: Record<string, number> = {
+          '1m': 60, '5m': 300, '15m': 900, '30m': 1800,
+          '1h': 3600, '60m': 3600, '4h': 14400,
+          '1d': 86400, 'daily': 86400, '1wk': 604800, 'weekly': 604800,
+        };
+        const stepSec = barSeconds[tf] ?? 300;
+        const lastTs = new Date(historical_data[historical_data.length - 1].timestamp).getTime();
+
+        // Project 6 bars forward from the last candle, smoothly interpolating
+        // from current price to the forecast target.
         for (let i = 1; i <= 6; i++) {
           const fraction = i / 6;
-          const futureDate = new Date();
-          futureDate.setMinutes(futureDate.getMinutes() + i * 10);
-
-          const interpolatedPrice = currentPrice + (targetPrice - currentPrice) * fraction;
-          const interpolatedUpper = currentPrice + (upperTarget - currentPrice) * fraction;
-          const interpolatedLower = currentPrice + (lowerTarget - currentPrice) * fraction;
-
+          const futureMs = lastTs + i * stepSec * 1000;
           predictions.push({
-            timestamp: futureDate.toISOString(),
-            predicted_price: interpolatedPrice,
+            timestamp: new Date(futureMs).toISOString(),
+            predicted_price: currentPrice + (targetPrice - currentPrice) * fraction,
             confidence: confidence,
-            upper_bound: interpolatedUpper,
-            lower_bound: interpolatedLower,
+            upper_bound: currentPrice + (upperTarget - currentPrice) * fraction,
+            lower_bound: currentPrice + (lowerTarget - currentPrice) * fraction,
             support_levels: levels?.support_levels || [],
             resistance_levels: levels?.resistance_levels || [],
           });
