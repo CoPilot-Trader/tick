@@ -1177,8 +1177,17 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       <div className="flex items-center justify-between px-2 py-1 flex-shrink-0" style={{ borderBottom: '1px solid #2a2e39', height: 36 }}>
         {/* Left: Symbol + Price */}
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold" style={{ color: '#d1d4dc' }}>{data.symbol}</span>
-          <span className="text-sm font-semibold" style={{ color: isPositive ? '#26a69a' : '#ef5350' }}>
+          {/* Prominent ticker badge so it's always clear which symbol is in view */}
+          <span
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md"
+            style={{ background: '#2962ff18', border: '1px solid #2962ff55' }}
+          >
+            <span className="text-base font-bold tracking-wide" style={{ color: '#2962ff' }}>{data.symbol}</span>
+            {data.name && data.name !== data.symbol && (
+              <span className="text-[10px] hidden lg:inline" style={{ color: '#787b86' }}>{data.name}</span>
+            )}
+          </span>
+          <span className="text-base font-bold" style={{ color: isPositive ? '#26a69a' : '#ef5350' }}>
             <span ref={livePriceRef}>{lastPrice.toFixed(2)}</span>
           </span>
           <span className="flex items-center gap-1">
