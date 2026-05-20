@@ -8,12 +8,13 @@ import { formatEasternTime } from '@/lib/time';
 import MultiStockSelector from '@/components/MultiStockSelector';
 import StockOverview from '@/components/StockOverview';
 import CandlestickChart from '@/components/CandlestickChart';
+import ComparisonGrid from '@/components/ComparisonGrid';
 import PredictionDetail from '@/components/PredictionDetail';
 import SignalsLog from '@/components/SignalsLog';
 import {
   ChevronDown, LayoutDashboard, Newspaper, Layers, Database, Zap, LineChart, Bell,
   Crosshair, MousePointer2, ZoomIn, ZoomOut, Maximize2, RotateCcw, Camera, Ruler,
-  ScrollText,
+  ScrollText, LayoutGrid, Square,
 } from 'lucide-react';
 
 const defaultFilters: GraphFilters = {
@@ -56,6 +57,7 @@ export default function Home() {
   const [activeBarSize, setActiveBarSize] = useState<string>('5m');     // BAR SIZE (granularity)
   const [signalsLogOpen, setSignalsLogOpen] = useState(false);
   const [clock, setClock] = useState('');
+  const [viewMode, setViewMode] = useState<'single' | 'grid'>('single');
   const chartRef = useRef<{
     takeScreenshot: () => void;
     resetView: () => void;
@@ -269,6 +271,28 @@ export default function Home() {
             maxStocks={5}
           />
         </div>
+
+        {/* View mode: Single vs Grid comparison (only when 2+ tickers) */}
+        {isComparisonMode && (
+          <div className="flex items-center gap-0.5 ml-2 flex-shrink-0 rounded" style={{ background: '#131722', border: '1px solid #2a2e39', padding: 2 }}>
+            <button
+              onClick={() => setViewMode('single')}
+              title="Single chart view"
+              className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-all"
+              style={{ background: viewMode === 'single' ? '#2962ff20' : 'transparent', color: viewMode === 'single' ? '#2962ff' : '#787b86' }}
+            >
+              <Square className="w-3 h-3" /> Single
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              title="Compare all selected tickers in a grid"
+              className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-all"
+              style={{ background: viewMode === 'grid' ? '#2962ff20' : 'transparent', color: viewMode === 'grid' ? '#2962ff' : '#787b86' }}
+            >
+              <LayoutGrid className="w-3 h-3" /> Grid
+            </button>
+          </div>
+        )}
       </header>
 
       {/* ─── Stock Overview Bar ──────────────────────────────────────── */}
@@ -316,18 +340,26 @@ export default function Home() {
           <div className="flex-1" />
         </div>
 
-        {/* Chart Area */}
+        {/* Chart Area — single chart or comparison grid */}
         <div className="flex-1 min-h-0 min-w-0">
-          <CandlestickChart
-            ref={chartRef}
-            key={`${activeStock.symbol}-${activeTimeframe}-${activeBarSize}`}
-            data={activeStock}
-            selectedPrediction={selectedPrediction}
-            onPredictionClick={setSelectedPrediction}
-            filters={filters}
-            onFilterChange={setFilters}
-            activeTool={activeTool}
-          />
+          {isComparisonMode && viewMode === 'grid' ? (
+            <ComparisonGrid
+              stocks={stocksData}
+              activeIndex={safeActiveIndex}
+              onSelect={(i) => { setActiveChartIndex(i); setViewMode('single'); }}
+            />
+          ) : (
+            <CandlestickChart
+              ref={chartRef}
+              key={`${activeStock.symbol}-${activeTimeframe}-${activeBarSize}`}
+              data={activeStock}
+              selectedPrediction={selectedPrediction}
+              onPredictionClick={setSelectedPrediction}
+              filters={filters}
+              onFilterChange={setFilters}
+              activeTool={activeTool}
+            />
+          )}
         </div>
       </div>
 
