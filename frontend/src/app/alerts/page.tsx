@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { SP500_STOCKS } from '@/lib/mockData';
 import { apiClient, Alert, AlertRule, AlertsSummary } from '@/lib/api/client';
+import { formatEasternDateTime } from '@/lib/time';
 
 export default function AlertsPage() {
   const [loading, setLoading] = useState(true);
@@ -412,7 +413,7 @@ function AlertCard({ alert, onAcknowledge }: { alert: Alert; onAcknowledge: () =
           <p className="text-white">{alert.message}</p>
           <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
             <Clock className="w-3 h-3" />
-            {new Date(alert.timestamp).toLocaleString()}
+            {formatEasternDateTime(alert.timestamp)}
           </div>
         </div>
         {!alert.acknowledged && (

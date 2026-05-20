@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { X, TrendingUp, TrendingDown, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import { LevelRejectionSignal } from '@/types';
+import { formatEasternTime, formatEasternDate } from '@/lib/time';
 
 interface PCRShockSignal {
   ticker: string;
@@ -300,15 +301,9 @@ function pctColor(v: number | null): string {
 }
 
 function formatTime(iso: string): string {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-  } catch { return iso; }
+  return formatEasternTime(iso, true) || iso;
 }
 
 function formatDate(iso: string): string {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch { return iso; }
+  return formatEasternDate(iso) || iso;
 }

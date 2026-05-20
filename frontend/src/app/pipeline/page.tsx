@@ -23,6 +23,7 @@ import {
   Play,
   Loader2,
 } from 'lucide-react';
+import { formatEasternTime } from '@/lib/time';
 
 const API_BASE = 'http://localhost:8000/api/v1';
 
@@ -624,7 +625,7 @@ export default function PipelinePage() {
                 Total Features: <span className="text-white font-semibold">{features.feature_count}</span>
               </span>
               <span className="text-xs text-gray-500">
-                Last updated: {new Date().toLocaleTimeString()}
+                Last updated: {formatEasternTime(new Date(), true)} ET
               </span>
             </div>
           )}

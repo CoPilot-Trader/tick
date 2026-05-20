@@ -18,6 +18,7 @@ import {
   LineStyle,
 } from 'lightweight-charts';
 import { StockData, PredictionPoint, GraphFilters, PredictionHistoryEntry } from '@/types';
+import { formatEasternAxis } from '@/lib/time';
 
 // ── Technical indicator helpers ─────────────────────────────────────────
 
@@ -591,6 +592,10 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         fontSize: 11,
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       },
+      // All axis + crosshair times rendered in US Eastern (market timezone)
+      localization: {
+        timeFormatter: (t: number) => formatEasternAxis(t, true),
+      },
       grid: {
         vertLines: { color: gridColor },
         horzLines: { color: gridColor },
@@ -610,6 +615,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         secondsVisible: false,
         rightOffset: 5,
         barSpacing: 8,
+        tickMarkFormatter: (t: number) => formatEasternAxis(t, true),
       },
     } as any);
     chartRef.current = chart;
@@ -967,6 +973,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         width: predAccWidth,
         height: predAccHeight,
         layout: { background: { type: ColorType.Solid, color: bgColor }, textColor, fontSize: 10 },
+        localization: { timeFormatter: (t: number) => formatEasternAxis(t, true) },
         grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
         crosshair: {
           mode: CrosshairMode.Normal,
@@ -974,7 +981,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           horzLine: { color: '#758696', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#2a2e39' },
         },
         rightPriceScale: { borderColor, scaleMargins: { top: 0.05, bottom: 0.05 } },
-        timeScale: { borderColor, timeVisible: true, secondsVisible: false, rightOffset: 2, barSpacing: 4 },
+        timeScale: { borderColor, timeVisible: true, secondsVisible: false, rightOffset: 2, barSpacing: 4, tickMarkFormatter: (t: number) => formatEasternAxis(t, true) },
       });
       predAccChartRef.current = predAccChart;
 

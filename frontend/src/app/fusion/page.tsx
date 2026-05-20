@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { SP500_STOCKS } from '@/lib/mockData';
 import { apiClient, FusionSignalResponse, MultiTimeframeResponse } from '@/lib/api/client';
+import { formatEasternDateTime } from '@/lib/time';
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -302,7 +303,7 @@ export default function FusionPage() {
                           {fusionData.signal}
                         </div>
                         <div className="text-gray-400 text-xs sm:text-sm mt-1">
-                          {fusionData.symbol} - {new Date(fusionData.timestamp).toLocaleString()}
+                          {fusionData.symbol} - {formatEasternDateTime(fusionData.timestamp)}
                         </div>
                       </div>
                     </div>

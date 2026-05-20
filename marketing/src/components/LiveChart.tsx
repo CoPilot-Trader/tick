@@ -106,6 +106,13 @@ export function LiveChart({
           "JetBrains Mono, ui-monospace, SF Mono, Consolas, monospace",
         fontSize: 11,
       },
+      // Render axis times in US Eastern (market timezone), not UTC
+      localization: {
+        timeFormatter: (t: number) =>
+          new Date(t * 1000).toLocaleTimeString("en-US", {
+            timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false,
+          }),
+      },
       grid: {
         vertLines: { color: "rgba(244, 246, 250, 0.04)" },
         horzLines: { color: "rgba(244, 246, 250, 0.04)" },
@@ -118,6 +125,10 @@ export function LiveChart({
         borderColor: "rgba(244, 246, 250, 0.06)",
         timeVisible: true,
         secondsVisible: false,
+        tickMarkFormatter: (t: number) =>
+          new Date(t * 1000).toLocaleTimeString("en-US", {
+            timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false,
+          }),
       },
       crosshair: {
         mode: CrosshairMode.Normal,

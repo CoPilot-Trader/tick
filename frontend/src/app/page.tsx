@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { StockData, PredictionPoint, GraphFilters } from '@/types';
 import { apiClient } from '@/lib/api/client';
+import { formatEasternTime } from '@/lib/time';
 import MultiStockSelector from '@/components/MultiStockSelector';
 import StockOverview from '@/components/StockOverview';
 import CandlestickChart from '@/components/CandlestickChart';
@@ -54,6 +55,7 @@ export default function Home() {
   const [activeTimeframe, setActiveTimeframe] = useState<string>('1D');
   const [activeBarSize, setActiveBarSize] = useState<string | null>(null); // null = use range selector mapping
   const [signalsLogOpen, setSignalsLogOpen] = useState(false);
+  const [clock, setClock] = useState('');
   const chartRef = useRef<{
     takeScreenshot: () => void;
     resetView: () => void;
@@ -113,6 +115,14 @@ export default function Home() {
 
   const handleTimeframeChange = useCallback((tf: string) => {
     setActiveTimeframe(tf);
+  }, []);
+
+  // Live Eastern-time clock (market timezone)
+  useEffect(() => {
+    const tick = () => setClock(formatEasternTime(new Date(), true));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
   }, []);
 
   const handleToolbarAction = useCallback((actionId: string) => {
@@ -371,7 +381,7 @@ export default function Home() {
             Signals Log
           </button>
           <span className="text-[10px]" style={{ color: '#787b86' }}>
-            {new Date().toLocaleTimeString()} UTC
+            {clock} ET
           </span>
         </div>
       </div>
