@@ -39,7 +39,7 @@ export default function MiniChart({ data, active, onClick }: MiniChartProps) {
       rightPriceScale: { borderColor: '#2a2e39', scaleMargins: { top: 0.1, bottom: 0.1 } },
       timeScale: {
         borderColor: '#2a2e39', timeVisible: true, secondsVisible: false,
-        tickMarkFormatter: (t: number) => formatEasternAxis(t, true),
+        tickMarkFormatter: (t: number, tickMarkType: number) => formatEasternAxis(t, true, tickMarkType),
       },
       handleScroll: true,
       handleScale: true,

@@ -358,6 +358,7 @@ export default function Home() {
               filters={filters}
               onFilterChange={setFilters}
               activeTool={activeTool}
+              onSignalsLogOpen={() => setSignalsLogOpen(true)}
             />
           )}
         </div>
@@ -391,20 +392,26 @@ export default function Home() {
               <div className="animate-spin rounded-full h-2.5 w-2.5 border-b mr-1" style={{ borderColor: '#2962ff' }} title="Refreshing data..." />
             )}
             {[
-              { key: '1m', label: '1m' },
-              { key: '5m', label: '5m' },
-              { key: '15m', label: '15m' },
-              { key: '30m', label: '30m' },
-              { key: '1h', label: '1h' },
-              { key: '1d', label: 'D' },
-              { key: '1wk', label: 'W' },
+              { key: '1m', label: '1m', smartRange: '1D' },
+              { key: '5m', label: '5m', smartRange: '5D' },
+              { key: '15m', label: '15m', smartRange: '1M' },
+              { key: '30m', label: '30m', smartRange: '6M' }, // Tory's spec
+              { key: '1h', label: '1h', smartRange: '1Y' },
+              { key: '1d', label: 'D', smartRange: '1Y' },   // Tory's spec
+              { key: '1wk', label: 'W', smartRange: 'All' },
             ].map((b) => (
               <button
                 key={b.key}
-                onClick={() => setActiveBarSize(b.key)}
+                onClick={() => {
+                  // Smart default: picking a bar size auto-sets a sensible lookback
+                  // window for that granularity (e.g. Daily → 1Y, 30m → 6M). The user
+                  // can still override the range manually afterward.
+                  setActiveBarSize(b.key);
+                  setActiveTimeframe(b.smartRange);
+                }}
                 className="px-2 py-0.5 text-[10px] font-medium rounded transition-all hover:bg-[#2a2e39]"
                 style={{ color: activeBarSize === b.key ? '#26a69a' : '#787b86' }}
-                title={`${b.label} candles (combines with the selected range; capped at the data source's history limit)`}
+                title={`${b.label} candles · default lookback ${b.smartRange} (you can override the range manually)`}
               >
                 {b.label}
               </button>

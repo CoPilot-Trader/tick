@@ -4,6 +4,7 @@ import { useEffect, useRef, useMemo, useCallback, forwardRef, useImperativeHandl
 import {
   createChart,
   createSeriesMarkers,
+  createTextWatermark,
   CandlestickSeries,
   LineSeries,
   AreaSeries,
@@ -246,6 +247,7 @@ interface CandlestickChartProps {
   onFilterChange: (filters: GraphFilters) => void;
   fusionSignal?: { signal: string; confidence: number } | null;
   activeTool?: string;
+  onSignalsLogOpen?: () => void;
 }
 
 const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProps>(function CandlestickChart({
@@ -256,6 +258,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   onFilterChange,
   fusionSignal,
   activeTool = 'crosshair',
+  onSignalsLogOpen,
 }, ref) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -629,7 +632,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         secondsVisible: false,
         rightOffset: 5,
         barSpacing: 8,
-        tickMarkFormatter: (t: number) => formatEasternAxis(t, true),
+        tickMarkFormatter: (t: number, tickMarkType: number) => formatEasternAxis(t, true, tickMarkType),
       },
     } as any);
     chartRef.current = chart;
@@ -645,6 +648,22 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     });
     candleSeries.setData(chartData.candles);
     candleSeriesRef.current = candleSeries;
+
+    // Background ticker watermark — faint large ticker symbol behind the
+    // candles so the user knows which symbol they're viewing without looking
+    // at the small header badge. Per Tory's TradingView reference.
+    try {
+      const panes = chart.panes();
+      if (panes && panes.length > 0) {
+        createTextWatermark(panes[0], {
+          horzAlign: 'center',
+          vertAlign: 'center',
+          lines: [
+            { text: data.symbol, color: 'rgba(255, 255, 255, 0.045)', fontSize: 140, fontStyle: 'bold' },
+          ],
+        });
+      }
+    } catch { /* watermark is decorative — never block the chart */ }
 
     // Current price line
     if (chartData.currentPrice > 0) {
@@ -733,66 +752,99 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     }
 
     // Level Rejection signals (external — from Tory's pipeline)
+    // Density strategy (Tory: "chart feels too busy with lines"):
+    //   1) Only render signals whose timestamp falls inside the chart's
+    //      currently visible time range.
+    //   2) Deduplicate signals whose prices land within 0.1% of each other —
+    //      one line at the cluster average, with a count badge in the title.
+    //   3) Re-render dynamically on pan/zoom so the user always sees just
+    //      the signals relevant to the window they're looking at.
     if (filters.showLevelRejection && data.level_rejection_signals && data.level_rejection_signals.length > 0) {
-      // Determine visible price range from candle data to only show signals near current view
-      const signals = data.level_rejection_signals;
-      const markers: { time: any; position: string; color: string; shape: string; text: string }[] = [];
+      const allSignals = data.level_rejection_signals;
+      let renderedLines: any[] = [];
 
-      for (const sig of signals) {
-        try {
-          // Level price — solid cyan. Prefix "SIG" so it reads clearly as a
-          // trade signal level, not a generic indicator line.
-          candleSeries.createPriceLine({
-            price: sig.level_price, color: '#00bcd4', lineWidth: 1,
-            lineStyle: LineStyle.Solid, axisLabelVisible: true,
-            title: `SIG Level · ${sig.level_type}`,
-          });
-          // Entry — gold dotted
-          candleSeries.createPriceLine({
-            price: sig.entry_price, color: '#ffc107', lineWidth: 1,
-            lineStyle: LineStyle.Dotted, axisLabelVisible: false,
-            title: 'SIG Entry',
-          });
-          // Stop — red dashed
-          candleSeries.createPriceLine({
-            price: sig.stop_price, color: '#f44336', lineWidth: 1,
-            lineStyle: LineStyle.Dashed, axisLabelVisible: false,
-            title: 'SIG Stop',
-          });
-          // Target 1 — green dashed
-          candleSeries.createPriceLine({
-            price: sig.target1_price, color: '#4caf50', lineWidth: 1,
-            lineStyle: LineStyle.Dashed, axisLabelVisible: false,
-            title: 'SIG Target 1',
-          });
-          // Target 2 (if present) — light green dashed
-          if (sig.target2_price != null) {
-            candleSeries.createPriceLine({
-              price: sig.target2_price, color: '#8bc34a', lineWidth: 1,
-              lineStyle: LineStyle.Dashed, axisLabelVisible: false,
-              title: 'SIG Target 2',
-            });
+      // All markers always shown (lightweight overlays at signal time), but
+      // the heavy price lines are filtered to visible-range.
+      const allMarkers = allSignals.map(s => ({
+        time: Math.floor(new Date(s.signal_time).getTime() / 1000),
+        position: 'belowBar' as const,
+        color: s.target1_hit ? '#4caf50' : '#f44336',
+        shape: 'arrowUp' as const,
+        text: s.target1_hit ? 'W' : 'L',
+      })).sort((a, b) => a.time - b.time);
+      try { (candleSeries as any).setMarkers(allMarkers); } catch { /* noop */ }
+
+      const clearLines = () => {
+        for (const line of renderedLines) {
+          try { candleSeries.removePriceLine(line); } catch { /* noop */ }
+        }
+        renderedLines = [];
+      };
+
+      // Cluster nearby prices into one rendered line with a count.
+      const clusterPrices = (entries: { price: number; label: string }[]) => {
+        if (entries.length === 0) return [];
+        const sorted = [...entries].sort((a, b) => a.price - b.price);
+        const clusters: { price: number; count: number; label: string }[] = [];
+        for (const e of sorted) {
+          const last = clusters[clusters.length - 1];
+          if (last && Math.abs(e.price - last.price) / last.price < 0.001) {
+            last.price = (last.price * last.count + e.price) / (last.count + 1);
+            last.count += 1;
+          } else {
+            clusters.push({ price: e.price, count: 1, label: e.label });
           }
+        }
+        return clusters;
+      };
 
-          // Series marker at signal time
-          const ts = new Date(sig.signal_time);
-          const epoch = Math.floor(ts.getTime() / 1000);
-          markers.push({
-            time: epoch as any,
-            position: 'belowBar',
-            color: sig.target1_hit ? '#4caf50' : '#f44336',
-            shape: 'arrowUp',
-            text: sig.target1_hit ? 'W' : 'L',
-          });
-        } catch { /* noop — signal price may be outside chart range */ }
+      const renderForVisibleRange = (fromSec: number, toSec: number) => {
+        clearLines();
+        const inWindow = allSignals.filter(s => {
+          const t = new Date(s.signal_time).getTime() / 1000;
+          return t >= fromSec && t <= toSec;
+        });
+
+        const levels: { price: number; label: string }[] = [];
+        const entries: { price: number; label: string }[] = [];
+        const stops: { price: number; label: string }[] = [];
+        const t1s: { price: number; label: string }[] = [];
+        const t2s: { price: number; label: string }[] = [];
+        for (const s of inWindow) {
+          levels.push({ price: s.level_price, label: s.level_type });
+          entries.push({ price: s.entry_price, label: 'entry' });
+          stops.push({ price: s.stop_price, label: 'stop' });
+          t1s.push({ price: s.target1_price, label: 't1' });
+          if (s.target2_price != null) t2s.push({ price: s.target2_price, label: 't2' });
+        }
+
+        const addLine = (price: number, color: string, style: LineStyle, title: string, axisLabel: boolean) => {
+          try { renderedLines.push(candleSeries.createPriceLine({ price, color, lineWidth: 1, lineStyle: style, axisLabelVisible: axisLabel, title })); } catch { /* noop */ }
+        };
+
+        for (const c of clusterPrices(levels)) addLine(c.price, '#00bcd4', LineStyle.Solid, `SIG Level · ${c.label}${c.count > 1 ? ` ×${c.count}` : ''}`, true);
+        for (const c of clusterPrices(entries)) addLine(c.price, '#ffc107', LineStyle.Dotted, `SIG Entry${c.count > 1 ? ` ×${c.count}` : ''}`, false);
+        for (const c of clusterPrices(stops)) addLine(c.price, '#f44336', LineStyle.Dashed, `SIG Stop${c.count > 1 ? ` ×${c.count}` : ''}`, false);
+        for (const c of clusterPrices(t1s)) addLine(c.price, '#4caf50', LineStyle.Dashed, `SIG Target 1${c.count > 1 ? ` ×${c.count}` : ''}`, false);
+        for (const c of clusterPrices(t2s)) addLine(c.price, '#8bc34a', LineStyle.Dashed, `SIG Target 2${c.count > 1 ? ` ×${c.count}` : ''}`, false);
+      };
+
+      // Initial render covering the full data range (the visible-range
+      // subscription will narrow it on first paint).
+      const candleTimes = chartData.candles.map(c => c.time as number);
+      if (candleTimes.length > 0) {
+        renderForVisibleRange(candleTimes[0], candleTimes[candleTimes.length - 1]);
       }
 
-      if (markers.length > 0) {
-        try {
-          markers.sort((a, b) => (a.time as number) - (b.time as number));
-          (candleSeries as any).setMarkers(markers);
-        } catch { /* noop */ }
-      }
+      // Re-render on pan/zoom so the chart only ever shows lines for what's
+      // actually in view.
+      chart.timeScale().subscribeVisibleTimeRangeChange((range) => {
+        if (!range) return;
+        const from = typeof range.from === 'number' ? range.from : NaN;
+        const to = typeof range.to === 'number' ? range.to : NaN;
+        if (!isFinite(from) || !isFinite(to)) return;
+        renderForVisibleRange(from, to);
+      });
     }
 
     // Prediction forecast — prominent area band + bold line
@@ -856,13 +908,27 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       createSeriesMarkers(candleSeries, allMarkers);
     }
 
-    // Restore the user's preserved zoom range if we have one, otherwise fit content
+    // Restore the user's preserved zoom range if we have one. Otherwise show
+    // the most recent ~80 candles at a TradingView-like comfortable density
+    // (Tory: "candles too small by default" — fitContent crammed everything
+    // into the viewport).
     if (preservedRangeRef.current) {
       try {
         chart.timeScale().setVisibleRange(preservedRangeRef.current as any);
       } catch { chart.timeScale().fitContent(); }
     } else {
-      chart.timeScale().fitContent();
+      const total = chartData.candles.length;
+      const DEFAULT_BARS = 80;
+      if (total > DEFAULT_BARS) {
+        try {
+          chart.timeScale().setVisibleLogicalRange({
+            from: total - DEFAULT_BARS,
+            to: total + 5, // small right padding for forecast / live updates
+          });
+        } catch { chart.timeScale().fitContent(); }
+      } else {
+        chart.timeScale().fitContent();
+      }
     }
 
     // Persist the visible range whenever the user pans or zooms
@@ -996,7 +1062,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
           horzLine: { color: '#758696', width: 1, style: LineStyle.Dashed, labelBackgroundColor: '#2a2e39' },
         },
         rightPriceScale: { borderColor, scaleMargins: { top: 0.05, bottom: 0.05 } },
-        timeScale: { borderColor, timeVisible: true, secondsVisible: false, rightOffset: 2, barSpacing: 4, tickMarkFormatter: (t: number) => formatEasternAxis(t, true) },
+        timeScale: { borderColor, timeVisible: true, secondsVisible: false, rightOffset: 2, barSpacing: 4, tickMarkFormatter: (t: number, tickMarkType: number) => formatEasternAxis(t, true, tickMarkType) },
       });
       predAccChartRef.current = predAccChart;
 
@@ -1338,19 +1404,37 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
             <span ref={hudVolRef} style={{ color: '#d1d4dc' }}>{formatVolume(initVol)}</span>
           </span>
 
-          {/* Signal count badge — visible whenever there are signals for this ticker */}
+          {/* Signal count widget — visible whenever there are signals for this
+              ticker. Split into TWO clickable actions so the Signals Log entry
+              point is discoverable (Tory: "where do I click to pull up the
+              signals?"). Left half = open the Signals Log panel, right half =
+              fit the chart to the signal range. */}
           {data.level_rejection_signals && data.level_rejection_signals.length > 0 && (
-            <button
-              onClick={() => fitChartToSignals()}
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] hover:bg-[#00bcd420] transition-colors"
-              style={{ background: '#00bcd415', color: '#00bcd4', border: '1px solid #00bcd440' }}
-              title="Click to zoom the chart to the signals' time range"
+            <span
+              className="flex items-center text-[10px] overflow-hidden rounded"
+              style={{ border: '1px solid #00bcd455', background: '#00bcd418' }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: 3, background: '#00bcd4', display: 'inline-block' }} />
-              <span className="font-semibold">{data.level_rejection_signals.length}</span>
-              <span style={{ color: '#00bcd4cc' }}>signal{data.level_rejection_signals.length === 1 ? '' : 's'}</span>
-              <span className="ml-1" style={{ color: '#00bcd488', fontSize: 9 }}>↔ fit</span>
-            </button>
+              <button
+                onClick={() => onSignalsLogOpen?.()}
+                className="flex items-center gap-1 px-2 py-0.5 hover:bg-[#00bcd428] transition-colors"
+                style={{ color: '#00bcd4' }}
+                title="Open the Signals Log — full audit trail of signals received from the VM pipeline"
+              >
+                <span style={{ width: 6, height: 6, borderRadius: 3, background: '#00bcd4', display: 'inline-block' }} />
+                <span className="font-semibold">{data.level_rejection_signals.length}</span>
+                <span style={{ color: '#00bcd4cc' }}>signal{data.level_rejection_signals.length === 1 ? '' : 's'}</span>
+                <span style={{ color: '#00bcd488', fontSize: 9 }} className="ml-1">· open log</span>
+              </button>
+              <span style={{ width: 1, alignSelf: 'stretch', background: '#00bcd444' }} />
+              <button
+                onClick={() => fitChartToSignals()}
+                className="px-1.5 py-0.5 hover:bg-[#00bcd428] transition-colors"
+                style={{ color: '#00bcd4', fontSize: 9 }}
+                title="Zoom the chart to the signals' time range"
+              >
+                ↔ fit
+              </button>
+            </span>
           )}
 
           {data.prediction_accuracy && data.prediction_accuracy.resolved > 0 && (

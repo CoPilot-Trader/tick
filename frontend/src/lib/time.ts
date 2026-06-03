@@ -45,13 +45,37 @@ export function formatEasternDateTime(input: Date | string | number): string {
 /**
  * Format a lightweight-charts time value (UNIX seconds or business-day object)
  * as an Eastern-time axis label. Used for tickMarkFormatter / crosshair.
+ *
+ * The `tickMarkType` is supplied by lightweight-charts to indicate what kind
+ * of axis label to render at this tick (year/month/day/time). Producing the
+ * right granularity per tick is what gives TradingView its blend of date +
+ * time on the same axis — months/days at coarse zooms, times at fine zooms.
  */
-export function formatEasternAxis(timeValue: number, withTime: boolean): string {
+export function formatEasternAxis(timeValue: number, withTime: boolean, tickMarkType?: number): string {
   // lightweight-charts passes UNIX seconds for intraday, or {year,month,day} for daily+
   const d = new Date(timeValue * 1000);
   if (isNaN(d.getTime())) return '';
-  if (withTime) {
+
+  // tickMarkType values (from lightweight-charts): 0=Year, 1=Month, 2=DayOfMonth, 3=Time, 4=TimeWithSeconds
+  if (tickMarkType === 0) {
+    return d.toLocaleDateString('en-US', { timeZone: ET, year: 'numeric' });
+  }
+  if (tickMarkType === 1) {
+    return d.toLocaleDateString('en-US', { timeZone: ET, month: 'short', year: 'numeric' });
+  }
+  if (tickMarkType === 2) {
+    return d.toLocaleDateString('en-US', { timeZone: ET, month: 'short', day: 'numeric' });
+  }
+  if (tickMarkType === 3 || tickMarkType === 4) {
     return d.toLocaleTimeString('en-US', { timeZone: ET, hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+
+  // No tickMarkType (e.g. crosshair label): show BOTH date and time so the
+  // trader always knows the day they're looking at.
+  if (withTime) {
+    const date = d.toLocaleDateString('en-US', { timeZone: ET, month: 'short', day: 'numeric' });
+    const time = d.toLocaleTimeString('en-US', { timeZone: ET, hour: '2-digit', minute: '2-digit', hour12: false });
+    return `${date}  ${time}`;
   }
   return d.toLocaleDateString('en-US', { timeZone: ET, month: 'short', day: 'numeric' });
 }
