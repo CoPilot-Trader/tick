@@ -428,27 +428,28 @@ class SupportResistanceAgent(BaseAgent):
                     level['timeframe'] = timeframe
                     level['projection_periods'] = projection_periods
             
-            # Step 6: Filter by strength and limit count
+            # Step 6: Filter by strength and side relative to current price, then limit count.
+            # Resistance must sit ABOVE current price, support BELOW — otherwise the level is
+            # historical noise the stock has already broken through and not actionable.
             resistance_levels = [
                 level for level in resistance_levels
-                if level['strength'] >= min_strength
+                if level['strength'] >= min_strength and level['price'] > current_price
             ]
             support_levels = [
                 level for level in support_levels
-                if level['strength'] >= min_strength
+                if level['strength'] >= min_strength and level['price'] < current_price
             ]
-            
-            # Sort by strength (highest first) and limit
+
+            # Sort by proximity to current price (closest first), tie-break by strength.
+            # Closer levels are more actionable than stronger-but-distant ones.
             resistance_levels = sorted(
                 resistance_levels,
-                key=lambda x: x['strength'],
-                reverse=True
+                key=lambda x: (abs(x['price'] - current_price), -x['strength']),
             )[:max_levels]
-            
+
             support_levels = sorted(
                 support_levels,
-                key=lambda x: x['strength'],
-                reverse=True
+                key=lambda x: (abs(x['price'] - current_price), -x['strength']),
             )[:max_levels]
             
             # Format response
