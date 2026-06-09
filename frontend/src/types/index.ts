@@ -37,6 +37,13 @@ export interface PriceLevel {
   validated: boolean;
 }
 
+export interface PsychologicalLevel {
+  price: number;
+  side: "support" | "resistance";
+  type: "psychological";
+  distance_pct: number;
+}
+
 export interface SentimentData {
   sentiment_score: number; // -1.0 to +1.0
   sentiment_label: "positive" | "neutral" | "negative";
@@ -130,6 +137,7 @@ export interface StockData {
   predictions: PredictionPoint[];
   support_levels: PriceLevel[];
   resistance_levels: PriceLevel[];
+  psychological_levels?: PsychologicalLevel[];
   news_events?: NewsEvent[];
   prediction_history?: PredictionHistoryEntry[];
   prediction_accuracy?: PredictionAccuracy | null;
@@ -152,6 +160,9 @@ export interface GraphFilters {
   showMACD: boolean;
   showBollingerBands: boolean;
   showMovingAverages: boolean;
+  showEMA9: boolean;
+  showEMA21: boolean;
+  showEMA50: boolean;
   showNewsEvents: boolean;
   showTimingSignals: boolean;
   showPredictionAccuracy: boolean;

@@ -343,6 +343,9 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
     const sma50vals = sma(closes, Math.min(50, Math.floor(closes.length / 2)));
     const sma200vals = sma(closes, Math.min(200, closes.length));
+    const ema9vals = ema(closes, Math.min(9, Math.max(2, Math.floor(closes.length / 2))));
+    const ema21vals = ema(closes, Math.min(21, Math.max(2, Math.floor(closes.length / 2))));
+    const ema50vals = ema(closes, Math.min(50, Math.max(2, Math.floor(closes.length / 2))));
     const rsiVals = computeRSI(closes, Math.min(14, closes.length - 1));
     const macdVals = computeMACD(closes);
     const bb = computeBollingerBands(closes, Math.min(20, Math.floor(closes.length / 2)));
@@ -372,6 +375,9 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
     const sma50Data: LineData[] = [];
     const sma200Data: LineData[] = [];
+    const ema9Data: LineData[] = [];
+    const ema21Data: LineData[] = [];
+    const ema50Data: LineData[] = [];
     const bbUpperData: LineData[] = [];
     const bbLowerData: LineData[] = [];
     const rsiData: LineData[] = [];
@@ -383,6 +389,9 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       const t = toTime(p.timestamp);
       if (sma50vals[i] !== null) sma50Data.push({ time: t, value: sma50vals[i]! });
       if (sma200vals[i] !== null) sma200Data.push({ time: t, value: sma200vals[i]! });
+      if (ema9vals[i] !== null) ema9Data.push({ time: t, value: ema9vals[i]! });
+      if (ema21vals[i] !== null) ema21Data.push({ time: t, value: ema21vals[i]! });
+      if (ema50vals[i] !== null) ema50Data.push({ time: t, value: ema50vals[i]! });
       if (bb.upper[i] !== null) bbUpperData.push({ time: t, value: bb.upper[i]! });
       if (bb.lower[i] !== null) bbLowerData.push({ time: t, value: bb.lower[i]! });
       if (rsiVals[i] !== null) rsiData.push({ time: t, value: rsiVals[i]! });
@@ -513,7 +522,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     }
 
     return {
-      candles, volume, sma50Data, sma200Data, bbUpperData, bbLowerData,
+      candles, volume, sma50Data, sma200Data, ema9Data, ema21Data, ema50Data, bbUpperData, bbLowerData,
       rsiData, macdData, macdSignalData, macdHistData,
       predictionData, upperBoundData, lowerBoundData, markers, newsMarkers,
       backtrackPredicted, backtrackActual,
@@ -716,6 +725,19 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         s.setData(chartData.sma200Data);
       }
     }
+    // EMA lines — each toggled independently so user can show one, two, or all three.
+    if (filters.showEMA9 && chartData.ema9Data.length > 0) {
+      const s = chart.addSeries(LineSeries, { color: '#42a5f5', lineWidth: 1, title: 'EMA 9' });
+      s.setData(chartData.ema9Data);
+    }
+    if (filters.showEMA21 && chartData.ema21Data.length > 0) {
+      const s = chart.addSeries(LineSeries, { color: '#ffca28', lineWidth: 1, title: 'EMA 21' });
+      s.setData(chartData.ema21Data);
+    }
+    if (filters.showEMA50 && chartData.ema50Data.length > 0) {
+      const s = chart.addSeries(LineSeries, { color: '#ab47bc', lineWidth: 1, title: 'EMA 50' });
+      s.setData(chartData.ema50Data);
+    }
 
     // Bollinger Bands
     if (filters.showBollingerBands) {
@@ -746,6 +768,20 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
             price: level.price, color: '#ef5350', lineWidth: 1,
             lineStyle: LineStyle.Dashed, axisLabelVisible: true,
             title: `Resistance ${level.price.toFixed(2)}`,
+          });
+        } catch { /* noop */ }
+      });
+      // Psychological round-number levels — dotted orange, lower-contrast.
+      // These are derived ($5/$10 increments near current price), not detected.
+      (data.psychological_levels || []).forEach((level) => {
+        try {
+          candleSeries.createPriceLine({
+            price: level.price,
+            color: 'rgba(255, 167, 38, 0.55)',
+            lineWidth: 1,
+            lineStyle: LineStyle.Dotted,
+            axisLabelVisible: true,
+            title: `$${level.price.toFixed(2)}`,
           });
         } catch { /* noop */ }
       });
@@ -1126,7 +1162,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       try { if (predAccChartRef.current) { predAccChartRef.current.remove(); } } catch { /* noop */ }
       predAccChartRef.current = null;
     };
-  }, [chartData, filters, data.support_levels, data.resistance_levels, activeTool]);
+  }, [chartData, filters, data.support_levels, data.resistance_levels, data.psychological_levels, activeTool]);
 
   // ─── WebSocket live streaming ──────────────────────────────────────
   useEffect(() => {
@@ -1331,6 +1367,9 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
   const indicatorButtons: { key: keyof GraphFilters; label: string; color: string; tip: string }[] = [
     { key: 'showMovingAverages', label: 'SMA 50/200', color: '#f7a21b', tip: 'Simple Moving Averages — 50-period (gold) and 200-period (pink)' },
+    { key: 'showEMA9', label: 'EMA 9', color: '#42a5f5', tip: '9-period Exponential Moving Average — reacts faster than SMA' },
+    { key: 'showEMA21', label: 'EMA 21', color: '#ffca28', tip: '21-period Exponential Moving Average — common swing-trade reference' },
+    { key: 'showEMA50', label: 'EMA 50', color: '#ab47bc', tip: '50-period Exponential Moving Average — medium-term trend' },
     { key: 'showVWAP', label: 'VWAP', color: '#ab47bc', tip: 'Volume-Weighted Average Price — resets each session for intraday timeframes' },
     { key: 'showBollingerBands', label: 'BB', color: '#7b1fa2', tip: 'Bollinger Bands — 20-period SMA ± 2 standard deviations' },
     { key: 'showSupportResistance', label: 'S/R', color: '#26a69a', tip: 'Support & Resistance levels — detected by DBSCAN clustering + volume profile on live data' },

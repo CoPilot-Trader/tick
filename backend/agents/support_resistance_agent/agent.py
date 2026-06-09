@@ -454,10 +454,16 @@ class SupportResistanceAgent(BaseAgent):
             
             # Format response
             processing_time = (datetime.utcnow() - start_time).total_seconds()
-            
+
             # Format levels
             formatted_support = self._format_levels(support_levels)
             formatted_resistance = self._format_levels(resistance_levels)
+
+            # Psychological round-number levels within ±5% of current price.
+            # Traders cluster orders at round numbers ($5/$10 increments) — Tory called
+            # these out specifically. Step size scales with price so $5 ticker gets $0.50
+            # increments and $500 ticker gets $50 increments.
+            psychological_levels = self._compute_psychological_levels(current_price)
             
             # Create key price levels summary (Price + Strength + Direction format)
             key_levels_summary = self._create_key_levels_summary(
@@ -473,6 +479,7 @@ class SupportResistanceAgent(BaseAgent):
                 "timeframe": timeframe,
                 "support_levels": formatted_support,
                 "resistance_levels": formatted_resistance,
+                "psychological_levels": psychological_levels,
                 "key_price_levels": key_levels_summary,  # New: Formatted summary
                 "total_levels": len(support_levels) + len(resistance_levels),
                 "nearest_support": support_levels[0]['price'] if support_levels else None,
@@ -591,6 +598,48 @@ class SupportResistanceAgent(BaseAgent):
         
         return results
     
+    def _compute_psychological_levels(
+        self, current_price: float, window_pct: float = 0.05
+    ) -> List[Dict[str, Any]]:
+        """Generate round-number "psychological" price levels within ±window_pct of current.
+
+        These are the round prices traders cluster orders at — $65, $70, $75 style.
+        Step scales with price band so a $5 ticker uses $0.50 steps and a $500
+        ticker uses $25 steps. Tory's spec called out $75/$80/$100 as the kind
+        of levels traders place entries and exits around.
+        """
+        if current_price <= 0:
+            return []
+
+        import math
+        if current_price < 10:
+            step = 0.5
+        elif current_price < 50:
+            step = 1.0
+        elif current_price < 200:
+            step = 5.0
+        elif current_price < 500:
+            step = 10.0
+        else:
+            step = 25.0
+
+        low = current_price * (1 - window_pct)
+        high = current_price * (1 + window_pct)
+
+        levels = []
+        start = math.floor(low / step) * step
+        price = start
+        while price <= high:
+            if price > 0 and abs(price - current_price) / current_price > 0.0005:
+                levels.append({
+                    "price": round(price, 4),
+                    "side": "resistance" if price > current_price else "support",
+                    "type": "psychological",
+                    "distance_pct": round(abs(price - current_price) / current_price * 100, 2),
+                })
+            price += step
+        return levels
+
     def _format_levels(self, levels: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Format levels for response."""
         formatted = []

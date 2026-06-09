@@ -584,7 +584,7 @@ export class ApiClient {
       const [ohlcvResult, forecastResult, levels, newsResult, predHistory, levelRejResult, pcrBacktrack] = await Promise.all([
         this.getOHLCV(symbol, tf, rangeDays).catch(() => null),
         this.getPriceForecast(symbol, ['1h']).catch(() => null),
-        this.getLevels(symbol, { max_levels: 3 }).catch(() => null),
+        this.getLevels(symbol, { max_levels: 5, timeframe: tf === '1wk' ? '1w' : tf }).catch(() => null),
         this.getNewsArticles(symbol, 7).catch(() => null),
         this.getPredictionHistory(symbol, 500).catch(() => null),
         this.getLevelRejectionSignals(symbol).catch(() => null),
@@ -689,6 +689,7 @@ export class ApiClient {
         predictions,
         support_levels: levels?.support_levels || [],
         resistance_levels: levels?.resistance_levels || [],
+        psychological_levels: (levels as { psychological_levels?: import('@/types').PsychologicalLevel[] })?.psychological_levels || [],
         news_events,
         prediction_history: mergedHistory,
         prediction_accuracy: predHistory?.accuracy || null,
