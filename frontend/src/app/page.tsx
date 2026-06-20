@@ -33,7 +33,7 @@ const defaultFilters: GraphFilters = {
   showNewsEvents: true,
   showTimingSignals: false,
   showPredictionAccuracy: true,
-  showLevelRejection: true,
+  showLevelRejection: false,
   showVWAP: false,
 };
 
@@ -362,6 +362,7 @@ export default function Home() {
               onFilterChange={setFilters}
               activeTool={activeTool}
               onSignalsLogOpen={() => setSignalsLogOpen(true)}
+              barSize={({ '1d': 'D', '1wk': 'W' } as Record<string, string>)[activeBarSize] || activeBarSize}
             />
           )}
         </div>

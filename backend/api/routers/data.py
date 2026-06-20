@@ -102,13 +102,22 @@ async def get_ohlcv(
             })
 
         # If mock data returned more records than expected for the timeframe,
-        # trim to the most recent ones appropriate for the request
-        if timeframe == "5m":
-            max_bars = days * 78  # ~78 five-min bars per trading day
-        elif timeframe == "1h":
-            max_bars = days * 7  # ~7 hourly bars per trading day
-        else:
-            max_bars = days
+        # trim to the most recent ones appropriate for the request.
+        # Bars-per-trading-day reference (RTH only):
+        #   1m=390, 5m=78, 15m=26, 30m=13, 1h=7, 4h=2, 1d=1
+        # Weekly/monthly are <1/day. A 1.5x buffer keeps any extended-hours bars.
+        bars_per_day = {
+            "1m": 390,
+            "5m": 78,
+            "15m": 26,
+            "30m": 13,
+            "1h": 7, "60m": 7,
+            "4h": 2,
+            "1d": 1, "daily": 1,
+            "1wk": 1 / 5,
+            "1mo": 1 / 22,
+        }.get(timeframe, 1)
+        max_bars = max(int(days * bars_per_day * 1.5), 100)
         if len(records) > max_bars:
             records = records[-max_bars:]
 

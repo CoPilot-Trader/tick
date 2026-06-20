@@ -248,6 +248,7 @@ interface CandlestickChartProps {
   fusionSignal?: { signal: string; confidence: number } | null;
   activeTool?: string;
   onSignalsLogOpen?: () => void;
+  barSize?: string;
 }
 
 const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProps>(function CandlestickChart({
@@ -259,6 +260,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
   fusionSignal,
   activeTool = 'crosshair',
   onSignalsLogOpen,
+  barSize,
 }, ref) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -1403,12 +1405,16 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       <div className="flex items-center justify-between px-2 py-1 flex-shrink-0" style={{ borderBottom: '1px solid #2a2e39', height: 36 }}>
         {/* Left: Symbol + Price */}
         <div className="flex items-center gap-3">
-          {/* Prominent ticker badge so it's always clear which symbol is in view */}
+          {/* Prominent ticker badge so it's always clear which symbol is in view.
+              TradingView-style "AAPL · 5m" so the current bar size is glanceable. */}
           <span
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-md"
             style={{ background: '#2962ff18', border: '1px solid #2962ff55' }}
           >
             <span className="text-base font-bold tracking-wide" style={{ color: '#2962ff' }}>{data.symbol}</span>
+            {barSize && (
+              <span className="text-[11px] font-semibold" style={{ color: '#2962ffaa' }}>· {barSize}</span>
+            )}
             {data.name && data.name !== data.symbol && (
               <span className="text-[10px] hidden lg:inline" style={{ color: '#787b86' }}>{data.name}</span>
             )}
