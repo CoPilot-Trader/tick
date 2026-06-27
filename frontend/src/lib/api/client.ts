@@ -566,11 +566,12 @@ export class ApiClient {
         'YTD': Math.ceil((Date.now() - new Date(new Date().getFullYear(), 0, 1).getTime()) / 86400000),
         '1Y': 365, '5Y': 1825, 'All': 3650,
       };
-      // yfinance hard limits per bar size — clamp the requested window to what
-      // the data source can actually return for that granularity.
+      // yfinance hard limits per bar size. Real ceilings are 7d (1m) and 59d
+      // (5m/15m/30m); we clamp inside those with buffer so we never trigger
+      // the backend's stale-mock-data fallback on a borderline request.
       const barMaxDays: Record<string, number> = {
-        '1m': 7, '5m': 60, '15m': 60, '30m': 60,
-        '1h': 730, '60m': 730, '4h': 730,
+        '1m': 5, '5m': 50, '15m': 50, '30m': 50,
+        '1h': 700, '60m': 700, '4h': 700,
         '1d': 3650, 'daily': 3650, '1wk': 3650, 'weekly': 3650,
       };
 

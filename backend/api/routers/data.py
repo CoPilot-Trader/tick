@@ -40,17 +40,19 @@ async def get_ohlcv(
     Returns array of {timestamp, open, high, low, close, volume}.
     """
     try:
-        # Per-timeframe day clamps reflecting yfinance's history limits.
-        # Anything beyond these returns empty data, so we clamp early
-        # rather than letting the request silently fail.
+        # Per-timeframe day clamps. yfinance's documented hard limits for
+        # intraday are 7d (1m), 59d (5m/15m/30m). Going over silently returns
+        # empty, which trips our mock-data fallback and serves stale 2023
+        # prices as if they were current. Clamp inside the real window with
+        # safety buffer so we never trip that path on a borderline request.
         TF_MAX_DAYS = {
-            "1m": 7,
-            "5m": 60, "15m": 60, "30m": 60,
-            "1h": 730, "60m": 730, "4h": 730,
+            "1m": 5,
+            "5m": 50, "15m": 50, "30m": 50,
+            "1h": 700, "60m": 700, "4h": 700,
             "1d": 3650, "daily": 3650,
             "1wk": 3650, "1mo": 3650,
         }
-        max_days = TF_MAX_DAYS.get(timeframe, 60)
+        max_days = TF_MAX_DAYS.get(timeframe, 50)
         days = min(days, max_days)
 
         # Check cache first (60s TTL for intraday, 300s for daily)

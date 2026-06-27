@@ -399,7 +399,10 @@ export default function Home() {
               { key: '1m', label: '1m', smartRange: '1D' },
               { key: '5m', label: '5m', smartRange: '5D' },
               { key: '15m', label: '15m', smartRange: '1M' },
-              { key: '30m', label: '30m', smartRange: '6M' }, // Tory's spec
+              // 30m smart-range was '6M' in Tory's spec, but yfinance only
+              // surfaces ~50 days of 30m bars — so 6M would silently clamp.
+              // 1M aligns the default with what the source can actually give.
+              { key: '30m', label: '30m', smartRange: '1M' },
               { key: '1h', label: '1h', smartRange: '1Y' },
               { key: '1d', label: 'D', smartRange: '1Y' },   // Tory's spec
               { key: '1wk', label: 'W', smartRange: 'All' },

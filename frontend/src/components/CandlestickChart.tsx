@@ -666,13 +666,19 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
     try {
       const panes = chart.panes();
       if (panes && panes.length > 0) {
-        createTextWatermark(panes[0], {
-          horzAlign: 'center',
-          vertAlign: 'center',
-          lines: [
-            { text: data.symbol, color: 'rgba(255, 255, 255, 0.045)', fontSize: 140, fontStyle: 'bold' },
-          ],
-        });
+        // Tory's TradingView reference: ticker + interval on the top line,
+        // description (company / fund name) below. Comma separator, not bullet.
+        // Opacity bumped from 4.5% → 9% so the watermark actually reads at
+        // a glance without competing with the candles.
+        const tickerLine = barSize ? `${data.symbol}, ${barSize}` : data.symbol;
+        const descLine = data.name && data.name !== data.symbol ? data.name : '';
+        const lines: { text: string; color: string; fontSize: number; fontStyle?: string }[] = [
+          { text: tickerLine, color: 'rgba(255, 255, 255, 0.09)', fontSize: 120, fontStyle: 'bold' },
+        ];
+        if (descLine) {
+          lines.push({ text: descLine, color: 'rgba(255, 255, 255, 0.06)', fontSize: 28 });
+        }
+        createTextWatermark(panes[0], { horzAlign: 'center', vertAlign: 'center', lines });
       }
     } catch { /* watermark is decorative — never block the chart */ }
 
@@ -1411,10 +1417,9 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-md"
             style={{ background: '#2962ff18', border: '1px solid #2962ff55' }}
           >
-            <span className="text-base font-bold tracking-wide" style={{ color: '#2962ff' }}>{data.symbol}</span>
-            {barSize && (
-              <span className="text-[11px] font-semibold" style={{ color: '#2962ffaa' }}>· {barSize}</span>
-            )}
+            <span className="text-base font-bold tracking-wide" style={{ color: '#2962ff' }}>
+              {data.symbol}{barSize ? `, ${barSize}` : ''}
+            </span>
             {data.name && data.name !== data.symbol && (
               <span className="text-[10px] hidden lg:inline" style={{ color: '#787b86' }}>{data.name}</span>
             )}
@@ -1516,7 +1521,7 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
               key={ind.key}
               onClick={() => toggleFilter(ind.key)}
               title={ind.tip}
-              className="px-2 py-0.5 text-[10px] font-medium rounded transition-all"
+              className="px-2 py-1 text-[12px] font-medium rounded transition-all"
               style={{
                 background: filters[ind.key] ? `${ind.color}20` : 'transparent',
                 color: filters[ind.key] ? ind.color : '#787b86',
