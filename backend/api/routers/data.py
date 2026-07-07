@@ -129,7 +129,12 @@ async def get_ohlcv(
             "count": len(records),
             "data": records,
         }
-        ttl = 60 if timeframe == "5m" else 300
+        # Cache TTL — intraday bars move minute-to-minute during market
+        # hours, so a 5-minute cache made the chart look 5 minutes stale
+        # right after a bar closed (Tory saw last bar Jul 2 when new bar
+        # was already live). Daily+ bars don't need to refresh that fast.
+        intraday = timeframe in {"1m", "5m", "15m", "30m", "1h", "60m", "4h"}
+        ttl = 60 if intraday else 300
         cache_set(ck, result, ttl)
         return result
 

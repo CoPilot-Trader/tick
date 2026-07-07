@@ -1431,6 +1431,15 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#26a69a' }} />
             <span className="text-[9px]" style={{ color: '#787b86' }}>LIVE</span>
           </span>
+          {/* Timezone chip — all chart times are ET (US market timezone).
+              Tory asked "is it UTC or ET?" — this removes the guess. */}
+          <span
+            className="text-[9px] font-semibold px-1.5 py-0.5 rounded"
+            style={{ color: '#787b86', background: '#1e222d', border: '1px solid #2a2e39' }}
+            title="All times shown are US Eastern (market time)"
+          >
+            ET
+          </span>
           <span className="text-xs" style={{ color: isPositive ? '#26a69a' : '#ef5350' }}>
             {isPositive ? '+' : ''}{priceChange.toFixed(2)} ({isPositive ? '+' : ''}{priceChangePct.toFixed(2)}%)
           </span>
