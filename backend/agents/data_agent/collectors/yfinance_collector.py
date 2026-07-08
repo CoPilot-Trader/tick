@@ -142,9 +142,13 @@ class YFinanceCollector(BaseCollector):
                     prepost=False,
                 )
             else:
+                # yfinance treats `end` as EXCLUSIVE — an end=today request drops
+                # today's intraday bars entirely, which is exactly what Tory saw
+                # (last visible bar Jul 7 while market was open Jul 8). Push end
+                # forward one day so today is included in the returned window.
                 df = stock.history(
                     start=start_date.strftime("%Y-%m-%d"),
-                    end=end_date.strftime("%Y-%m-%d"),
+                    end=(end_date + timedelta(days=1)).strftime("%Y-%m-%d"),
                     interval=yf_interval,
                     auto_adjust=True,
                     prepost=False,
