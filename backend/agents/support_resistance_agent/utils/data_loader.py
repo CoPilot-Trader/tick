@@ -449,9 +449,16 @@ class DataLoader:
                 'Volume': 'volume'
             })
             
-            # Reset index to get Date as a column
+            # Reset index to get the timestamp as a column. yfinance names
+            # the index differently depending on the interval and how you
+            # requested the data — 'Date' for daily via start/end, 'Datetime'
+            # for intraday, index name may be empty ('index') when using
+            # period='Nd'. Normalise all of these to 'timestamp'.
             df = df.reset_index()
-            df = df.rename(columns={'Date': 'timestamp'})
+            for candidate in ('Date', 'Datetime', 'index', 'datetime', 'date'):
+                if candidate in df.columns:
+                    df = df.rename(columns={candidate: 'timestamp'})
+                    break
             
             # Ensure timestamp is timezone-aware (yfinance returns timezone-aware)
             if df['timestamp'].dt.tz is None:
