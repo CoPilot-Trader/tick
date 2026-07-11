@@ -343,11 +343,17 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
       color: p.close >= p.open ? 'rgba(38, 166, 154, 0.35)' : 'rgba(239, 83, 80, 0.35)',
     }));
 
-    const sma50vals = sma(closes, Math.min(50, Math.floor(closes.length / 2)));
-    const sma200vals = sma(closes, Math.min(200, closes.length));
-    const ema9vals = ema(closes, Math.min(9, Math.max(2, Math.floor(closes.length / 2))));
-    const ema21vals = ema(closes, Math.min(21, Math.max(2, Math.floor(closes.length / 2))));
-    const ema50vals = ema(closes, Math.min(50, Math.max(2, Math.floor(closes.length / 2))));
+    // Fixed periods — don't adaptively shrink to fit the data window. Prior
+    // code did `Math.min(50, closes.length/2)` which computed a shorter SMA
+    // and still labelled it "MA 50" (misleading). Now: if there aren't
+    // enough bars for the full period, the line is null until there are.
+    // Warmup fetch in client.ts pre-loads ~200 extra bars so this rarely
+    // shows a gap in practice.
+    const sma50vals = sma(closes, 50);
+    const sma200vals = sma(closes, 200);
+    const ema9vals = ema(closes, 9);
+    const ema21vals = ema(closes, 21);
+    const ema50vals = ema(closes, 50);
     const rsiVals = computeRSI(closes, Math.min(14, closes.length - 1));
     const macdVals = computeMACD(closes);
     const bb = computeBollingerBands(closes, Math.min(20, Math.floor(closes.length / 2)));
@@ -809,13 +815,20 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
 
       // All markers always shown (lightweight overlays at signal time), but
       // the heavy price lines are filtered to visible-range.
-      const allMarkers = allSignals.map(s => ({
-        time: Math.floor(new Date(s.signal_time).getTime() / 1000),
-        position: 'belowBar' as const,
-        color: s.target1_hit ? '#4caf50' : '#f44336',
-        shape: 'arrowUp' as const,
-        text: s.target1_hit ? 'W' : 'L',
-      })).sort((a, b) => a.time - b.time);
+      // Tri-state outcome: 1=won (green), 0=lost (red), null=pending (gray).
+      // Never treat pending as loss.
+      const allMarkers = allSignals.map(s => {
+        const won = s.target1_hit === 1;
+        const lost = s.target1_hit === 0 || s.stop_hit === 1;
+        const pending = !won && !lost;
+        return {
+          time: Math.floor(new Date(s.signal_time).getTime() / 1000),
+          position: 'belowBar' as const,
+          color: won ? '#4caf50' : pending ? '#9e9e9e' : '#f44336',
+          shape: 'arrowUp' as const,
+          text: won ? 'W' : pending ? '·' : 'L',
+        };
+      }).sort((a, b) => a.time - b.time);
       try { (candleSeries as any).setMarkers(allMarkers); } catch { /* noop */ }
 
       const clearLines = () => {
@@ -855,7 +868,8 @@ const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProp
         const t1s: { price: number; label: string }[] = [];
         const t2s: { price: number; label: string }[] = [];
         for (const s of inWindow) {
-          levels.push({ price: s.level_price, label: s.level_type });
+          // level_price is legacy — new schema omits it. Fall back to entry.
+          if (s.level_price != null) levels.push({ price: s.level_price, label: s.level_type });
           entries.push({ price: s.entry_price, label: 'entry' });
           stops.push({ price: s.stop_price, label: 'stop' });
           t1s.push({ price: s.target1_price, label: 't1' });

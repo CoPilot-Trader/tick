@@ -419,16 +419,20 @@ export class ApiClient {
       ticker: string;
       signal_time: string;
       level_type: string;
-      level_price: number;
+      level_price?: number;
       entry_price: number;
       target1_price: number;
       target2_price: number | null;
       stop_price: number;
       side: string;
-      vix_level: number;
-      macro_regime: string;
-      target1_hit: number;
-      stop_hit: number;
+      vix_level?: number;
+      macro_regime?: string;
+      // Tri-state: 1=hit, 0=not-hit, null=pending
+      target1_hit: 1 | 0 | null;
+      target2_hit?: 1 | 0 | null;
+      stop_hit: 1 | 0 | null;
+      outcome_filled?: boolean;
+      spot_at_signal?: number;
     }[];
   }> {
     return this.get(`/api/v1/signals/level-rejection/${symbol}`);
@@ -578,7 +582,21 @@ export class ApiClient {
       const tf = barSize || '5m';
       const requestedDays = rangeDaysMap[range] ?? 1;
       const maxDays = barMaxDays[tf] ?? 60;
-      const rangeDays = Math.min(requestedDays, maxDays);
+
+      // Warmup: SMA 200 needs 200 prior bars, EMA 50 needs 50, etc. Without
+      // warmup the moving-average lines start partway into the visible range
+      // (Tory called this out — MA 200 barely appears on a 1Y daily chart).
+      // We fetch ~200 bars of extra history behind the requested range so
+      // indicators can be computed for the full visible window. Numbers are
+      // calendar days needed to cover ~200 bars at each bar size, with room
+      // for weekends/holidays. Clamped by maxDays so we never trip yfinance.
+      const warmupDaysByBar: Record<string, number> = {
+        '1m': 2, '5m': 3, '15m': 10, '30m': 20,
+        '1h': 45, '60m': 45, '4h': 150,
+        '1d': 300, 'daily': 300, '1wk': 1400, 'weekly': 1400,
+      };
+      const warmupDays = warmupDaysByBar[tf] ?? 20;
+      const rangeDays = Math.min(requestedDays + warmupDays, maxDays);
       // Backend also clamps, but clamping here keeps the request honest.
 
       // Fetch real OHLCV data, forecast, levels, news, prediction history, and signals in parallel

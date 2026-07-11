@@ -170,9 +170,15 @@ export default function SignalsLog({ symbol, open, onClose, onSignalClick }: Sig
 function SignalRow({ item, onClick }: { item: UnifiedSignal; onClick?: () => void }) {
   if (item.source === 'level_rejection') {
     const s = item.raw as LevelRejectionSignal;
+    // Tri-state hit flags — null means pending (outcome not yet evaluated),
+    // never conflate with 0. `outcome_filled` on the feed is the source of
+    // truth; the flags corroborate. Some legacy rows still lack outcome_filled,
+    // so we fall back to the flag check.
+    const outcomeFilled = s.outcome_filled ?? (s.target1_hit !== null || s.stop_hit !== null);
     const won = s.target1_hit === 1;
     const stopped = s.stop_hit === 1;
-    const pending = !won && !stopped;
+    const pending = !outcomeFilled;
+    const isPut = (s.side || '').toUpperCase() === 'PUT';
     return (
       <div onClick={onClick} className="px-4 py-3 hover:bg-[#1e222d] transition-colors cursor-pointer" title="Click to zoom the chart to this signal">
         <div className="flex items-start justify-between gap-3">
@@ -184,23 +190,28 @@ function SignalRow({ item, onClick }: { item: UnifiedSignal; onClick?: () => voi
               <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: '#1e222d', color: '#787b86' }}>
                 {s.level_type}
               </span>
-              <span className="text-[10px] font-semibold" style={{ color: '#26a69a' }}>
-                CALL
+              <span className="text-[10px] font-semibold" style={{ color: isPut ? '#ef5350' : '#26a69a' }}>
+                {isPut ? 'PUT' : 'CALL'}
               </span>
               <OutcomePill won={won} stopped={stopped} pending={pending} />
             </div>
-            <div className="grid grid-cols-5 gap-2 text-[11px] font-mono">
-              <Field label="Level" value={s.level_price.toFixed(2)} color="#00bcd4" />
+            <div className="grid grid-cols-4 gap-2 text-[11px] font-mono">
               <Field label="Entry" value={s.entry_price.toFixed(2)} color="#ffc107" />
               <Field label="Stop" value={s.stop_price.toFixed(2)} color="#ef5350" />
               <Field label="T1" value={s.target1_price.toFixed(2)} color="#4caf50" />
-              <Field label="T2" value={s.target2_price ? s.target2_price.toFixed(2) : '—'} color="#8bc34a" />
+              <Field label="T2" value={s.target2_price != null ? s.target2_price.toFixed(2) : '—'} color="#8bc34a" />
             </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[10px]" style={{ color: '#787b86' }}>
-              <span>VIX <span style={{ color: '#d1d4dc' }}>{s.vix_level.toFixed(2)}</span></span>
-              <span>·</span>
-              <span>Regime <span style={{ color: '#d1d4dc' }}>{s.macro_regime}</span></span>
-            </div>
+            {(s.vix_level != null || s.macro_regime) && (
+              <div className="flex items-center gap-3 mt-1.5 text-[10px]" style={{ color: '#787b86' }}>
+                {s.vix_level != null && (
+                  <span>VIX <span style={{ color: '#d1d4dc' }}>{s.vix_level.toFixed(2)}</span></span>
+                )}
+                {s.vix_level != null && s.macro_regime && <span>·</span>}
+                {s.macro_regime && (
+                  <span>Regime <span style={{ color: '#d1d4dc' }}>{s.macro_regime}</span></span>
+                )}
+              </div>
+            )}
           </div>
           <div className="text-right flex-shrink-0">
             <div className="text-[10px]" style={{ color: '#787b86' }}>{formatTime(s.signal_time)}</div>

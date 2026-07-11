@@ -107,17 +107,24 @@ export interface PredictionHistoryEntry {
 export interface LevelRejectionSignal {
   ticker: string;
   signal_time: string;
-  level_type: string;       // OR_LOW, PML, PDL, PREV_VWAP
-  level_price: number;
+  level_type: string;       // SESSION_VWAP, PDL_resist, etc.
+  level_price?: number;
   entry_price: number;
   target1_price: number;
   target2_price: number | null;
   stop_price: number;
-  side: string;             // CALL
-  vix_level: number;
-  macro_regime: string;
-  target1_hit: number;      // 1=won, 0=lost
-  stop_hit: number;
+  side: string;             // CALL / PUT
+  vix_level?: number;
+  macro_regime?: string;
+  // Tri-state: 1=hit, 0=not-hit, null=pending (outcome not evaluated yet).
+  // Null must NEVER be treated as 0 — a pending signal isn't a miss.
+  target1_hit: 1 | 0 | null;
+  target2_hit?: 1 | 0 | null;
+  stop_hit: 1 | 0 | null;
+  outcome_filled?: boolean;
+  // spot_at_signal is aliased to entry_price in the raw feed. Kept for
+  // downstream code that references it separately.
+  spot_at_signal?: number;
 }
 
 export interface PredictionAccuracy {

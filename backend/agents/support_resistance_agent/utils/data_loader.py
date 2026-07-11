@@ -403,14 +403,38 @@ class DataLoader:
                         auto_adjust=True,
                         prepost=False
                     )
+            elif timeframe in hourly_timeframes:
+                # yfinance's start/end path silently returns empty for hourly
+                # when the request straddles today (per Tory: S/R missing on
+                # 1h). Use period-based fetch — proven reliable path — and
+                # cap at 60 days per yfinance's hourly window.
+                span_days = min(max((end_date - start_date).days, 1), 60)
+                try:
+                    df = ticker.history(
+                        period=f"{span_days}d",
+                        interval=interval,
+                        auto_adjust=True,
+                        prepost=False,
+                    )
+                    logger.info(f"Fetched hourly data using period='{span_days}d'")
+                except Exception as period_error:
+                    logger.warning(f"Hourly period fetch failed: {period_error}. Falling back to start/end.")
+                    df = ticker.history(
+                        start=start_date,
+                        end=end_date + timedelta(days=1),  # end is exclusive
+                        interval=interval,
+                        auto_adjust=True,
+                        prepost=False,
+                    )
             else:
-                # For other timeframes, use start/end dates normally
+                # Daily+ timeframes — start/end is stable here. yfinance
+                # treats `end` as exclusive, so push it forward one day.
                 df = ticker.history(
                     start=start_date,
-                    end=end_date,
+                    end=end_date + timedelta(days=1),
                     interval=interval,
                     auto_adjust=True,
-                    prepost=False
+                    prepost=False,
                 )
             
             if df.empty:

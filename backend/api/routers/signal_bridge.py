@@ -5,6 +5,13 @@ Serves external signal datasets (Level Rejection, PCR Shock) from
 Tory's GCS pipeline. Data is loaded from local JSON files under
 storage/signal_data/ and cached in memory. A refresh endpoint can
 re-download from GCS when new data is available.
+
+Level Rejection uses the raw per-signal feed at
+`gs://copilot-ai-trader-data/briefings/signals_raw/level_rejection/` (per
+Tory's 2026-07-08 handoff — supersedes the April-dead `copilot-signal-bridge`
+bucket). Hit flags in that feed are tri-state (1/0/null) — see _is_hit().
+PCR_SHOCK is a separate dataset with its own schema; kept on the legacy
+path until Tory publishes a repoint for that lane.
 """
 
 import json
@@ -25,9 +32,20 @@ SIGNAL_DATA_DIR = Path(__file__).parent.parent.parent / "storage" / "signal_data
 _level_rejection_cache: Optional[List[Dict]] = None
 _pcr_shock_cache: Optional[List[Dict]] = None
 
-GCS_BUCKET = "copilot-signal-bridge"
-GCS_LR_KEY = "exports/level_rejection_calls_v1.json"
+# Live bucket for the raw Level Rejection per-signal feed.
+GCS_BUCKET = "copilot-ai-trader-data"
+GCS_LR_KEY = "briefings/signals_raw/level_rejection/level_rejection_latest.json"
+# PCR_SHOCK is on a separate dataset Tory hasn't repointed yet — legacy path
+# still applies (was last written 2026-05-16). Kept read-only until repoint.
+GCS_PCR_BUCKET = "copilot-signal-bridge"
 GCS_PCR_KEY = "exports/pcr_shock_forecast_v1.json"
+
+
+def _is_hit(v: Any) -> bool:
+    """Tri-state hit flag: 1=hit, 0=not-hit, null/None=pending.
+    Only 1 counts as a real hit — never conflate pending with a miss.
+    """
+    return v == 1
 
 
 def _load_level_rejection() -> List[Dict]:
@@ -90,15 +108,21 @@ async def get_level_rejection(
 
     filtered.sort(key=lambda s: s.get("signal_time", ""))
 
-    # Aggregate win rate
-    outcomes = [s for s in filtered if s.get("outcome_filled")]
-    wins = sum(1 for s in outcomes if s.get("target1_hit"))
-    win_rate = round(wins / len(outcomes), 3) if outcomes else None
+    # Aggregate win rate. Trust Tory's derived `outcome_filled` — some rows
+    # carry a stale DB "evaluated" flag but have null hit data, and the
+    # derived flag correctly categorises those as pending. Only count 1 as
+    # a hit; null (pending) must never be conflated with 0 (miss).
+    resolved = [s for s in filtered if s.get("outcome_filled")]
+    pending = [s for s in filtered if not s.get("outcome_filled")]
+    wins = sum(1 for s in resolved if _is_hit(s.get("target1_hit")))
+    win_rate = round(wins / len(resolved), 3) if resolved else None
 
     return {
         "status": "success",
         "ticker": ticker.upper(),
         "count": len(filtered),
+        "resolved_count": len(resolved),
+        "pending_count": len(pending),
         "win_rate": win_rate,
         "signals": filtered,
     }
@@ -244,29 +268,37 @@ async def get_pcr_shock_backtrack(
 
 @router.post("/refresh")
 async def refresh_from_gcs() -> Dict[str, Any]:
-    """Re-download signal data from GCS. Requires google-cloud-storage."""
+    """Re-download signal data from GCS. Requires google-cloud-storage.
+
+    Level Rejection reads from the new `copilot-ai-trader-data` bucket at
+    `briefings/signals_raw/level_rejection/level_rejection_latest.json`.
+    PCR_SHOCK stays on the legacy bucket until Tory publishes a repoint —
+    a 404 there is expected and non-fatal.
+    """
     global _level_rejection_cache, _pcr_shock_cache
     try:
         from google.cloud import storage as gcs_storage
 
         client = gcs_storage.Client()
-        bucket = client.bucket(GCS_BUCKET)
 
         SIGNAL_DATA_DIR.mkdir(parents=True, exist_ok=True)
         downloaded = []
+        skipped = []
 
-        for gcs_key, local_name in [
-            (GCS_LR_KEY, "level_rejection_calls_v1.json"),
-            (GCS_PCR_KEY, "pcr_shock_forecast_v1.json"),
+        for bucket_name, gcs_key, local_name in [
+            (GCS_BUCKET, GCS_LR_KEY, "level_rejection_calls_v1.json"),
+            (GCS_PCR_BUCKET, GCS_PCR_KEY, "pcr_shock_forecast_v1.json"),
         ]:
+            bucket = client.bucket(bucket_name)
             blob = bucket.blob(gcs_key)
             if blob.exists():
                 dest = SIGNAL_DATA_DIR / local_name
                 blob.download_to_filename(str(dest))
                 downloaded.append(local_name)
-                logger.info("Downloaded %s from GCS", local_name)
+                logger.info("Downloaded gs://%s/%s -> %s", bucket_name, gcs_key, local_name)
             else:
-                logger.warning("GCS blob %s not found", gcs_key)
+                skipped.append(f"gs://{bucket_name}/{gcs_key}")
+                logger.warning("GCS blob not found: gs://%s/%s", bucket_name, gcs_key)
 
         # Clear caches so next request reloads from disk
         _level_rejection_cache = None
@@ -275,6 +307,7 @@ async def refresh_from_gcs() -> Dict[str, Any]:
         return {
             "status": "success",
             "downloaded": downloaded,
+            "skipped": skipped,
             "message": f"Refreshed {len(downloaded)} file(s) from GCS",
         }
 
