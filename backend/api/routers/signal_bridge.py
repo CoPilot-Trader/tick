@@ -32,13 +32,15 @@ SIGNAL_DATA_DIR = Path(__file__).parent.parent.parent / "storage" / "signal_data
 _level_rejection_cache: Optional[List[Dict]] = None
 _pcr_shock_cache: Optional[List[Dict]] = None
 
-# Live bucket for the raw Level Rejection per-signal feed.
+# Both feeds now live on the copilot-ai-trader-data bucket under
+# briefings/signals_raw/. Tory's platform-side pipeline auto-refreshes
+# twice daily on weekdays (~8:40 CT + ~4:50 CT). The legacy
+# copilot-signal-bridge bucket is dead — kept out of this file entirely
+# to avoid accidentally pointing at it in the future.
 GCS_BUCKET = "copilot-ai-trader-data"
 GCS_LR_KEY = "briefings/signals_raw/level_rejection/level_rejection_latest.json"
-# PCR_SHOCK is on a separate dataset Tory hasn't repointed yet — legacy path
-# still applies (was last written 2026-05-16). Kept read-only until repoint.
-GCS_PCR_BUCKET = "copilot-signal-bridge"
-GCS_PCR_KEY = "exports/pcr_shock_forecast_v1.json"
+GCS_PCR_BUCKET = "copilot-ai-trader-data"
+GCS_PCR_KEY = "briefings/signals_raw/pcr_shock/pcr_shock_latest.json"
 
 
 def _is_hit(v: Any) -> bool:
@@ -174,16 +176,22 @@ async def get_pcr_shock_backtrack(
     correct_dir = 0
 
     for s in filtered:
-        spot = s.get("spot_at_signal")
+        # Schema evolution: legacy PCR used `spot_at_signal`, new PCR feed
+        # (2026-07-21 repoint) uses `spot`. Accept either — never break on
+        # a mid-flight feed swap.
+        spot = s.get("spot") if s.get("spot") is not None else s.get("spot_at_signal")
         if not spot:
             continue
 
-        sig_type = s.get("signal_type", "")
-        # Derive direction from signal type
-        if "DROP" in sig_type.upper():
+        # `signal_type` (legacy, single string) → `signal_types_at_ts`
+        # (new, list of relabels for the same event). Direction only needs
+        # one representative type; use the first that indicates a direction.
+        sig_types = s.get("signal_types_at_ts") or ([s.get("signal_type")] if s.get("signal_type") else [])
+        sig_type_str = " ".join(str(t) for t in sig_types).upper()
+        if "DROP" in sig_type_str or "PUT" in sig_type_str:
             direction = "DOWN"
             implied_move = -0.005  # -0.5% expected
-        elif "SPIKE" in sig_type.upper():
+        elif "SPIKE" in sig_type_str or "CALL" in sig_type_str:
             direction = "UP"
             implied_move = 0.005
         else:
@@ -205,7 +213,18 @@ async def get_pcr_shock_backtrack(
         else:
             confidence = 0.6
 
-        # Actual price from fwd_1d_pct
+        # Actual price:
+        #  - Legacy schema had `fwd_1d_pct` → straightforward stock forward
+        #    return; back-computed into an actual_price.
+        #  - New schema (post repoint) tracks OPTION forward returns
+        #    (`outcome_opt_call_60m_pct` etc), which are semantically
+        #    different from stock forward returns. Rather than misleadingly
+        #    map option returns as if they were stock returns, we mark the
+        #    signal as "actual not available in this feed" and leave the
+        #    accuracy overlay empty for PCR rows. The Predicted-vs-Actual
+        #    panel still renders the predicted price and direction; it
+        #    just won't show a resolved outcome for PCR until we
+        #    properly integrate the option-return view (Phase 2 scope).
         fwd_1d = s.get("fwd_1d_pct")
         if fwd_1d is not None:
             actual_price = round(spot * (1 + fwd_1d / 100), 2)

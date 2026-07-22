@@ -125,6 +125,11 @@ export interface LevelRejectionSignal {
   // spot_at_signal is aliased to entry_price in the raw feed. Kept for
   // downstream code that references it separately.
   spot_at_signal?: number;
+  // Number of structural levels the bar rejected off (PML, VWAP, EMA200,
+  // pivots, etc). >1 = confluence — signals with more levels tend to
+  // carry more conviction. Feed publishes one row per signal after
+  // Tory's 2026-07-21 collapse; this preserves the multi-level count.
+  levels_at_bar?: number;
 }
 
 export interface PredictionAccuracy {

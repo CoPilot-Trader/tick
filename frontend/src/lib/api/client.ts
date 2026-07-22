@@ -433,6 +433,7 @@ export class ApiClient {
       stop_hit: 1 | 0 | null;
       outcome_filled?: boolean;
       spot_at_signal?: number;
+      levels_at_bar?: number;
     }[];
   }> {
     return this.get(`/api/v1/signals/level-rejection/${symbol}`);

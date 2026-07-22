@@ -193,6 +193,15 @@ function SignalRow({ item, onClick }: { item: UnifiedSignal; onClick?: () => voi
               <span className="text-[10px] font-semibold" style={{ color: isPut ? '#ef5350' : '#26a69a' }}>
                 {isPut ? 'PUT' : 'CALL'}
               </span>
+              {(s.levels_at_bar ?? 0) > 1 && (
+                <span
+                  className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                  style={{ background: '#ffb74d20', color: '#ffb74d', border: '1px solid #ffb74d40' }}
+                  title={`Rejected off ${s.levels_at_bar} structural levels at this bar — confluence signal`}
+                >
+                  ×{s.levels_at_bar}
+                </span>
+              )}
               <OutcomePill won={won} stopped={stopped} pending={pending} />
             </div>
             <div className="grid grid-cols-4 gap-2 text-[11px] font-mono">
