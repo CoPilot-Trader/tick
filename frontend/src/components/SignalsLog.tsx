@@ -8,16 +8,32 @@ import { formatEasternTime, formatEasternDate } from '@/lib/time';
 
 interface PCRShockSignal {
   ticker: string;
-  signal_ts: string;
+  // Schema evolved 2026-07-21: `signal_time` + `spot` replaced the legacy
+  // `signal_ts` + `spot_at_signal`. Legacy fields kept optional so a mixed
+  // feed doesn't crash the panel.
+  signal_time?: string;
+  signal_ts?: string;
   signal_type: string;
-  spot_at_signal: number;
-  fwd_15m_pct: number | null;
-  fwd_30m_pct: number | null;
-  fwd_1h_pct: number | null;
-  fwd_4h_pct: number | null;
-  fwd_1d_pct: number | null;
+  signal_types_at_ts?: number;
+  spot?: number;
+  spot_at_signal?: number;
+  // Legacy stock forward returns (old feed only).
+  fwd_15m_pct?: number | null;
+  fwd_30m_pct?: number | null;
+  fwd_1h_pct?: number | null;
+  fwd_4h_pct?: number | null;
+  fwd_1d_pct?: number | null;
+  // New feed publishes option forward returns instead of stock returns.
+  // Tri-state: null = pending.
+  outcome_opt_call_15m_pct?: number | null;
+  outcome_opt_call_30m_pct?: number | null;
+  outcome_opt_call_60m_pct?: number | null;
+  outcome_opt_put_15m_pct?: number | null;
+  outcome_opt_put_30m_pct?: number | null;
+  outcome_opt_put_60m_pct?: number | null;
   outcome_class: string | null;
-  accuracy: string | null;
+  outcome_filled?: boolean;
+  accuracy?: string | null;
 }
 
 interface UnifiedSignal {
@@ -61,7 +77,7 @@ export default function SignalsLog({ symbol, open, onClose, onSignalClick }: Sig
   const merged: UnifiedSignal[] = useMemo(() => {
     const items: UnifiedSignal[] = [];
     for (const s of levelRej) items.push({ source: 'level_rejection', timestamp: s.signal_time, raw: s });
-    for (const s of pcrShock) items.push({ source: 'pcr_shock', timestamp: s.signal_ts, raw: s });
+    for (const s of pcrShock) items.push({ source: 'pcr_shock', timestamp: s.signal_time || s.signal_ts || '', raw: s });
     items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     if (filter === 'all') return items;
     return items.filter(i => i.source === filter);
@@ -233,12 +249,31 @@ function SignalRow({ item, onClick }: { item: UnifiedSignal; onClick?: () => voi
 
   // PCR Shock
   const s = item.raw as PCRShockSignal;
-  const isUp = (s.fwd_1d_pct ?? 0) >= 0;
+  const spot = s.spot ?? s.spot_at_signal;
+  const ts = s.signal_time || s.signal_ts || '';
   const outcomeColor =
     s.outcome_class === 'STRONG_WIN' ? '#26a69a' :
     s.outcome_class === 'WIN' ? '#4caf50' :
     s.outcome_class === 'LOSS' ? '#ef5350' :
     s.outcome_class === 'FLAT' ? '#787b86' : '#ffb74d';
+  // Choose which forward-return family to display. Legacy stock returns
+  // (`fwd_*_pct`) if present; otherwise the new option-return fields.
+  // Option returns are much more volatile than stock returns — labelled
+  // explicitly so the reader knows what they're looking at.
+  const usingLegacyReturns = s.fwd_15m_pct != null || s.fwd_1h_pct != null || s.fwd_1d_pct != null;
+  const pcrFields: Array<{ label: string; value: number | null | undefined }> = usingLegacyReturns
+    ? [
+        { label: '15m', value: s.fwd_15m_pct },
+        { label: '1h',  value: s.fwd_1h_pct },
+        { label: '4h',  value: s.fwd_4h_pct },
+        { label: '1d',  value: s.fwd_1d_pct },
+      ]
+    : [
+        { label: 'C 15m', value: s.outcome_opt_call_15m_pct },
+        { label: 'C 60m', value: s.outcome_opt_call_60m_pct },
+        { label: 'P 15m', value: s.outcome_opt_put_15m_pct },
+        { label: 'P 60m', value: s.outcome_opt_put_60m_pct },
+      ];
 
   return (
     <div onClick={onClick} className="px-4 py-3 hover:bg-[#1e222d] transition-colors cursor-pointer" title="Click to zoom the chart to this signal">
@@ -251,6 +286,15 @@ function SignalRow({ item, onClick }: { item: UnifiedSignal; onClick?: () => voi
             <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: '#1e222d', color: '#787b86' }}>
               {s.signal_type}
             </span>
+            {!usingLegacyReturns && (
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
+                style={{ color: '#ff9800', background: '#ff980010', border: '1px solid #ff980030' }}
+                title="Option forward returns (call / put, 15m and 60m). New feed schema."
+              >
+                OPT
+              </span>
+            )}
             {s.outcome_class && (
               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded" style={{ color: outcomeColor, border: `1px solid ${outcomeColor}40` }}>
                 {s.outcome_class}
@@ -263,16 +307,15 @@ function SignalRow({ item, onClick }: { item: UnifiedSignal; onClick?: () => voi
             )}
           </div>
           <div className="grid grid-cols-5 gap-2 text-[11px] font-mono">
-            <Field label="Spot" value={s.spot_at_signal.toFixed(2)} color="#d1d4dc" />
-            <Field label="15m" value={fmtPct(s.fwd_15m_pct)} color={pctColor(s.fwd_15m_pct)} />
-            <Field label="1h" value={fmtPct(s.fwd_1h_pct)} color={pctColor(s.fwd_1h_pct)} />
-            <Field label="4h" value={fmtPct(s.fwd_4h_pct)} color={pctColor(s.fwd_4h_pct)} />
-            <Field label="1d" value={fmtPct(s.fwd_1d_pct)} color={pctColor(s.fwd_1d_pct)} />
+            <Field label="Spot" value={spot != null ? spot.toFixed(2) : '—'} color="#d1d4dc" />
+            {pcrFields.map(f => (
+              <Field key={f.label} label={f.label} value={fmtPct(f.value ?? null)} color={pctColor(f.value ?? null)} />
+            ))}
           </div>
         </div>
         <div className="text-right flex-shrink-0">
-          <div className="text-[10px]" style={{ color: '#787b86' }}>{formatTime(s.signal_ts)}</div>
-          <div className="text-[9px] mt-0.5" style={{ color: '#5c6272' }}>{formatDate(s.signal_ts)}</div>
+          <div className="text-[10px]" style={{ color: '#787b86' }}>{formatTime(ts)}</div>
+          <div className="text-[9px] mt-0.5" style={{ color: '#5c6272' }}>{formatDate(ts)}</div>
         </div>
       </div>
     </div>
