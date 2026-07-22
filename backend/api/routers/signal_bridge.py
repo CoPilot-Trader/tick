@@ -130,6 +130,15 @@ async def get_level_rejection(
     }
 
 
+def _pcr_ts(s: Dict) -> str:
+    """Timestamp field name changed between PCR schemas.
+
+    Legacy: `signal_ts`. New (2026-07-21 repoint): `signal_time`. Accept
+    either so /pcr-shock consumers keep working across the migration.
+    """
+    return s.get("signal_time") or s.get("signal_ts") or ""
+
+
 @router.get("/pcr-shock/{ticker}")
 async def get_pcr_shock(
     ticker: str,
@@ -141,11 +150,11 @@ async def get_pcr_shock(
     filtered = [s for s in all_signals if s.get("ticker", "").upper() == ticker.upper()]
 
     if start:
-        filtered = [s for s in filtered if s.get("signal_ts", "") >= start]
+        filtered = [s for s in filtered if _pcr_ts(s) >= start]
     if end:
-        filtered = [s for s in filtered if s.get("signal_ts", "") <= end]
+        filtered = [s for s in filtered if _pcr_ts(s) <= end]
 
-    filtered.sort(key=lambda s: s.get("signal_ts", ""))
+    filtered.sort(key=_pcr_ts)
 
     return {
         "status": "success",
@@ -167,7 +176,7 @@ async def get_pcr_shock_backtrack(
     """
     all_signals = _load_pcr_shock()
     filtered = [s for s in all_signals if s.get("ticker", "").upper() == ticker.upper()]
-    filtered.sort(key=lambda s: s.get("signal_ts", ""))
+    filtered.sort(key=_pcr_ts)
     filtered = filtered[-limit:]
 
     predictions = []
@@ -183,11 +192,21 @@ async def get_pcr_shock_backtrack(
         if not spot:
             continue
 
-        # `signal_type` (legacy, single string) → `signal_types_at_ts`
-        # (new, list of relabels for the same event). Direction only needs
-        # one representative type; use the first that indicates a direction.
-        sig_types = s.get("signal_types_at_ts") or ([s.get("signal_type")] if s.get("signal_type") else [])
-        sig_type_str = " ".join(str(t) for t in sig_types).upper()
+        # `signal_type` is the primary type string in both legacy and new
+        # schemas. `signal_types_at_ts` in the new feed is a COUNT of
+        # relabels folded into this row (int, not list) — surface it as
+        # metadata but don't use it for direction. Guard against
+        # unexpected shapes (list, str) too — never trust an eager
+        # iteration.
+        sig_type = s.get("signal_type", "") or ""
+        types_count_raw = s.get("signal_types_at_ts")
+        if isinstance(types_count_raw, list):
+            types_count = len(types_count_raw)
+        elif isinstance(types_count_raw, (int, float)):
+            types_count = int(types_count_raw)
+        else:
+            types_count = 1
+        sig_type_str = str(sig_type).upper()
         if "DROP" in sig_type_str or "PUT" in sig_type_str:
             direction = "DOWN"
             implied_move = -0.005  # -0.5% expected
@@ -240,18 +259,21 @@ async def get_pcr_shock_backtrack(
             error_pct = None
             dir_correct = None
 
-        # Parse signal_ts to compute target_date
+        # Parse timestamp — legacy `signal_ts` or new `signal_time`.
+        ts_str = _pcr_ts(s)
+        # New feed timestamps are naive strings like "2026-07-20 15:00:00"
+        # (no offset, ET wall time). Normalise to ISO by adding a space→T.
+        iso_ts_str = ts_str.replace(" ", "T") if ts_str and " " in ts_str else ts_str
         try:
-            ts = datetime.fromisoformat(s["signal_ts"].replace("Z", "+00:00"))
-            target_dt = ts + timedelta(days=1)
+            target_dt = datetime.fromisoformat(iso_ts_str.replace("Z", "+00:00")) + timedelta(days=1)
             target_date = target_dt.strftime("%Y-%m-%d")
             target_timestamp = target_dt.isoformat()
         except Exception:
-            target_date = s.get("signal_ts", "")[:10]
+            target_date = ts_str[:10]
             target_timestamp = None
 
         predictions.append({
-            "predicted_at": s["signal_ts"],
+            "predicted_at": iso_ts_str,
             "horizon": "1d",
             "base_price": spot,
             "predicted_price": predicted_price,
